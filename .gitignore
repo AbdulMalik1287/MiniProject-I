@@ -1,0 +1,6 @@
+data/
+*.ckpt
+*.zip
+__pycache__/
+*.pyc
+figshare_data/
