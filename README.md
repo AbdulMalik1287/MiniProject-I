@@ -33,6 +33,37 @@ Verified against `EEGGraphDataset.py`, not taken from the paper text:
   (summed into one scalar upstream; this harness can keep them as 2 channels)
 - **node features** = 6-band power spectral density, shape `(8, 6)`
 
+## Reproduction status: DONE (2026-09-08, milestone was 15 Sep)
+
+`python train.py --eval-ckpt` on the 478 held-out subjects, 10 released
+checkpoints. Every metric matches the published figures including the standard
+deviations:
+
+| metric | published | reproduced |
+|---|---|---|
+| AUC | 0.871 (0.001) | **0.871 (0.001)** |
+| precision | 0.989 (0.003) | **0.989 (0.003)** |
+| recall | 0.677 (0.018) | **0.677 (0.017)** |
+| F1 | 0.804 (0.011) | **0.804 (0.011)** |
+| balanced accuracy | 0.810 (0.003) | **0.810 (0.003)** |
+
+Dataset as loaded: **225,334 windows, 1,593 subjects**, 87% diseased / 13%
+healthy (1385 / 208 subjects). Held-out split is 478 subjects at seed 42.
+
+Two portability issues had to be solved to get there, both worth knowing:
+
+1. **Checkpoint layout changed.** 2020-era PyG stored `conv1.weight` as
+   `(in, out)` and computed `x @ W`; current PyG keeps it in an `nn.Linear`
+   submodule as `conv1.lin.weight` with shape `(out, in)` and computes
+   `x @ Wᵀ`. Porting needs a **transpose**, not just a rename — see
+   `port_state_dict`.
+2. **Positive class is `diseased`, not `healthy`.** The corpus is 87% diseased,
+   so precision/recall/F1 computed against `healthy` describe detection of the
+   rare class and look nothing like the paper. AUC and balanced accuracy are
+   symmetric under that flip — which is why they matched while the others did
+   not. If you ever see those two agree and the rest disagree, check the
+   positive class first.
+
 ## Setup (blackwell)
 
 ```bash

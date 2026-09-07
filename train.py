@@ -125,8 +125,11 @@ class EEGGraphDataset(torch.utils.data.Dataset):
         else:
             edge_attr = torch.from_numpy(combined.astype(np.float32)).unsqueeze(1)
 
+        # Both must be shape-(1,) tensors, not Python scalars: PyG collates
+        # non-tensor attributes into lists, which breaks .cpu() downstream.
         return Data(x=x, edge_index=edge_index, edge_attr=edge_attr,
-                    y=torch.tensor(self.y[idx]), dataset_idx=idx)
+                    y=torch.tensor([self.y[idx]]),
+                    dataset_idx=torch.tensor([idx]))
 
 
 # ------------------------------------------------------------------------- models
@@ -194,30 +197,40 @@ def build_model(name, edge_dim):
 # ------------------------------------------------------------------------ metrics
 
 
+DISEASED = 0  # np.unique(['diseased','healthy']) -> diseased=0, healthy=1
+
+
 def patient_metrics(probs, y_true, groups):
     """Aggregate window predictions to one prediction per subject (upstream does this).
 
     Reporting window-level numbers on multi-window subjects inflates results;
     subject-level is the number that means anything clinically.
+
+    Diseased is the positive class. That is not cosmetic: the corpus is 87%
+    diseased / 13% healthy, so precision and recall computed against `healthy`
+    describe detection of the rare class and look nothing like the published
+    figures. AUC and balanced accuracy are symmetric under that flip, which is
+    exactly why they can match while precision/recall/f1 do not.
     """
-    df = pd.DataFrame({"g": groups, "p": probs[:, 1], "y": y_true})
+    df = pd.DataFrame({"g": groups, "p": probs[:, DISEASED], "y": y_true})
     # "first" is only valid because a subject is diseased or healthy as a whole.
     # If that ever breaks, every subject-level number below is silently wrong.
     if df.groupby("g")["y"].nunique().max() > 1:
         raise ValueError("labels vary within a subject; subject-level aggregation is invalid")
     agg = df.groupby("g").agg({"p": "mean", "y": "first"})
-    auc = roc_auc_score(agg["y"], agg["p"])
+    pos = (agg["y"] == DISEASED).astype(int)  # 1 = diseased
+    auc = roc_auc_score(pos, agg["p"])
     # Youden's J for the operating point, as upstream.
     from sklearn.metrics import roc_curve
-    fpr, tpr, thr = roc_curve(agg["y"], agg["p"])
+    fpr, tpr, thr = roc_curve(pos, agg["p"])
     cut = thr[np.argmax(tpr - fpr)]
     pred = (agg["p"] >= cut).astype(int)
     return {
         "auc": auc,
-        "precision": precision_score(agg["y"], pred, zero_division=0),
-        "recall": recall_score(agg["y"], pred, zero_division=0),
-        "f1": f1_score(agg["y"], pred, zero_division=0),
-        "bal_acc": balanced_accuracy_score(agg["y"], pred),
+        "precision": precision_score(pos, pred, zero_division=0),
+        "recall": recall_score(pos, pred, zero_division=0),
+        "f1": f1_score(pos, pred, zero_division=0),
+        "bal_acc": balanced_accuracy_score(pos, pred),
         "n_subjects": len(agg),
     }
 
@@ -262,6 +275,32 @@ def run_fold(args, data, tr_idx, te_idx, edge_index, distances, device):
     return patient_metrics(probs, ys, groups[idxs])
 
 
+CKPT_RENAME = {"conv2_bn": "bn", "fc_block1": "fc1", "fc_block2": "fc2"}
+
+
+def port_state_dict(state):
+    """Port a 2020-era PyG checkpoint onto the current GCNConv layout.
+
+    Two changes, and the second one is the dangerous one:
+      - GCNConv moved its weight into an `nn.Linear` submodule, so
+        `conv1.weight` is now `conv1.lin.weight`.
+      - That also flipped the layout from (in, out) to nn.Linear's (out, in).
+        The old layer computed `x @ W`; the new one computes `x @ W.T`. A
+        rename without the transpose loads a wrongly-oriented matrix.
+
+    Here the two conv layers are 6->32 and 32->20, so a missing transpose
+    would be caught by the shape check in load_state_dict. That is luck, not
+    safety - the reproduced AUC below is the real verification.
+    """
+    out = {}
+    for key, v in state.items():
+        parts = [CKPT_RENAME.get(p, p) for p in key.split(".")]
+        if parts[0].startswith("conv") and parts[-1] == "weight" and v.dim() == 2:
+            parts, v = [parts[0], "lin", "weight"], v.t().contiguous()
+        out[".".join(parts)] = v
+    return out
+
+
 def eval_checkpoints(args, data, heldout_idx, edge_index, distances, device):
     """Reproduce the published Table 2 numbers from the released checkpoints.
 
@@ -270,7 +309,6 @@ def eval_checkpoints(args, data, heldout_idx, edge_index, distances, device):
     weights through our loader also proves our loader agrees with theirs.
     """
     X, y, groups, coh = data
-    remap = {"conv2_bn": "bn", "fc_block1": "fc1", "fc_block2": "fc2"}
     ds = EEGGraphDataset(X, y, coh, heldout_idx, edge_index, distances, "sum")
     loader = DataLoader(ds, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
 
@@ -278,7 +316,7 @@ def eval_checkpoints(args, data, heldout_idx, edge_index, distances, device):
     for k in range(args.folds):
         ckpt = Path(args.ckpt_dir).expanduser() / f"{args.ckpt_prefix}_fold_{k}.ckpt"
         state = torch.load(ckpt, map_location=device, weights_only=False)["state_dict"]
-        state = {".".join([remap.get(p, p) for p in key.split(".")]): v for key, v in state.items()}
+        state = port_state_dict(state)
 
         model = build_model("gcn", 1).to(device).double()
         missing, unexpected = model.load_state_dict(state, strict=False)
@@ -406,15 +444,44 @@ def selfcheck():
     for a, b in gkf.split(np.arange(n), y, groups):
         assert not (set(groups[a]) & set(groups[b])), "subject leaked across the split"
 
+    # Batch attributes must survive collation as tensors of shape (batch,),
+    # so the eval loop can call .cpu().numpy() on them.
+    batch = next(iter(DataLoader(ds, batch_size=4)))
+    for attr in ("y", "dataset_idx"):
+        v = getattr(batch, attr)
+        assert torch.is_tensor(v), f"{attr} collated to {type(v).__name__}, not a tensor"
+        assert v.shape == (4,), f"{attr} collated to {tuple(v.shape)}, expected (4,)"
+    assert batch.dataset_idx.tolist() == [0, 1, 2, 3], batch.dataset_idx.tolist()
+
     for name in ("fcnn", "gcn", "cheb", "gatv2"):
         m = build_model(name, 1)
-        batch = next(iter(DataLoader(ds, batch_size=4)))
         out = m(batch.x, batch.edge_index, batch.edge_attr, batch.batch)
         assert out.shape == (4, 2), f"{name} produced {out.shape}"
 
     gat = build_model("gatv2", 2)
     b2 = next(iter(DataLoader(split, batch_size=4)))
     assert gat(b2.x, b2.edge_index, b2.edge_attr, b2.batch).shape == (4, 2)
+
+    # Checkpoint porting: keys must land exactly where the model wants them,
+    # conv weights must be transposed, and fc weights must NOT be.
+    old = {
+        "conv1.weight": torch.randn(6, 32), "conv1.bias": torch.randn(32),
+        "conv2.weight": torch.randn(32, 20), "conv2.bias": torch.randn(20),
+        "conv2_bn.module.weight": torch.randn(20), "conv2_bn.module.bias": torch.randn(20),
+        "conv2_bn.module.running_mean": torch.randn(20),
+        "conv2_bn.module.running_var": torch.randn(20).abs(),
+        "conv2_bn.module.num_batches_tracked": torch.tensor(0),
+        "fc_block1.weight": torch.randn(10, 20), "fc_block1.bias": torch.randn(10),
+        "fc_block2.weight": torch.randn(2, 10), "fc_block2.bias": torch.randn(2),
+    }
+    ported = port_state_dict(old)
+    assert torch.equal(ported["conv1.lin.weight"], old["conv1.weight"].t()), "conv1 must transpose"
+    assert torch.equal(ported["conv2.lin.weight"], old["conv2.weight"].t()), "conv2 must transpose"
+    assert torch.equal(ported["fc1.weight"], old["fc_block1.weight"]), "fc must not transpose"
+    assert torch.equal(ported["conv1.bias"], old["conv1.bias"]), "bias must pass through"
+    want = set(build_model("gcn", 1).state_dict())
+    assert set(ported) == want, f"ported keys != model keys: {set(ported) ^ want}"
+    build_model("gcn", 1).load_state_dict(ported)  # strict: shapes must line up
 
     # Subject-level aggregation must collapse windows, not pass them through.
     probs = np.stack([1 - y, y], 1).astype(float)
