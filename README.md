@@ -64,6 +64,65 @@ Two portability issues had to be solved to get there, both worth knowing:
    not. If you ever see those two agree and the rest disagree, check the
    positive class first.
 
+## Phase 2: multi-disorder on Park et al. (in progress)
+
+`park.py` — 945 subjects, 19 channels, single site (SMG-SNU Boramae, Seoul).
+Verified against the paper: Mood 266, Addictive 186, Trauma 128, SZ 117,
+Anxiety 107, Healthy 95, OCD 46. Features are 114 band-power (19×6) and 1026
+coherence (171 pairs × 6 bands) columns.
+
+Graph: 19 nodes, complete + self-loops (361 edges), node features = 6 band
+powers, edge features = 6 per-band coherences.
+
+```bash
+python park.py --task multiclass --model gcn       # 4-way deliverable
+python park.py --task binary --target Schizophrenia # reference, comparable to Park
+```
+
+### Results so far — all models lose to classical baselines
+
+| | binary SZ vs HC (n=212) | 4-way (n=664) |
+|---|---|---|
+| logistic regression (AB+COH) | **0.731** | 0.428 |
+| random forest | 0.721 | **0.449** |
+| majority class | — | 0.401 |
+| fcnn | 0.627 | 0.277 |
+| gcn | 0.576 | 0.259 |
+| cheb | 0.561 | 0.253 |
+| gatv2 | 0.529 | 0.254 |
+| *Park et al. published* | *0.938* | *not attempted in the literature* |
+
+(accuracy, 10-fold stratified. Neural accuracy sits below the majority-class rate
+because the loss is class-weighted — balanced accuracy is above chance, 0.321 vs
+0.250 for the 4-way.)
+
+**Diagnosis, not yet a finding.** The classical models read all 1140 columns as
+features. The GNNs read 114 band-power values as node features and consume
+coherence only as edge weights, which for GCN collapses 1026 numbers into one
+scalar per edge. The deficit looks like an information bottleneck in the graph
+formulation, not evidence that GNNs are unsuited. Do not report this as
+"GNNs underperform" until coherence is given to the models properly.
+
+**What is solid:** the binary → multi-class gap. Logistic regression drops
+0.731 → 0.428, and 4-way barely clears the 0.401 majority-class rate. Four-way
+disorder discrimination on these features is close to not working, for every
+model tried. That is the result the project set out to measure.
+
+**Also notable:** the published 0.938 for SZ vs HC is not reproducible here —
+a straightforward logistic regression on the same features and a clean
+stratified split reaches 0.731.
+
+### Two bugs found and fixed
+
+1. **Park stores coherence as 0–100, not [0,1].** Fed raw into an unnormalised
+   GCN over a 19-node complete graph, activations blew up ~4×10⁸ and accuracy
+   went *below chance* (0.439 acc, 0.412 AUC on a binary task). `load_park`
+   now rescales and asserts the range.
+2. **`normalize=False` is correct only for the baseline.** It reproduces
+   EEG-GCNN's 8-node model exactly, but on a 19-node complete graph it must be
+   `True`. It is now a parameter, defaulting to `False` so the reproduction is
+   untouched — verified by re-running `--eval-ckpt` after every change.
+
 ## Setup (blackwell)
 
 ```bash

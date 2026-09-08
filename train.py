@@ -138,13 +138,16 @@ class EEGGraphDataset(torch.utils.data.Dataset):
 class GraphNet(nn.Module):
     """Two conv layers -> BN -> add-pool -> MLP head. Upstream topology, swappable conv."""
 
-    def __init__(self, model, edge_dim):
+    def __init__(self, model, edge_dim, n_classes=2, normalize=False):
         super().__init__()
         self.model = model
         if model == "gcn":
-            # improved/cached/normalize flags match the published model exactly.
-            self.conv1 = GCNConv(N_BANDS, 32, improved=True, cached=False, normalize=False)
-            self.conv2 = GCNConv(32, 20, improved=True, cached=False, normalize=False)
+            # normalize=False reproduces the published model exactly, because its
+            # 8-node graph carries small edge weights. On a denser graph with
+            # larger weights the unnormalised sum explodes (a 19-node complete
+            # graph blew activations up ~4e8x), so callers there pass True.
+            self.conv1 = GCNConv(N_BANDS, 32, improved=True, cached=False, normalize=normalize)
+            self.conv2 = GCNConv(32, 20, improved=True, cached=False, normalize=normalize)
         elif model == "cheb":
             self.conv1 = ChebConv(N_BANDS, 32, K=3)
             self.conv2 = ChebConv(32, 20, K=3)
@@ -156,7 +159,7 @@ class GraphNet(nn.Module):
         else:
             raise ValueError(model)
         self.bn = BatchNorm(20)
-        self.fc1, self.fc2 = nn.Linear(20, 10), nn.Linear(10, 2)
+        self.fc1, self.fc2 = nn.Linear(20, 10), nn.Linear(10, n_classes)
         for m in (self.fc1, self.fc2):
             nn.init.xavier_normal_(m.weight, gain=1)
 
@@ -178,20 +181,23 @@ class GraphNet(nn.Module):
 class FCNN(nn.Module):
     """Graph-blind control. If this matches the GNNs, structure is not being used."""
 
-    def __init__(self):
+    def __init__(self, n_nodes=N_NODES, n_classes=2):
         super().__init__()
+        self.n_nodes = n_nodes
         self.net = nn.Sequential(
-            nn.Linear(N_NODES * N_BANDS, 32), nn.LeakyReLU(),
+            nn.Linear(n_nodes * N_BANDS, 32), nn.LeakyReLU(),
             nn.Linear(32, 20), nn.LeakyReLU(), nn.Dropout(0.2),
-            nn.Linear(20, 10), nn.LeakyReLU(), nn.Linear(10, 2))
+            nn.Linear(20, 10), nn.LeakyReLU(), nn.Linear(10, n_classes))
 
     def forward(self, x, edge_index, edge_attr, batch):
         n_graphs = int(batch.max()) + 1
-        return self.net(x.view(n_graphs, N_NODES * N_BANDS))
+        return self.net(x.view(n_graphs, self.n_nodes * N_BANDS))
 
 
-def build_model(name, edge_dim):
-    return FCNN() if name == "fcnn" else GraphNet(name, edge_dim)
+def build_model(name, edge_dim, n_nodes=N_NODES, n_classes=2, normalize=False):
+    if name == "fcnn":
+        return FCNN(n_nodes, n_classes)
+    return GraphNet(name, edge_dim, n_classes, normalize)
 
 
 # ------------------------------------------------------------------------ metrics
