@@ -19,17 +19,18 @@ def main(pattern="res/*.json"):
     for f in sorted(glob.glob(pattern)):
         d = json.load(open(f))
         a, s = d["args"], d["summary"]
-        rows.append((a["task"], a["model"], s["accuracy"], s["bal_acc"],
-                     s["macro_f1"], s["macro_auc"]))
+        rows.append((a["task"], a["model"], a.get("node_features", "power"),
+                     s["accuracy"], s["bal_acc"], s["macro_f1"], s["macro_auc"]))
 
     for task in ("binary", "multiclass"):
-        sub = sorted([r for r in rows if r[0] == task], key=lambda r: -r[2][0])
+        sub = sorted([r for r in rows if r[0] == task], key=lambda r: -r[3][0])
         if not sub:
             continue
         print(f"\n=== {LABEL[task]} ===")
-        print(f"{'model':<10} {'accuracy':>16} {'bal_acc':>10} {'macro_f1':>10} {'macro_auc':>11}")
-        for _, m, acc, bal, f1, auc in sub:
-            print(f"{m:<10} {acc[0]:>9.3f} +-{acc[1]:.3f} {bal[0]:>10.3f} "
+        print(f"{'model':<8} {'nodefeat':<10} {'accuracy':>16} {'bal_acc':>10} "
+              f"{'macro_f1':>10} {'macro_auc':>11}")
+        for _, m, nf, acc, bal, f1, auc in sub:
+            print(f"{m:<8} {nf:<10} {acc[0]:>9.3f} +-{acc[1]:.3f} {bal[0]:>10.3f} "
                   f"{f1[0]:>10.3f} {auc[0]:>11.3f}")
         print(f"{'':<10} {'-' * 48}")
         for name, val in CONTROLS[task]:

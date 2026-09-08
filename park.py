@@ -107,12 +107,39 @@ def load_park(csv_path, classes):
     return ab, coh, y, names
 
 
+def node_feature_dim(mode):
+    return {"power": N_BANDS,
+            "strength": N_BANDS * 2,
+            "profile": N_BANDS + N_NODES * N_BANDS}[mode]
+
+
+def build_node_features(ab_i, coh_i, mode):
+    """Node features for one subject. ab_i (19, 6), coh_i (19, 19, 6).
+
+    "power" is band power only - what the graph originally carried, and an
+    information bottleneck: the classical baselines read all 1140 columns while
+    the GNN saw 114 here plus coherence squeezed into a scalar edge weight.
+    "profile" appends each channel's full coherence row, so a node carries the
+    same connectivity information the classical models get.
+    """
+    if mode == "power":
+        return ab_i
+    if mode == "strength":
+        # Mean coherence from this channel to every other, per band (19, 6).
+        off = coh_i.sum(1) - coh_i[np.arange(N_NODES), np.arange(N_NODES), :]
+        return np.concatenate([ab_i, off / (N_NODES - 1)], axis=1)
+    if mode == "profile":
+        return np.concatenate([ab_i, coh_i.reshape(N_NODES, -1)], axis=1)
+    raise ValueError(mode)
+
+
 class ParkGraphDataset(torch.utils.data.Dataset):
     """One subject = one graph. 19 nodes, complete + self-loops (361 edges)."""
 
-    def __init__(self, ab, coh, y, indices, edge_index, edge_mode="bands"):
+    def __init__(self, ab, coh, y, indices, edge_index, edge_mode="bands",
+                 node_mode="power"):
         self.ab, self.coh, self.y, self.indices = ab, coh, y, indices
-        self.edge_index, self.edge_mode = edge_index, edge_mode
+        self.edge_index, self.edge_mode, self.node_mode = edge_index, edge_mode, node_mode
 
     def __len__(self):
         return len(self.indices)
@@ -123,7 +150,8 @@ class ParkGraphDataset(torch.utils.data.Dataset):
         e = self.coh[idx][src.numpy(), dst.numpy(), :]  # (E, 6)
         if self.edge_mode == "mean":
             e = e.mean(1, keepdims=True)
-        return Data(x=torch.from_numpy(self.ab[idx]),
+        x = build_node_features(self.ab[idx], self.coh[idx], self.node_mode)
+        return Data(x=torch.from_numpy(np.ascontiguousarray(x, dtype=np.float32)),
                     edge_index=self.edge_index,
                     edge_attr=torch.from_numpy(np.ascontiguousarray(e)),
                     y=torch.tensor([self.y[idx]]),
@@ -171,13 +199,15 @@ def print_confusion(cm, names):
 
 def run_fold(args, ab, coh, y, names, tr, te, edge_index, device):
     edge_dim = N_BANDS if args.edge_mode == "bands" else 1
-    mk = lambda idx: ParkGraphDataset(ab, coh, y, idx, edge_index, args.edge_mode)
+    mk = lambda idx: ParkGraphDataset(ab, coh, y, idx, edge_index, args.edge_mode,
+                                      args.node_features)
     tl = DataLoader(mk(tr), batch_size=args.batch_size, shuffle=True)
     vl = DataLoader(mk(te), batch_size=args.batch_size, shuffle=False)
 
     # normalize=True: 19-node complete graph, unlike the 8-node baseline graph.
     model = build_model(args.model, edge_dim, n_nodes=N_NODES, n_classes=len(names),
-                        normalize=True).to(device)
+                        normalize=True,
+                        in_dim=node_feature_dim(args.node_features)).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     counts = np.bincount(y[tr], minlength=len(names))
     w = torch.tensor(counts.sum() / (len(names) * np.maximum(counts, 1)),
@@ -214,6 +244,10 @@ def main():
     p.add_argument("--classes", default=",".join(DEFAULT_CLASSES),
                    help="multiclass task: comma-separated main.disorder values")
     p.add_argument("--edge-mode", default="bands", choices=["bands", "mean"])
+    p.add_argument("--node-features", default="power",
+                   choices=["power", "strength", "profile"],
+                   help="power=band power only; strength=+mean coherence per band; "
+                        "profile=+full coherence row (same info the classical baselines get)")
     p.add_argument("--folds", type=int, default=10)
     p.add_argument("--epochs", type=int, default=150)
     p.add_argument("--batch-size", type=int, default=64)
@@ -236,7 +270,8 @@ def main():
     edge_index = torch.tensor(list(product(range(N_NODES), range(N_NODES))),
                               dtype=torch.long).t().contiguous()
     print(f"[graph] {N_NODES} nodes, {edge_index.shape[1]} edges (complete + self-loops), "
-          f"edge_dim={N_BANDS if args.edge_mode == 'bands' else 1}")
+          f"edge_dim={N_BANDS if args.edge_mode == 'bands' else 1}, "
+          f"node_features={args.node_features} (dim {node_feature_dim(args.node_features)})")
 
     # One row per subject, so a stratified split cannot leak a subject across
     # folds the way window-level data can.
@@ -295,6 +330,27 @@ def selfcheck():
     for name in ("fcnn", "gcn", "cheb", "gatv2"):
         m = build_model(name, 6, n_nodes=N_NODES, n_classes=4)
         assert m(batch.x, batch.edge_index, batch.edge_attr, batch.batch).shape == (4, 4), name
+
+    # Node-feature modes must have the advertised width, and "profile" must
+    # actually carry the coherence row - that is the whole point of the mode.
+    for mode, want in [("power", 6), ("strength", 12), ("profile", 6 + 19 * 6)]:
+        feats = build_node_features(ab[0], coh[0], mode)
+        assert feats.shape == (N_NODES, want), f"{mode}: {feats.shape}"
+        assert node_feature_dim(mode) == want, mode
+        assert np.allclose(feats[:, :6], ab[0]), f"{mode} must keep band power first"
+    prof = build_node_features(ab[0], coh[0], "profile")
+    assert np.allclose(prof[3, 6:].reshape(19, 6), coh[0, 3]), "profile row misaligned"
+    strg = build_node_features(ab[0], coh[0], "strength")
+    expect = (coh[0, 5].sum(0) - coh[0, 5, 5]) / (N_NODES - 1)
+    assert np.allclose(strg[5, 6:], expect), "strength must exclude the self-loop"
+
+    for mode in ("power", "strength", "profile"):
+        d = ParkGraphDataset(ab, coh, y, np.arange(n), ei, "bands", mode)
+        bb = next(iter(DataLoader(d, batch_size=4)))
+        for name in ("fcnn", "gcn", "gatv2"):
+            m = build_model(name, 6, n_nodes=N_NODES, n_classes=4,
+                            normalize=True, in_dim=node_feature_dim(mode))
+            assert m(bb.x, bb.edge_index, bb.edge_attr, bb.batch).shape == (4, 4), f"{name}/{mode}"
 
     # Scale regression guard. A 19-node complete graph with unnormalised GCN
     # aggregation explodes; this is what drove accuracy below chance until the

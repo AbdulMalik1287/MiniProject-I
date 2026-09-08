@@ -138,7 +138,7 @@ class EEGGraphDataset(torch.utils.data.Dataset):
 class GraphNet(nn.Module):
     """Two conv layers -> BN -> add-pool -> MLP head. Upstream topology, swappable conv."""
 
-    def __init__(self, model, edge_dim, n_classes=2, normalize=False):
+    def __init__(self, model, edge_dim, n_classes=2, normalize=False, in_dim=N_BANDS):
         super().__init__()
         self.model = model
         if model == "gcn":
@@ -146,15 +146,15 @@ class GraphNet(nn.Module):
             # 8-node graph carries small edge weights. On a denser graph with
             # larger weights the unnormalised sum explodes (a 19-node complete
             # graph blew activations up ~4e8x), so callers there pass True.
-            self.conv1 = GCNConv(N_BANDS, 32, improved=True, cached=False, normalize=normalize)
+            self.conv1 = GCNConv(in_dim, 32, improved=True, cached=False, normalize=normalize)
             self.conv2 = GCNConv(32, 20, improved=True, cached=False, normalize=normalize)
         elif model == "cheb":
-            self.conv1 = ChebConv(N_BANDS, 32, K=3)
+            self.conv1 = ChebConv(in_dim, 32, K=3)
             self.conv2 = ChebConv(32, 20, K=3)
         elif model == "gatv2":
             # edge_dim is what lets attention actually read coherence/distance;
             # without it GATv2 is blind to the edge weights the paper computes.
-            self.conv1 = GATv2Conv(N_BANDS, 8, heads=4, edge_dim=edge_dim)
+            self.conv1 = GATv2Conv(in_dim, 8, heads=4, edge_dim=edge_dim)
             self.conv2 = GATv2Conv(32, 20, heads=1, edge_dim=edge_dim)
         else:
             raise ValueError(model)
@@ -181,23 +181,24 @@ class GraphNet(nn.Module):
 class FCNN(nn.Module):
     """Graph-blind control. If this matches the GNNs, structure is not being used."""
 
-    def __init__(self, n_nodes=N_NODES, n_classes=2):
+    def __init__(self, n_nodes=N_NODES, n_classes=2, in_dim=N_BANDS):
         super().__init__()
-        self.n_nodes = n_nodes
+        self.flat_dim = n_nodes * in_dim
         self.net = nn.Sequential(
-            nn.Linear(n_nodes * N_BANDS, 32), nn.LeakyReLU(),
+            nn.Linear(self.flat_dim, 32), nn.LeakyReLU(),
             nn.Linear(32, 20), nn.LeakyReLU(), nn.Dropout(0.2),
             nn.Linear(20, 10), nn.LeakyReLU(), nn.Linear(10, n_classes))
 
     def forward(self, x, edge_index, edge_attr, batch):
         n_graphs = int(batch.max()) + 1
-        return self.net(x.view(n_graphs, self.n_nodes * N_BANDS))
+        return self.net(x.view(n_graphs, self.flat_dim))
 
 
-def build_model(name, edge_dim, n_nodes=N_NODES, n_classes=2, normalize=False):
+def build_model(name, edge_dim, n_nodes=N_NODES, n_classes=2, normalize=False,
+                in_dim=N_BANDS):
     if name == "fcnn":
-        return FCNN(n_nodes, n_classes)
-    return GraphNet(name, edge_dim, n_classes, normalize)
+        return FCNN(n_nodes, n_classes, in_dim)
+    return GraphNet(name, edge_dim, n_classes, normalize, in_dim)
 
 
 # ------------------------------------------------------------------------ metrics

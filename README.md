@@ -79,38 +79,55 @@ python park.py --task multiclass --model gcn       # 4-way deliverable
 python park.py --task binary --target Schizophrenia # reference, comparable to Park
 ```
 
-### Results so far — all models lose to classical baselines
+### Results
+
+Node-feature modes (`--node-features`) control how much connectivity each node
+carries: `power` = 6 band powers only; `strength` = + mean coherence per band
+(12); `profile` = + the channel's full coherence row (120), the same
+connectivity information the classical baselines get.
+
+Accuracy, 10-fold stratified, best node-feature mode per model:
 
 | | binary SZ vs HC (n=212) | 4-way (n=664) |
 |---|---|---|
 | logistic regression (AB+COH) | **0.731** | 0.428 |
 | random forest | 0.721 | **0.449** |
 | majority class | — | 0.401 |
-| fcnn | 0.627 | 0.277 |
-| gcn | 0.576 | 0.259 |
-| cheb | 0.561 | 0.253 |
-| gatv2 | 0.529 | 0.254 |
+| fcnn (profile) | 0.703 | 0.321 |
+| gatv2 (profile) | 0.613 | 0.273 |
+| gcn (profile) | 0.594 | 0.301 |
 | *Park et al. published* | *0.938* | *not attempted in the literature* |
 
-(accuracy, 10-fold stratified. Neural accuracy sits below the majority-class rate
-because the loss is class-weighted — balanced accuracy is above chance, 0.321 vs
-0.250 for the 4-way.)
+Effect of feeding connectivity into the nodes (binary / 4-way accuracy):
 
-**Diagnosis, not yet a finding.** The classical models read all 1140 columns as
-features. The GNNs read 114 band-power values as node features and consume
-coherence only as edge weights, which for GCN collapses 1026 numbers into one
-scalar per edge. The deficit looks like an information bottleneck in the graph
-formulation, not evidence that GNNs are unsuited. Do not report this as
-"GNNs underperform" until coherence is given to the models properly.
+| model | power | strength | profile |
+|---|---|---|---|
+| fcnn | 0.627 / 0.277 | 0.670 / 0.318 | **0.703 / 0.321** |
+| gcn | 0.566 / 0.260 | 0.538 / 0.252 | **0.594 / 0.301** |
+| gatv2 | 0.556 / 0.272 | 0.515 / 0.261 | **0.613 / 0.273** |
 
-**What is solid:** the binary → multi-class gap. Logistic regression drops
-0.731 → 0.428, and 4-way barely clears the 0.401 majority-class rate. Four-way
-disorder discrimination on these features is close to not working, for every
-model tried. That is the result the project set out to measure.
+**The bottleneck was real and it is now mostly closed.** `profile` node features
+lift every model, and the FCNN goes 0.627 → 0.703 on binary, within noise of
+logistic regression's 0.731. The earlier deficit was an artefact of starving the
+graph, not evidence that GNNs are unsuited — which is why it was recorded as a
+diagnosis rather than a finding.
 
-**Also notable:** the published 0.938 for SZ vs HC is not reproducible here —
-a straightforward logistic regression on the same features and a clean
-stratified split reaches 0.731.
+**Graph structure does not help on this corpus.** Given identical information,
+the graph-blind FCNN beats GCN and GATv2 on both tasks. With 19 nodes and a
+complete graph there is little topology to exploit, and message passing over a
+fully-connected graph mostly averages the nodes together. Report this as a
+negative result about *this graph formulation at this scale*, not about GNNs.
+
+**The binary → multi-class collapse is the headline.** Logistic regression drops
+0.731 → 0.428, and the best 4-way model (0.449, random forest) barely clears the
+0.401 majority-class rate. Every architecture tried, classical and neural, fails
+to separate the disorders from each other while succeeding at
+patient-vs-control. Four-way discrimination on these features is close to not
+working, and that reproduces across nine model/feature combinations.
+
+**The published number does not reproduce.** Park reports 0.938 for SZ vs HC;
+logistic regression on the same features with a clean stratified split reaches
+0.731.
 
 ### Two bugs found and fixed
 
