@@ -1,0 +1,20 @@
+reference: 58 Mumtaz recordings, labelled channels; target: 101 ASEEG recordings
+
+marker check on labelled Mumtaz controls: alpha top-5 ['O2', 'O1', 'T6', 'T5', 'P4'] (5/5 posterior), delta top-5 ['FP1', 'FP2', 'F8', 'F7', 'T4'] (4/5 frontal)
+
+candidate orders (column j of ASEEG = candidate[j]):
+  10-20 row order                    fingerprint r=0.869  alpha ['O2', 'O1', 'T6', 'T5', 'P4'] (5/5 post)  delta ['FP2', 'FP1', 'F8', 'F7', 'F4'] (5/5 front)
+  left/right pairs, midline last     fingerprint r=-0.018  alpha ['PZ', 'CZ', 'FZ', 'T3', 'T6'] (2/5 post)  delta ['FP2', 'FP1', 'P3', 'F3', 'C4'] (3/5 front)
+  left chain, midline, right chain   fingerprint r=0.214  alpha ['PZ', 'CZ', 'T6', 'P4', 'T4'] (3/5 post)  delta ['F3', 'FP1', 'T3', 'C3', 'F7'] (3/5 front)
+  alphabetical                       fingerprint r=0.254  alpha ['T6', 'T5', 'T4', 'P3', 'T3'] (3/5 post)  delta ['C4', 'C3', 'F8', 'CZ', 'F7'] (2/5 front)
+
+unconstrained search best fingerprint r=0.898
+  inferred column order: ['O1', 'O2', 'T5', 'P3', 'PZ', 'P4', 'T6', 'T3', 'C3', 'CZ', 'C4', 'T4', 'F7', 'F3', 'FZ', 'F4', 'F8', 'FP2', 'FP1']
+  its physiology: alpha ['FP1', 'FP2', 'F8', 'F7', 'F4'] (0/5 post), delta ['O2', 'O1', 'T6', 'T5', 'P4'] (0/5 front)
+
+best candidate: 10-20 row order  r=0.869 (next candidate r=0.254, unconstrained r=0.898)
+  fingerprint clearly separates candidates and is near the optimum: True
+  physiology (alpha posterior AND delta frontal): True
+  unconstrained optimum rejected as a front/back mirror: True
+VERDICT: ACCEPT '10-20 row order': ['FP1', 'FP2', 'F7', 'F3', 'FZ', 'F4', 'F8', 'T3', 'C3', 'CZ', 'C4', 'T4', 'T5', 'P3', 'PZ', 'P4', 'T6', 'O1', 'O2']
+  residual assumption: left/right (e.g. FP1 vs FP2) is not identifiable from resting EEG; taken from this standard export order.

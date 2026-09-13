@@ -34,7 +34,7 @@ from sklearn.model_selection import GroupKFold, train_test_split
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 from torch_geometric.nn import (BatchNorm, ChebConv, GATv2Conv, GCNConv,
-                                global_add_pool)
+                                global_add_pool, global_max_pool, global_mean_pool)
 
 N_NODES = 8
 N_BANDS = 6
@@ -138,25 +138,36 @@ class EEGGraphDataset(torch.utils.data.Dataset):
 class GraphNet(nn.Module):
     """Two conv layers -> BN -> add-pool -> MLP head. Upstream topology, swappable conv."""
 
-    def __init__(self, model, edge_dim):
+    def __init__(self, model, edge_dim, n_classes=2, normalize=False, in_dim=N_BANDS,
+                 pool="add"):
         super().__init__()
         self.model = model
+        # "add" is the published readout. "meanmax" concatenates mean and max
+        # pooling: on a complete graph the add-pooled embedding is dominated by
+        # node count and averaging, and max keeps the most extreme channel.
+        if pool not in ("add", "mean", "meanmax"):
+            raise ValueError(pool)
+        self.pool = pool
         if model == "gcn":
-            # improved/cached/normalize flags match the published model exactly.
-            self.conv1 = GCNConv(N_BANDS, 32, improved=True, cached=False, normalize=False)
-            self.conv2 = GCNConv(32, 20, improved=True, cached=False, normalize=False)
+            # normalize=False reproduces the published model exactly, because its
+            # 8-node graph carries small edge weights. On a denser graph with
+            # larger weights the unnormalised sum explodes (a 19-node complete
+            # graph blew activations up ~4e8x), so callers there pass True.
+            self.conv1 = GCNConv(in_dim, 32, improved=True, cached=False, normalize=normalize)
+            self.conv2 = GCNConv(32, 20, improved=True, cached=False, normalize=normalize)
         elif model == "cheb":
-            self.conv1 = ChebConv(N_BANDS, 32, K=3)
+            self.conv1 = ChebConv(in_dim, 32, K=3)
             self.conv2 = ChebConv(32, 20, K=3)
         elif model == "gatv2":
             # edge_dim is what lets attention actually read coherence/distance;
             # without it GATv2 is blind to the edge weights the paper computes.
-            self.conv1 = GATv2Conv(N_BANDS, 8, heads=4, edge_dim=edge_dim)
+            self.conv1 = GATv2Conv(in_dim, 8, heads=4, edge_dim=edge_dim)
             self.conv2 = GATv2Conv(32, 20, heads=1, edge_dim=edge_dim)
         else:
             raise ValueError(model)
         self.bn = BatchNorm(20)
-        self.fc1, self.fc2 = nn.Linear(20, 10), nn.Linear(10, 2)
+        self.fc1 = nn.Linear(40 if pool == "meanmax" else 20, 10)
+        self.fc2 = nn.Linear(10, n_classes)
         for m in (self.fc1, self.fc2):
             nn.init.xavier_normal_(m.weight, gain=1)
 
@@ -170,7 +181,12 @@ class GraphNet(nn.Module):
     def forward(self, x, edge_index, edge_attr, batch):
         x = F.leaky_relu(self._conv(self.conv1, x, edge_index, edge_attr))
         x = F.leaky_relu(self.bn(self._conv(self.conv2, x, edge_index, edge_attr)))
-        out = global_add_pool(x, batch)
+        if self.pool == "add":
+            out = global_add_pool(x, batch)
+        elif self.pool == "mean":
+            out = global_mean_pool(x, batch)
+        else:
+            out = torch.cat([global_mean_pool(x, batch), global_max_pool(x, batch)], 1)
         out = F.dropout(out, p=0.2, training=self.training)
         return self.fc2(F.leaky_relu(self.fc1(out)))
 
@@ -178,20 +194,24 @@ class GraphNet(nn.Module):
 class FCNN(nn.Module):
     """Graph-blind control. If this matches the GNNs, structure is not being used."""
 
-    def __init__(self):
+    def __init__(self, n_nodes=N_NODES, n_classes=2, in_dim=N_BANDS):
         super().__init__()
+        self.flat_dim = n_nodes * in_dim
         self.net = nn.Sequential(
-            nn.Linear(N_NODES * N_BANDS, 32), nn.LeakyReLU(),
+            nn.Linear(self.flat_dim, 32), nn.LeakyReLU(),
             nn.Linear(32, 20), nn.LeakyReLU(), nn.Dropout(0.2),
-            nn.Linear(20, 10), nn.LeakyReLU(), nn.Linear(10, 2))
+            nn.Linear(20, 10), nn.LeakyReLU(), nn.Linear(10, n_classes))
 
     def forward(self, x, edge_index, edge_attr, batch):
         n_graphs = int(batch.max()) + 1
-        return self.net(x.view(n_graphs, N_NODES * N_BANDS))
+        return self.net(x.view(n_graphs, self.flat_dim))
 
 
-def build_model(name, edge_dim):
-    return FCNN() if name == "fcnn" else GraphNet(name, edge_dim)
+def build_model(name, edge_dim, n_nodes=N_NODES, n_classes=2, normalize=False,
+                in_dim=N_BANDS, pool="add"):
+    if name == "fcnn":
+        return FCNN(n_nodes, n_classes, in_dim)
+    return GraphNet(name, edge_dim, n_classes, normalize, in_dim, pool)
 
 
 # ------------------------------------------------------------------------ metrics

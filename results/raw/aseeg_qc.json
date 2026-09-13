@@ -1,0 +1,709 @@
+[
+ {
+  "subject": "aseeg-n1",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n10",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n11",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n12",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n13",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n14",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n15",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n16",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n17",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n18",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n19",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n2",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n20",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n21",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n22",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n23",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n24",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n25",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n26",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n27",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n28",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n29",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 2,
+  "kept": 28
+ },
+ {
+  "subject": "aseeg-n3",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n30",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n31",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n32",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "aseeg-n33",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 2,
+  "kept": 28
+ },
+ {
+  "subject": "aseeg-n34",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n35",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n36",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n37",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n38",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "aseeg-n39",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n4",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n40",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n41",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n42",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n43",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n44",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n45",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n46",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n47",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "aseeg-n48",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n49",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n5",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n50",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n6",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 13,
+  "kept": 17
+ },
+ {
+  "subject": "aseeg-n7",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n8",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-n9",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz1",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz10",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 3,
+  "kept": 27
+ },
+ {
+  "subject": "aseeg-sz11",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 14,
+  "kept": 16
+ },
+ {
+  "subject": "aseeg-sz12",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 3,
+  "kept": 27
+ },
+ {
+  "subject": "aseeg-sz13",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 3,
+  "kept": 27
+ },
+ {
+  "subject": "aseeg-sz14",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz15",
+  "label": 1,
+  "windows_total": 25,
+  "rejected": 1,
+  "kept": 24
+ },
+ {
+  "subject": "aseeg-sz16",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz17",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 4,
+  "kept": 26
+ },
+ {
+  "subject": "aseeg-sz18",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 4,
+  "kept": 26
+ },
+ {
+  "subject": "aseeg-sz19",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz2",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz20",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 3,
+  "kept": 27
+ },
+ {
+  "subject": "aseeg-sz21",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 3,
+  "kept": 27
+ },
+ {
+  "subject": "aseeg-sz22",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz23",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 2,
+  "kept": 28
+ },
+ {
+  "subject": "aseeg-sz24",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 2,
+  "kept": 28
+ },
+ {
+  "subject": "aseeg-sz25",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz26",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "aseeg-sz27",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 3,
+  "kept": 27
+ },
+ {
+  "subject": "aseeg-sz28",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz29",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 2,
+  "kept": 28
+ },
+ {
+  "subject": "aseeg-sz3",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "aseeg-sz30",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "aseeg-sz31",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz32",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 2,
+  "kept": 28
+ },
+ {
+  "subject": "aseeg-sz33",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz34",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz35",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz36",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz37",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 2,
+  "kept": 28
+ },
+ {
+  "subject": "aseeg-sz38",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz39",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "aseeg-sz4",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 2,
+  "kept": 28
+ },
+ {
+  "subject": "aseeg-sz40",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz41",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz42",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz43",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "aseeg-sz44",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz45",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz46",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz47",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "aseeg-sz48",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz49",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz5",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz50",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz51",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "aseeg-sz6",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "aseeg-sz7",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 3,
+  "kept": 27
+ },
+ {
+  "subject": "aseeg-sz8",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 2,
+  "kept": 28
+ },
+ {
+  "subject": "aseeg-sz9",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ }
+]

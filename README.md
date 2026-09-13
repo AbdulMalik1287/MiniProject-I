@@ -64,6 +64,139 @@ Two portability issues had to be solved to get there, both worth knowing:
    not. If you ever see those two agree and the rest disagree, check the
    positive class first.
 
+## Phase 2: multi-disorder on Park et al. (in progress)
+
+`park.py` — 945 subjects, 19 channels, single site (SMG-SNU Boramae, Seoul).
+Verified against the paper: Mood 266, Addictive 186, Trauma 128, SZ 117,
+Anxiety 107, Healthy 95, OCD 46. Features are 114 band-power (19×6) and 1026
+coherence (171 pairs × 6 bands) columns.
+
+Graph: 19 nodes, complete + self-loops (361 edges), node features = 6 band
+powers, edge features = 6 per-band coherences.
+
+```bash
+python park.py --task multiclass --model gcn       # 4-way deliverable
+python park.py --task binary --target Schizophrenia # reference, comparable to Park
+```
+
+### Results
+
+Node-feature modes (`--node-features`) control how much connectivity each node
+carries: `power` = 6 band powers only; `strength` = + mean coherence per band
+(12); `profile` = + the channel's full coherence row (120), the same
+connectivity information the classical baselines get.
+
+Accuracy, 10-fold stratified, best node-feature mode per model:
+
+| | binary SZ vs HC (n=212) | 4-way (n=664) |
+|---|---|---|
+| logistic regression (AB+COH) | **0.731** | 0.428 |
+| random forest | 0.721 | **0.449** |
+| majority class | — | 0.401 |
+| fcnn (profile) | 0.703 | 0.321 |
+| gatv2 (profile) | 0.613 | 0.273 |
+| gcn (profile) | 0.594 | 0.301 |
+| *Park et al. published* | *0.938* | *not attempted in the literature* |
+
+Effect of feeding connectivity into the nodes (binary / 4-way accuracy):
+
+| model | power | strength | profile |
+|---|---|---|---|
+| fcnn | 0.627 / 0.277 | 0.670 / 0.318 | **0.703 / 0.321** |
+| gcn | 0.566 / 0.260 | 0.538 / 0.252 | **0.594 / 0.301** |
+| gatv2 | 0.556 / 0.272 | 0.515 / 0.261 | **0.613 / 0.273** |
+
+**The bottleneck was real and it is now mostly closed.** `profile` node features
+lift every model, and the FCNN goes 0.627 → 0.703 on binary, within noise of
+logistic regression's 0.731. The earlier deficit was an artefact of starving the
+graph, not evidence that GNNs are unsuited — which is why it was recorded as a
+diagnosis rather than a finding.
+
+**Graph structure does not help on this corpus.** Given identical information,
+the graph-blind FCNN beats GCN and GATv2 on both tasks. With 19 nodes and a
+complete graph there is little topology to exploit, and message passing over a
+fully-connected graph mostly averages the nodes together. Report this as a
+negative result about *this graph formulation at this scale*, not about GNNs.
+
+**The binary → multi-class collapse is the headline.** Logistic regression drops
+0.731 → 0.428, and the best 4-way model (0.449, random forest) barely clears the
+0.401 majority-class rate. Every architecture tried, classical and neural, fails
+to separate the disorders from each other while succeeding at
+patient-vs-control. Four-way discrimination on these features is close to not
+working, and that reproduces across nine model/feature combinations.
+
+**The published number does not reproduce.** Park reports 0.938 for SZ vs HC;
+logistic regression on the same features with a clean stratified split reaches
+0.731.
+
+### Two bugs found and fixed
+
+1. **Park stores coherence as 0–100, not [0,1].** Fed raw into an unnormalised
+   GCN over a 19-node complete graph, activations blew up ~4×10⁸ and accuracy
+   went *below chance* (0.439 acc, 0.412 AUC on a binary task). `load_park`
+   now rescales and asserts the range.
+2. **`normalize=False` is correct only for the baseline.** It reproduces
+   EEG-GCNN's 8-node model exactly, but on a 19-node complete graph it must be
+   `True`. It is now a parameter, defaulting to `False` so the reproduction is
+   untouched — verified by re-running `--eval-ckpt` after every change.
+
+## Phase 3: one GNN per disorder, and raw EEG across hospitals
+
+Full write-up with architectures, all tables and figures:
+**[`docs/MiniProject_Results.docx`](docs/MiniProject_Results.docx)**, rebuilt from the result
+files by `python make_report.py`.
+
+### Per-disorder GNNs (`per_disorder.py`, Park corpus)
+
+Five binary GNNs (disorder vs healthy) plus an ensemble. OCD excluded (46 subjects).
+Protocol: stratified 80/20 subject split fixed once (`results/per_disorder/split.json`);
+8 GNN configs compared by 5-fold CV on the train split only; one config chosen for all
+five models; trained, Platt-calibrated on train out-of-fold predictions, then evaluated
+once on the 180 untouched test subjects.
+
+Selected: **GATv2, mean+max pooling, top-4 coherence graph** (9,952 parameters). The three
+best configs all use sparse graphs.
+
+| model | AUC vs healthy [95% CI] | AUC vs other disorders [95% CI] |
+|---|---|---|
+| schizophrenia | 0.705 [0.53, 0.86] | 0.484 [0.37, 0.61] |
+| mood | 0.709 [0.54, 0.86] | 0.506 [0.41, 0.60] |
+| addictive | 0.696 [0.53, 0.84] | 0.592 [0.49, 0.69] |
+| trauma | 0.733 [0.57, 0.88] | 0.536 [0.41, 0.66] |
+| anxiety | 0.797 [0.65, 0.92] | 0.508 [0.37, 0.65] |
+
+Every model detects its disorder against healthy controls (all CIs above 0.5); none
+separates its disorder from the other disorders (all CIs include 0.5). The models detect
+psychiatric illness, not which illness. Ensemble balanced accuracy 0.235 [0.18, 0.29]
+over 6 classes (chance 0.167). Raw models were 5-10x overconfident (calibration slopes
+0.10-0.20); calibration took saturated probabilities from 44% to 0%.
+
+```bash
+python per_disorder.py predict --ids 503 730 --out results/per_disorder   # trained models are committed
+```
+
+### Raw EEG across hospitals (`raw_eeg.py`)
+
+Every external dataset brings its own controls. One pipeline for all sources; the GNN
+config is the one tuned on Park, not re-tuned here. ASEEG ships unlabelled channels -
+`infer_channel_order.py` recovers the order from the data.
+
+| evaluation | AUC [95% CI] |
+|---|---|
+| schizophrenia, within ASEEG (51 / 50) | 0.769 [0.67, 0.86] |
+| schizophrenia, within Warsaw (14 / 14) | 0.765 [0.56, 0.94] |
+| schizophrenia, pooled both hospitals | 0.754 [0.67, 0.83] |
+| **train ASEEG, test Warsaw** | **0.526 [0.31, 0.74]** |
+| **train Warsaw, test ASEEG** | **0.505 [0.39, 0.62]** |
+| depression, within Mumtaz (30 / 28) | 0.945 [0.87, 1.00] |
+
+Within a hospital the GNN detects schizophrenia; trained at one hospital it is at chance
+at the other. What is learned is largely site-specific. The depression result has no
+second open dataset to check it against, so it should not be read as a transferable
+signature.
+
+Phase 3 ran on a laptop CPU (Blackwell unreachable on 2026-09-13).
+
 ## Setup (blackwell)
 
 ```bash

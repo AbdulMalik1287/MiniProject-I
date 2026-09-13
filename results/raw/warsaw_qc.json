@@ -1,0 +1,198 @@
+[
+ {
+  "subject": "warsaw-h01",
+  "label": 0,
+  "windows_total": 92,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h02",
+  "label": 0,
+  "windows_total": 91,
+  "rejected": 1,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h03",
+  "label": 0,
+  "windows_total": 91,
+  "rejected": 4,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h04",
+  "label": 0,
+  "windows_total": 92,
+  "rejected": 5,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h05",
+  "label": 0,
+  "windows_total": 94,
+  "rejected": 7,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h06",
+  "label": 0,
+  "windows_total": 93,
+  "rejected": 2,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h07",
+  "label": 0,
+  "windows_total": 91,
+  "rejected": 8,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h08",
+  "label": 0,
+  "windows_total": 91,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h09",
+  "label": 0,
+  "windows_total": 90,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h10",
+  "label": 0,
+  "windows_total": 111,
+  "rejected": 11,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h11",
+  "label": 0,
+  "windows_total": 91,
+  "rejected": 10,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h12",
+  "label": 0,
+  "windows_total": 90,
+  "rejected": 3,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h13",
+  "label": 0,
+  "windows_total": 96,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-h14",
+  "label": 0,
+  "windows_total": 86,
+  "rejected": 2,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s01",
+  "label": 1,
+  "windows_total": 84,
+  "rejected": 1,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s02",
+  "label": 1,
+  "windows_total": 114,
+  "rejected": 3,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s03",
+  "label": 1,
+  "windows_total": 96,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s04",
+  "label": 1,
+  "windows_total": 120,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s05",
+  "label": 1,
+  "windows_total": 89,
+  "rejected": 1,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s06",
+  "label": 1,
+  "windows_total": 74,
+  "rejected": 7,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s07",
+  "label": 1,
+  "windows_total": 134,
+  "rejected": 5,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s08",
+  "label": 1,
+  "windows_total": 91,
+  "rejected": 1,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s09",
+  "label": 1,
+  "windows_total": 118,
+  "rejected": 2,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s10",
+  "label": 1,
+  "windows_total": 85,
+  "rejected": 1,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s11",
+  "label": 1,
+  "windows_total": 136,
+  "rejected": 4,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s12",
+  "label": 1,
+  "windows_total": 108,
+  "rejected": 28,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s13",
+  "label": 1,
+  "windows_total": 113,
+  "rejected": 7,
+  "kept": 30
+ },
+ {
+  "subject": "warsaw-s14",
+  "label": 1,
+  "windows_total": 217,
+  "rejected": 16,
+  "kept": 30
+ }
+]

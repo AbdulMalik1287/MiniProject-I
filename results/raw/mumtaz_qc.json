@@ -1,0 +1,408 @@
+[
+ {
+  "subject": "mumtaz-H-S1",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S10",
+  "label": 0,
+  "windows_total": 37,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S11",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S13",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-H-S14",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S15",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S16",
+  "label": 0,
+  "windows_total": 29,
+  "rejected": 0,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-H-S17",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S19",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 4,
+  "kept": 26
+ },
+ {
+  "subject": "mumtaz-H-S2",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-H-S20",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S21",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S22",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S23",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S24",
+  "label": 0,
+  "windows_total": 29,
+  "rejected": 1,
+  "kept": 28
+ },
+ {
+  "subject": "mumtaz-H-S25",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S26",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-H-S27",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S28",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S29",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S3",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S30",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S4",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-H-S5",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S6",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-H-S7",
+  "label": 0,
+  "windows_total": 35,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S8",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-H-S9",
+  "label": 0,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-MDD-S1",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 21,
+  "kept": 9
+ },
+ {
+  "subject": "mumtaz-MDD-S10",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-MDD-S11",
+  "label": 1,
+  "windows_total": 29,
+  "rejected": 0,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-MDD-S13",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-MDD-S14",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-MDD-S15",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 7,
+  "kept": 23
+ },
+ {
+  "subject": "mumtaz-MDD-S17",
+  "label": 1,
+  "windows_total": 29,
+  "rejected": 0,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-MDD-S18",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-MDD-S19",
+  "label": 1,
+  "windows_total": 29,
+  "rejected": 0,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-MDD-S2",
+  "label": 1,
+  "windows_total": 29,
+  "rejected": 6,
+  "kept": 23
+ },
+ {
+  "subject": "mumtaz-MDD-S20",
+  "label": 1,
+  "windows_total": 29,
+  "rejected": 9,
+  "kept": 20
+ },
+ {
+  "subject": "mumtaz-MDD-S21",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-MDD-S22",
+  "label": 1,
+  "windows_total": 29,
+  "rejected": 0,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-MDD-S23",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-MDD-S24",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-MDD-S25",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 2,
+  "kept": 28
+ },
+ {
+  "subject": "mumtaz-MDD-S26",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-MDD-S27",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-MDD-S28",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 6,
+  "kept": 24
+ },
+ {
+  "subject": "mumtaz-MDD-S29",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-MDD-S3",
+  "label": 1,
+  "windows_total": 18,
+  "rejected": 1,
+  "kept": 17
+ },
+ {
+  "subject": "mumtaz-MDD-S30",
+  "label": 1,
+  "windows_total": 24,
+  "rejected": 0,
+  "kept": 24
+ },
+ {
+  "subject": "mumtaz-MDD-S31",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-MDD-S32",
+  "label": 1,
+  "windows_total": 29,
+  "rejected": 4,
+  "kept": 25
+ },
+ {
+  "subject": "mumtaz-MDD-S33",
+  "label": 1,
+  "windows_total": 29,
+  "rejected": 2,
+  "kept": 27
+ },
+ {
+  "subject": "mumtaz-MDD-S34",
+  "label": 1,
+  "windows_total": 29,
+  "rejected": 2,
+  "kept": 27
+ },
+ {
+  "subject": "mumtaz-MDD-S5",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 1,
+  "kept": 29
+ },
+ {
+  "subject": "mumtaz-MDD-S6",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ },
+ {
+  "subject": "mumtaz-MDD-S7",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 3,
+  "kept": 27
+ },
+ {
+  "subject": "mumtaz-MDD-S9",
+  "label": 1,
+  "windows_total": 30,
+  "rejected": 0,
+  "kept": 30
+ }
+]
