@@ -50,16 +50,24 @@ DEFAULT_CLASSES = ["Healthy control", "Schizophrenia", "Mood disorder", "Addicti
 
 
 def load_park(csv_path, classes):
-    """Returns node features (S, 19, 6), coherence (S, 19, 19, 6), labels, class names.
-
-    Node features are log1p'd then L2-normalised per subject. Both are row-wise,
-    so no statistic crosses the train/test boundary.
-    """
+    """Returns node features (S, 19, 6), coherence (S, 19, 19, 6), labels, class names."""
     df = pd.read_csv(csv_path, low_memory=False)
     df = df[df["main.disorder"].isin(classes)].reset_index(drop=True)
     if df.empty:
         raise ValueError(f"no rows matched {classes}")
+    ab, coh = features_from_df(df)
+    names = sorted(classes)
+    y = df["main.disorder"].map({c: i for i, c in enumerate(names)}).to_numpy(np.int64)
+    return ab, coh, y, names
 
+
+def features_from_df(df):
+    """Band power (S, 19, 6) and coherence (S, 19, 19, 6) from Park-format columns.
+
+    Needs no label column, so it also serves inference on new recordings.
+    Node features are log1p'd then L2-normalised per subject. Both are row-wise,
+    so no statistic crosses the train/test boundary.
+    """
     # --- node features: AB.<letter>.<band>.<letter>.<CHAN>
     ab = np.full((len(df), N_NODES, N_BANDS), np.nan, dtype=np.float32)
     for col in (c for c in df.columns if c.startswith("AB.")):
@@ -101,10 +109,7 @@ def load_park(csv_path, classes):
     missing = int((~seen[off]).sum())
     if missing:
         raise ValueError(f"{missing} channel-pair/band coherence cells never filled")
-
-    names = sorted(classes)
-    y = df["main.disorder"].map({c: i for i, c in enumerate(names)}).to_numpy(np.int64)
-    return ab, coh, y, names
+    return ab, coh
 
 
 def node_feature_dim(mode):
@@ -133,26 +138,51 @@ def build_node_features(ab_i, coh_i, mode):
     raise ValueError(mode)
 
 
+def topk_edge_mask(coh_i, k):
+    """(19, 19) bool adjacency keeping each channel's k most coherent neighbours.
+
+    Ranked on coherence averaged over bands. Symmetrised - an edge survives if
+    either endpoint ranks the other in its top k - and self-loops always stay.
+    On a complete graph message passing mostly averages all channels together;
+    sparsifying is what gives each node a distinct neighbourhood.
+    """
+    w = coh_i.mean(-1).copy()
+    np.fill_diagonal(w, -np.inf)
+    best = np.argsort(-w, axis=1)[:, :k]
+    m = np.zeros((N_NODES, N_NODES), dtype=bool)
+    np.put_along_axis(m, best, True, axis=1)
+    m |= m.T
+    np.fill_diagonal(m, True)
+    return m
+
+
 class ParkGraphDataset(torch.utils.data.Dataset):
-    """One subject = one graph. 19 nodes, complete + self-loops (361 edges)."""
+    """One subject = one graph. 19 nodes; complete + self-loops (361 edges) unless topk."""
 
     def __init__(self, ab, coh, y, indices, edge_index, edge_mode="bands",
-                 node_mode="power"):
+                 node_mode="power", topk=None):
         self.ab, self.coh, self.y, self.indices = ab, coh, y, indices
         self.edge_index, self.edge_mode, self.node_mode = edge_index, edge_mode, node_mode
+        self.topk = topk
 
     def __len__(self):
         return len(self.indices)
 
     def __getitem__(self, i):
         idx = self.indices[i]
-        src, dst = self.edge_index
+        edge_index = self.edge_index
+        if self.topk is not None:
+            m = topk_edge_mask(self.coh[idx], self.topk)
+            edge_index = edge_index[:, torch.from_numpy(m[edge_index[0], edge_index[1]])]
+        src, dst = edge_index
         e = self.coh[idx][src.numpy(), dst.numpy(), :]  # (E, 6)
         if self.edge_mode == "mean":
             e = e.mean(1, keepdims=True)
+        # Node features always see the full coherence row, even when edges are
+        # sparsified - topk limits message passing, not what a node knows.
         x = build_node_features(self.ab[idx], self.coh[idx], self.node_mode)
         return Data(x=torch.from_numpy(np.ascontiguousarray(x, dtype=np.float32)),
-                    edge_index=self.edge_index,
+                    edge_index=edge_index,
                     edge_attr=torch.from_numpy(np.ascontiguousarray(e)),
                     y=torch.tensor([self.y[idx]]),
                     dataset_idx=torch.tensor([idx]))
@@ -185,7 +215,8 @@ def multiclass_metrics(probs, y_true, names):
 def print_confusion(cm, names):
     w = max(len(n) for n in names)
     short = [n[:14] for n in names]
-    print(f"\n{'true \\ pred':>{w}} | " + " ".join(f"{s:>14}" for s in short))
+    corner = "true \\ pred"  # backslash outside the f-string: Python <3.12 rejects it inside
+    print(f"\n{corner:>{w}} | " + " ".join(f"{s:>14}" for s in short))
     for i, n in enumerate(names):
         row = " ".join(f"{v:>14d}" for v in cm[i])
         print(f"{n:>{w}} | {row}")
@@ -352,16 +383,47 @@ def selfcheck():
                             normalize=True, in_dim=node_feature_dim(mode))
             assert m(bb.x, bb.edge_index, bb.edge_attr, bb.batch).shape == (4, 4), f"{name}/{mode}"
 
+    # topk sparsification: every node keeps >= k real neighbours plus its
+    # self-loop, the mask is symmetric, and it actually removes edges.
+    for kk in (2, 4):
+        msk = topk_edge_mask(coh[0], kk)
+        assert (msk == msk.T).all(), "topk mask must be symmetric"
+        assert msk.diagonal().all(), "self-loops must survive"
+        assert ((msk.sum(1) - 1) >= kk).all(), f"a node kept fewer than {kk} neighbours"
+        assert msk.sum() < N_NODES * N_NODES, "topk must drop edges"
+        w = coh[0].mean(-1).copy()
+        np.fill_diagonal(w, -np.inf)
+        assert msk[3, int(np.argmax(w[3]))], "a node's strongest neighbour must be kept"
+    sp = ParkGraphDataset(ab, coh, y, np.arange(n), ei, "bands", "profile", topk=3)
+    g3 = sp[0]
+    assert g3.edge_index.shape[1] == topk_edge_mask(coh[0], 3).sum()
+    s3, d3 = g3.edge_index
+    assert np.allclose(g3.edge_attr.numpy(), coh[0][s3.numpy(), d3.numpy(), :]), \
+        "edge_attr misaligned after sparsification"
+    assert g3.x.shape == (N_NODES, node_feature_dim("profile")), "topk must not shrink node features"
+    b3 = next(iter(DataLoader(sp, batch_size=4)))
+    for pool in ("add", "mean", "meanmax"):
+        for name in ("gcn", "gatv2"):
+            mm = build_model(name, 6, n_nodes=N_NODES, n_classes=2, normalize=True,
+                             in_dim=node_feature_dim("profile"), pool=pool)
+            assert mm(b3.x, b3.edge_index, b3.edge_attr, b3.batch).shape == (4, 2), (name, pool)
+
     # Scale regression guard. A 19-node complete graph with unnormalised GCN
     # aggregation explodes; this is what drove accuracy below chance until the
     # coherence rescale and normalize=True went in.
-    normed = build_model("gcn", 6, n_nodes=N_NODES, n_classes=4, normalize=True)
-    out_n = normed(batch.x, batch.edge_index, batch.edge_attr, batch.batch)
+    torch.manual_seed(0)
+    normed = build_model("gcn", 6, n_nodes=N_NODES, n_classes=4, normalize=True).eval()
+    raw = build_model("gcn", 6, n_nodes=N_NODES, n_classes=4, normalize=False).eval()
+    # Identical weights, so normalisation is the only difference being tested
+    # (comparing two randomly initialised models made this assert flaky).
+    raw.load_state_dict(normed.state_dict())
+    with torch.no_grad():
+        h_n = normed.conv1(batch.x, batch.edge_index, edge_weight=batch.edge_attr.sum(1))
+        h_r = raw.conv1(batch.x, batch.edge_index, edge_weight=batch.edge_attr.sum(1))
+        out_n = normed(batch.x, batch.edge_index, batch.edge_attr, batch.batch)
     assert out_n.abs().max().item() < 1e3, f"normalised GCN still exploding: {out_n.abs().max()}"
-    raw = build_model("gcn", 6, n_nodes=N_NODES, n_classes=4, normalize=False)
-    out_r = raw(batch.x, batch.edge_index, batch.edge_attr, batch.batch)
-    assert out_r.abs().max() > out_n.abs().max(), \
-        "normalize=False should aggregate larger than normalize=True on a complete graph"
+    assert h_r.abs().mean() > 5 * h_n.abs().mean(), \
+        "normalize=False should aggregate far larger than normalize=True on a complete graph"
 
     # A perfect predictor must score 1.0; a constant one must not.
     perfect = np.eye(4)[y]
