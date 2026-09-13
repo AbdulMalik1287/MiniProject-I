@@ -1,0 +1,23 @@
+{
+  "grid_index": 1,
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 150,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gcn",
+    "pool": "add",
+    "topk": 4
+  },
+  "mean_auc": 0.6368096220189151,
+  "per_disorder_auc": {
+    "Schizophrenia": 0.5628499440089585,
+    "Mood disorder": 0.7121633308623672,
+    "Addictive disorder": 0.6593959731543625,
+    "Trauma and stress related disorder": 0.6982069143446852,
+    "Anxiety disorder": 0.6146284829721363,
+    "Obsessive compulsive disorder": 0.5736130867709814
+  }
+}

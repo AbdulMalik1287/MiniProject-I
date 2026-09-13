@@ -1,0 +1,211 @@
+{
+  "results": [
+    {
+      "grid_index": 0,
+      "config": {
+        "node_features": "profile",
+        "edge_mode": "bands",
+        "epochs": 150,
+        "batch_size": 64,
+        "lr": 0.001,
+        "weight_decay": 0.0005,
+        "model": "gcn",
+        "pool": "add",
+        "topk": null
+      },
+      "mean_auc": 0.6488415852251471,
+      "per_disorder_auc": {
+        "Schizophrenia": 0.5995240761478163,
+        "Mood disorder": 0.6971213244378552,
+        "Addictive disorder": 0.6630166019074532,
+        "Trauma and stress related disorder": 0.6709236326109391,
+        "Anxiety disorder": 0.6136222910216719,
+        "Obsessive compulsive disorder": 0.6013513513513513
+      }
+    },
+    {
+      "grid_index": 1,
+      "config": {
+        "node_features": "profile",
+        "edge_mode": "bands",
+        "epochs": 150,
+        "batch_size": 64,
+        "lr": 0.001,
+        "weight_decay": 0.0005,
+        "model": "gcn",
+        "pool": "add",
+        "topk": 4
+      },
+      "mean_auc": 0.6494489290685019,
+      "per_disorder_auc": {
+        "Schizophrenia": 0.5628499440089585,
+        "Mood disorder": 0.7121633308623672,
+        "Addictive disorder": 0.6593959731543625,
+        "Trauma and stress related disorder": 0.6982069143446852,
+        "Anxiety disorder": 0.6146284829721363,
+        "Obsessive compulsive disorder": 0.5736130867709814
+      }
+    },
+    {
+      "grid_index": 2,
+      "config": {
+        "node_features": "profile",
+        "edge_mode": "bands",
+        "epochs": 150,
+        "batch_size": 64,
+        "lr": 0.001,
+        "weight_decay": 0.0005,
+        "model": "gcn",
+        "pool": "meanmax",
+        "topk": null
+      },
+      "mean_auc": 0.6346407825309089,
+      "per_disorder_auc": {
+        "Schizophrenia": 0.6105823068309071,
+        "Mood disorder": 0.6538176426982951,
+        "Addictive disorder": 0.6739226421759096,
+        "Trauma and stress related disorder": 0.6328689370485037,
+        "Anxiety disorder": 0.6020123839009288,
+        "Obsessive compulsive disorder": 0.5800142247510669
+      }
+    },
+    {
+      "grid_index": 3,
+      "config": {
+        "node_features": "profile",
+        "edge_mode": "bands",
+        "epochs": 150,
+        "batch_size": 64,
+        "lr": 0.001,
+        "weight_decay": 0.0005,
+        "model": "gcn",
+        "pool": "meanmax",
+        "topk": 4
+      },
+      "mean_auc": 0.6648573501431759,
+      "per_disorder_auc": {
+        "Schizophrenia": 0.6255599104143338,
+        "Mood disorder": 0.697059550284161,
+        "Addictive disorder": 0.6680501589544331,
+        "Trauma and stress related disorder": 0.7026573787409699,
+        "Anxiety disorder": 0.6309597523219814,
+        "Obsessive compulsive disorder": 0.6806543385490754
+      }
+    },
+    {
+      "grid_index": 4,
+      "config": {
+        "node_features": "profile",
+        "edge_mode": "bands",
+        "epochs": 150,
+        "batch_size": 64,
+        "lr": 0.001,
+        "weight_decay": 0.0005,
+        "model": "gatv2",
+        "pool": "add",
+        "topk": null
+      },
+      "mean_auc": 0.6088978537783433,
+      "per_disorder_auc": {
+        "Schizophrenia": 0.5904255319148937,
+        "Mood disorder": 0.6333703978255497,
+        "Addictive disorder": 0.6194807488519958,
+        "Trauma and stress related disorder": 0.6003611971104232,
+        "Anxiety disorder": 0.6008513931888545,
+        "Obsessive compulsive disorder": 0.5803698435277382
+      }
+    },
+    {
+      "grid_index": 5,
+      "config": {
+        "node_features": "profile",
+        "edge_mode": "bands",
+        "epochs": 150,
+        "batch_size": 64,
+        "lr": 0.001,
+        "weight_decay": 0.0005,
+        "model": "gatv2",
+        "pool": "add",
+        "topk": 4
+      },
+      "mean_auc": 0.6668555131670287,
+      "per_disorder_auc": {
+        "Schizophrenia": 0.6329787234042553,
+        "Mood disorder": 0.7134605880899432,
+        "Addictive disorder": 0.6594842811727305,
+        "Trauma and stress related disorder": 0.7103973168214655,
+        "Anxiety disorder": 0.6179566563467492,
+        "Obsessive compulsive disorder": 0.6902560455192035
+      }
+    },
+    {
+      "grid_index": 6,
+      "config": {
+        "node_features": "profile",
+        "edge_mode": "bands",
+        "epochs": 150,
+        "batch_size": 64,
+        "lr": 0.001,
+        "weight_decay": 0.0005,
+        "model": "gatv2",
+        "pool": "meanmax",
+        "topk": null
+      },
+      "mean_auc": 0.6544698010902659,
+      "per_disorder_auc": {
+        "Schizophrenia": 0.6241601343784995,
+        "Mood disorder": 0.7012910798122066,
+        "Addictive disorder": 0.6681826209819851,
+        "Trauma and stress related disorder": 0.6892414860681113,
+        "Anxiety disorder": 0.5894736842105264,
+        "Obsessive compulsive disorder": 0.6223328591749645
+      }
+    },
+    {
+      "grid_index": 7,
+      "config": {
+        "node_features": "profile",
+        "edge_mode": "bands",
+        "epochs": 150,
+        "batch_size": 64,
+        "lr": 0.001,
+        "weight_decay": 0.0005,
+        "model": "gatv2",
+        "pool": "meanmax",
+        "topk": 4
+      },
+      "mean_auc": 0.682172119084242,
+      "per_disorder_auc": {
+        "Schizophrenia": 0.6580347144456888,
+        "Mood disorder": 0.7259698542129973,
+        "Addictive disorder": 0.6851377605086542,
+        "Trauma and stress related disorder": 0.7418730650154798,
+        "Anxiety disorder": 0.59984520123839,
+        "Obsessive compulsive disorder": 0.6888335704125178
+      }
+    }
+  ],
+  "best": {
+    "grid_index": 7,
+    "config": {
+      "node_features": "profile",
+      "edge_mode": "bands",
+      "epochs": 150,
+      "batch_size": 64,
+      "lr": 0.001,
+      "weight_decay": 0.0005,
+      "model": "gatv2",
+      "pool": "meanmax",
+      "topk": 4
+    },
+    "mean_auc": 0.682172119084242,
+    "per_disorder_auc": {
+      "Schizophrenia": 0.6580347144456888,
+      "Mood disorder": 0.7259698542129973,
+      "Addictive disorder": 0.6851377605086542,
+      "Trauma and stress related disorder": 0.7418730650154798,
+      "Anxiety disorder": 0.59984520123839,
+      "Obsessive compulsive disorder": 0.6888335704125178
+    }
+  }
+}

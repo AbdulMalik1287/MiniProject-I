@@ -1,0 +1,26 @@
+{
+  "disease": "mood",
+  "datasets": [
+    "mumtaz"
+  ],
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 20,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gatv2",
+    "pool": "meanmax",
+    "topk": 4
+  },
+  "within:mumtaz": {
+    "auc": 0.9452380952380952,
+    "ci": [
+      0.8712915680657616,
+      0.9950980392156862
+    ],
+    "n_patients": 30,
+    "n_controls": 28
+  }
+}

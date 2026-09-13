@@ -202,10 +202,10 @@ def load_features(out, datasets):
 
 def subject_scores(subject, y, win_prob, rows):
     """Aggregate window probabilities to one score per subject."""
-    s = subject[rows]
+    s, p, yr = subject[rows], win_prob[rows], y[rows]  # all three aligned to `rows`
     uniq = np.unique(s)
-    score = np.array([win_prob[s == u].mean() for u in uniq])
-    lab = np.array([y[rows][s == u][0] for u in uniq])
+    score = np.array([p[s == u].mean() for u in uniq])
+    lab = np.array([yr[s == u][0] for u in uniq])
     return uniq, lab, score
 
 
@@ -324,6 +324,14 @@ def selfcheck():
     prob = np.tile([0.2, 0.4, 0.6, 0.8, 1.0], 12)
     uniq, lab, score = subject_scores(subject, yy, prob, rows)
     assert len(uniq) == 12 and np.allclose(score, 0.6), "subject score must be the window mean"
+    # A subset of rows (one dataset out of a pooled array) must index consistently.
+    sub = np.arange(20, 45)                               # subjects s4..s8
+    marked = prob.copy()
+    marked[25:30] = 0.0                                   # subject s5 only
+    u2, l2, sc2 = subject_scores(subject, yy, marked, sub)
+    assert list(u2) == ["s4", "s5", "s6", "s7", "s8"], list(u2)
+    assert np.isclose(sc2[1], 0.0) and np.allclose(sc2[[0, 2, 3, 4]], 0.6), sc2
+    assert list(l2) == [0, 1, 0, 1, 0], list(l2)
     print("selfcheck ok")
 
 

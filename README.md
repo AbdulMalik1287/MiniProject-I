@@ -140,6 +140,63 @@ logistic regression on the same features with a clean stratified split reaches
    `True`. It is now a parameter, defaulting to `False` so the reproduction is
    untouched — verified by re-running `--eval-ckpt` after every change.
 
+## Phase 3: one GNN per disorder, and raw EEG across hospitals
+
+Full write-up with architectures, all tables and figures:
+**[`docs/MiniProject_Results.docx`](docs/MiniProject_Results.docx)**, rebuilt from the result
+files by `python make_report.py`.
+
+### Per-disorder GNNs (`per_disorder.py`, Park corpus)
+
+Five binary GNNs (disorder vs healthy) plus an ensemble. OCD excluded (46 subjects).
+Protocol: stratified 80/20 subject split fixed once (`results/per_disorder/split.json`);
+8 GNN configs compared by 5-fold CV on the train split only; one config chosen for all
+five models; trained, Platt-calibrated on train out-of-fold predictions, then evaluated
+once on the 180 untouched test subjects.
+
+Selected: **GATv2, mean+max pooling, top-4 coherence graph** (9,952 parameters). The three
+best configs all use sparse graphs.
+
+| model | AUC vs healthy [95% CI] | AUC vs other disorders [95% CI] |
+|---|---|---|
+| schizophrenia | 0.705 [0.53, 0.86] | 0.484 [0.37, 0.61] |
+| mood | 0.709 [0.54, 0.86] | 0.506 [0.41, 0.60] |
+| addictive | 0.696 [0.53, 0.84] | 0.592 [0.49, 0.69] |
+| trauma | 0.733 [0.57, 0.88] | 0.536 [0.41, 0.66] |
+| anxiety | 0.797 [0.65, 0.92] | 0.508 [0.37, 0.65] |
+
+Every model detects its disorder against healthy controls (all CIs above 0.5); none
+separates its disorder from the other disorders (all CIs include 0.5). The models detect
+psychiatric illness, not which illness. Ensemble balanced accuracy 0.235 [0.18, 0.29]
+over 6 classes (chance 0.167). Raw models were 5-10x overconfident (calibration slopes
+0.10-0.20); calibration took saturated probabilities from 44% to 0%.
+
+```bash
+python per_disorder.py predict --ids 503 730 --out results/per_disorder   # trained models are committed
+```
+
+### Raw EEG across hospitals (`raw_eeg.py`)
+
+Every external dataset brings its own controls. One pipeline for all sources; the GNN
+config is the one tuned on Park, not re-tuned here. ASEEG ships unlabelled channels -
+`infer_channel_order.py` recovers the order from the data.
+
+| evaluation | AUC [95% CI] |
+|---|---|
+| schizophrenia, within ASEEG (51 / 50) | 0.769 [0.67, 0.86] |
+| schizophrenia, within Warsaw (14 / 14) | 0.765 [0.56, 0.94] |
+| schizophrenia, pooled both hospitals | 0.754 [0.67, 0.83] |
+| **train ASEEG, test Warsaw** | **0.526 [0.31, 0.74]** |
+| **train Warsaw, test ASEEG** | **0.505 [0.39, 0.62]** |
+| depression, within Mumtaz (30 / 28) | 0.945 [0.87, 1.00] |
+
+Within a hospital the GNN detects schizophrenia; trained at one hospital it is at chance
+at the other. What is learned is largely site-specific. The depression result has no
+second open dataset to check it against, so it should not be read as a transferable
+signature.
+
+Phase 3 ran on a laptop CPU (Blackwell unreachable on 2026-09-13).
+
 ## Setup (blackwell)
 
 ```bash
