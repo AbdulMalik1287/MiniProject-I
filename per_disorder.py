@@ -199,6 +199,17 @@ def bootstrap_ci(y, s, stat, b=2000, seed=SEED):
     return float(lo), float(hi)
 
 
+def combined_score(probs):
+    """Headline 'outside the healthy range' score: mean of the calibrated disorder probabilities.
+
+    Fixed as the rule BEFORE the test split was scored for it; the max is only
+    reported as a labelled sensitivity check. Every model detects illness vs
+    healthy but none separates disorders, so agreement across all five is the
+    quantity the models can actually support.
+    """
+    return probs.mean(1)
+
+
 def decide(probs, thr=0.5):
     """Ensemble rule over (n, 6) disorder probabilities -> index into ALL_CLASSES.
 
@@ -422,6 +433,38 @@ def cmd_evaluate(args, ab, coh, labels, ids, device):
           f"[{e['bal_acc_ci'][0]:.2f}, {e['bal_acc_ci'][1]:.2f}]   "
           f"(majority-class rate {majority:.3f}, {len(ALL_CLASSES)}-class chance bal_acc "
           f"{1 / len(ALL_CLASSES):.3f})")
+
+    patient = (true != 0).astype(int)
+    print(f"\n=== outside the healthy range: any disorder vs healthy "
+          f"({int(patient.sum())} patients / {int((patient == 0).sum())} controls) ===")
+    for j, d in enumerate(DISORDERS):  # single models on the same task, for comparison
+        report["per_disorder"][d]["auc_any_patient"] = float(roc_auc_score(patient, probs[:, j]))
+        report["per_disorder"][d]["auc_any_patient_ci"] = bootstrap_ci(patient, probs[:, j], roc_auc_score)
+    report["combined"] = {}
+    for rule, score in (("mean", combined_score(probs)), ("max (secondary)", probs.max(1))):
+        flag = (score >= args.threshold).astype(int)
+        r = {"auc": float(roc_auc_score(patient, score)),
+             "auc_ci": bootstrap_ci(patient, score, roc_auc_score),
+             "sensitivity": float(flag[patient == 1].mean()),
+             "specificity": float(1 - flag[patient == 0].mean()),
+             "bal_acc": float(balanced_accuracy_score(patient, flag)),
+             "bal_acc_ci": bootstrap_ci(patient, flag, balanced_accuracy_score)}
+        report["combined"][rule] = r
+        print(f"{'combined ' + rule:<26} AUC {r['auc']:.3f} [{r['auc_ci'][0]:.2f}, {r['auc_ci'][1]:.2f}]  "
+              f"at {args.threshold}: sensitivity {r['sensitivity']:.2f}  specificity {r['specificity']:.2f}  "
+              f"bal_acc {r['bal_acc']:.3f}")
+    for d in DISORDERS:
+        v = report["per_disorder"][d]
+        print(f"{'single ' + SHORT[d]:<26} AUC {v['auc_any_patient']:.3f} "
+              f"[{v['auc_any_patient_ci'][0]:.2f}, {v['auc_any_patient_ci'][1]:.2f}]")
+
+    # Per-subject calibrated probabilities for the held-out subjects, so a
+    # display can show real model output without shipping the dataset.
+    preds = [{"id": str(ids[te[i]]), "diagnosis": str(labels[te[i]]),
+              "p": {SHORT[d]: round(float(probs[i, j]), 4) for j, d in enumerate(DISORDERS)},
+              "combined": round(float(combined_score(probs[i:i + 1])[0]), 4)}
+             for i in range(len(te))]
+    (args.out / "test_predictions.json").write_text(json.dumps(preds, indent=1))
     (args.out / "evaluate.json").write_text(json.dumps(report, indent=2))
 
 
@@ -448,10 +491,15 @@ def cmd_predict(args, device):
         note = "  [WARNING: training subject, not a fair test]" if sid in train_ids else ""
         truth = f"  (recorded diagnosis: {df.loc[i, 'main.disorder']})" if has_label else ""
         print(f"\nsubject {sid}{truth}{note}")
+        c = combined_score(probs[i:i + 1])[0]
+        verdict = "OUTSIDE the healthy range" if c >= args.threshold else "within the healthy range"
+        print(f"  EEG pattern: {verdict}  (combined score {c:.3f})")
+        print("  per-disorder models (independent; they do not distinguish disorders from each other):")
         for j in np.argsort(-probs[i]):
             bar = "#" * int(round(probs[i, j] * 30))
-            print(f"  {DISORDERS[j]:<36} {probs[i, j]:.3f} {bar}")
-        print(f"  -> {ALL_CLASSES[pred[i]]}")
+            print(f"    {DISORDERS[j]:<36} {probs[i, j]:.3f} {bar}")
+        if pred[i]:
+            print(f"  most elevated model: {ALL_CLASSES[pred[i]]}")
 
 
 # ---------------------------------------------------------------------- self-check
@@ -496,6 +544,10 @@ def selfcheck():
                       [0.3, 0.2, 0.1, 0.4, 0.2],   # nothing clears 0.5
                       [0.6, 0.7, 0.1, 0.1, 0.1]])  # mood beats schizophrenia
     assert decide(probs).tolist() == [3, 0, 2], decide(probs).tolist()
+    assert np.allclose(combined_score(probs), [0.28, 0.24, 0.32]), combined_score(probs)
+    # One very confident model must not flag a subject on its own under the mean rule.
+    lone = np.array([[0.99, 0.1, 0.1, 0.1, 0.1]])
+    assert combined_score(lone)[0] < 0.5 and decide(lone)[0] == 1
     assert ALL_CLASSES[3] == "Addictive disorder" and ALL_CLASSES[0] == HEALTHY
 
     m = binary_metrics(np.array([0, 0, 1, 1]), np.array([0.1, 0.4, 0.6, 0.9]))

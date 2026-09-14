@@ -171,6 +171,18 @@ psychiatric illness, not which illness. Ensemble balanced accuracy 0.235 [0.18, 
 over 6 classes (chance 0.167). Raw models were 5-10x overconfident (calibration slopes
 0.10-0.20); calibration took saturated probabilities from 44% to 0%.
 
+**Showing the probabilities.** The five outputs are independent (they do not sum to 1) and
+rise together for most patients, so the display leads with one screen - the pre-declared
+**combined score, the mean of the five**, flagged at 0.5 - and shows the five bars beneath
+it, each labelled with its measured reliability. On the held-out split the combined score
+reaches AUC 0.738 [0.59, 0.85] for any patient vs healthy, catching 70% of patients and
+wrongly flagging 42% of healthy controls. It did **not** beat the single models (0.63-0.79),
+and with 19 controls none of those differences is resolvable.
+
+- Readout page for all 180 held-out subjects: [`docs/eeg_readout.html`](docs/eeg_readout.html),
+  built from the result files by `python readout/build.py`
+- Same readout on the command line:
+
 ```bash
 python per_disorder.py predict --ids 503 730 --out results/per_disorder   # trained models are committed
 ```

@@ -1,0 +1,570 @@
+<title>EEG Five-Model Readout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #f3f6f6;
+  --surface: #fbfcfc;
+  --ink: #102221;
+  --ink-2: #4a5a59;
+  --muted: #71807e;
+  --hairline: #d7dfde;
+  --grid: #e3e9e8;
+  --series: #2a78d6;
+  --series-track: #e4ecf3;
+  --selected: #e3edf9;
+  --flag-out: #ec835a;
+  --flag-in: #0ca30c;
+  --focus: #2a78d6;
+  --shadow: 0 1px 2px rgba(16, 34, 33, 0.06), 0 4px 14px rgba(16, 34, 33, 0.06);
+  --display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1312;
+    --surface: #141c1b;
+    --ink: #edf3f2;
+    --ink-2: #a7b5b3;
+    --muted: #82908e;
+    --hairline: #26302f;
+    --grid: #1f2928;
+    --series: #3987e5;
+    --series-track: #1c2a38;
+    --selected: #172538;
+    --flag-out: #ec835a;
+    --flag-in: #0ca30c;
+    --focus: #6da7ec;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1312;
+  --surface: #141c1b;
+  --ink: #edf3f2;
+  --ink-2: #a7b5b3;
+  --muted: #82908e;
+  --hairline: #26302f;
+  --grid: #1f2928;
+  --series: #3987e5;
+  --series-track: #1c2a38;
+  --selected: #172538;
+  --flag-out: #ec835a;
+  --flag-in: #0ca30c;
+  --focus: #6da7ec;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 15px/1.5 var(--body);
+  padding-inline: 20px;
+  padding-block: 28px 40px;
+}
+.page { max-width: 1180px; margin-inline: auto; display: grid; gap: 22px; }
+
+header { display: grid; gap: 6px; }
+.eyebrow {
+  font: 500 12px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  font: 600 32px/1.1 var(--display);
+  letter-spacing: 0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { margin: 0; color: var(--ink-2); max-width: 68ch; }
+.lede strong { color: var(--ink); font-weight: 600; }
+
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; align-items: start; }
+
+/* ---------- subject picker ---------- */
+.picker {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  max-height: calc(100vh - 56px);
+  position: sticky;
+  top: 16px;
+  overflow: hidden;
+}
+.picker-head { padding: 14px 14px 10px; display: grid; gap: 10px; border-bottom: 1px solid var(--hairline); }
+.picker-head h2 { font: 600 18px/1.2 var(--display); margin: 0; }
+.picker-head p { margin: 0; font-size: 13px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font: 500 12px/1 var(--body);
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.chip .n { font-family: var(--mono); color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--selected); border-color: var(--series); color: var(--ink); }
+.search { padding: 10px 14px; border-bottom: 1px solid var(--hairline); }
+.search input {
+  width: 100%;
+  font: 14px var(--mono);
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 7px 9px;
+}
+.list { overflow-y: auto; min-height: 0; }
+.row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 54px;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--grid);
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.row:hover { background: var(--grid); }
+.row[aria-selected="true"] { background: var(--selected); }
+.row .id { font: 500 13px var(--mono); }
+.row .dx { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .mini { font: 12px var(--mono); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.row .mini.out { color: var(--ink); }
+.empty { padding: 14px; font-size: 13px; color: var(--muted); }
+
+/* ---------- readout ---------- */
+.readout { display: grid; gap: 18px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px; padding: 18px 20px; display: grid; gap: 14px; }
+.panel h2 { font: 600 20px/1.2 var(--display); margin: 0; }
+.panel .sub { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 70ch; }
+
+.verdict { box-shadow: var(--shadow); gap: 16px; }
+.verdict-top { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; justify-content: space-between; }
+.subject-line { font: 600 24px/1.15 var(--display); margin: 0; }
+.subject-line .mono { font: 500 22px var(--mono); }
+.dx-line { color: var(--ink-2); font-size: 14px; }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 14px/1 var(--body);
+  padding: 7px 12px 7px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: var(--ground);
+  color: var(--ink);
+}
+.pill svg { width: 16px; height: 16px; flex: none; }
+.score-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
+.score-num { font: 500 40px/1 var(--mono); font-variant-numeric: normal; letter-spacing: -0.02em; }
+.score-num small { display: block; font: 500 11px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.scale { position: relative; height: 46px; }
+.scale .track { position: absolute; left: 0; right: 0; top: 12px; height: 10px; border-radius: 5px; background: var(--series-track); }
+.scale .fill { position: absolute; left: 0; top: 12px; height: 10px; border-radius: 5px; background: var(--series); }
+.scale .thr { position: absolute; top: 4px; width: 2px; height: 26px; background: var(--ink); transform: translateX(-1px); }
+.scale .ticks { position: absolute; left: 0; right: 0; top: 30px; font: 11px var(--mono); color: var(--muted); }
+.scale .ticks span { position: absolute; transform: translateX(-50%); }
+.scale .ticks span:first-child { transform: none; }
+.scale .ticks span:last-child { transform: translateX(-100%); }
+.caption { margin: 0; font-size: 13px; color: var(--ink-2); max-width: 78ch; }
+.caption .mono { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+
+/* model bars */
+.bars { display: grid; gap: 12px; }
+.bar {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) 56px;
+  grid-template-areas: "label plot value" "label rel rel";
+  gap: 3px 14px;
+  align-items: center;
+}
+.bar .label { grid-area: label; font-weight: 600; font-size: 14px; display: grid; gap: 3px; align-self: start; padding-top: 2px; }
+.tag {
+  justify-self: start;
+  font: 500 10.5px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 3px 5px;
+}
+.bar .plot { grid-area: plot; position: relative; height: 18px; }
+.bar .plot .track { position: absolute; inset: 5px 0; border-radius: 4px; background: var(--series-track); }
+.bar .plot .fill { position: absolute; left: 0; top: 5px; height: 8px; border-radius: 0 4px 4px 0; background: var(--series); }
+.bar .plot .thr { position: absolute; top: 0; height: 18px; width: 2px; background: var(--ink); opacity: 0.55; transform: translateX(-1px); }
+.bar .value { grid-area: value; font: 500 14px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.bar .rel { grid-area: rel; font: 12px var(--mono); color: var(--muted); }
+.bar .rel b { font-weight: 500; color: var(--ink-2); }
+.axis { display: grid; grid-template-columns: 170px minmax(0, 1fr) 56px; gap: 14px; }
+.axis .ticks { position: relative; height: 14px; font: 11px var(--mono); color: var(--muted); grid-column: 2; }
+.axis .ticks span { position: absolute; transform: translateX(-50%); }
+.axis .ticks span:first-child { transform: none; }
+.axis .ticks span:last-child { transform: translateX(-100%); }
+.note {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  border-top: 1px solid var(--hairline);
+  padding-top: 12px;
+  max-width: 80ch;
+}
+
+/* cohort strip */
+.strip-wrap { position: relative; }
+.strip svg { display: block; width: 100%; height: auto; overflow: visible; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); align-items: center; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+
+/* table */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13.5px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { font: 500 11.5px/1.2 var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); border-bottom-color: var(--hairline); }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+tr.combined td { font-weight: 600; border-top: 1px solid var(--hairline); }
+.dim { color: var(--muted); }
+
+footer { font-size: 12.5px; color: var(--muted); display: grid; gap: 4px; }
+footer code { font-family: var(--mono); color: var(--ink-2); }
+
+.tip {
+  position: fixed;
+  z-index: 10;
+  pointer-events: none;
+  background: var(--ink);
+  color: var(--ground);
+  font: 12.5px/1.35 var(--body);
+  padding: 7px 9px;
+  border-radius: 6px;
+  max-width: 260px;
+  box-shadow: var(--shadow);
+}
+.tip .mono { font-family: var(--mono); }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .picker { position: static; max-height: none; }
+  .list { max-height: 42vh; }
+  .bar, .axis { grid-template-columns: 116px minmax(0, 1fr) 50px; }
+  .score-row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+}
+@media (max-width: 420px) {
+  body { padding-inline: 16px; }
+  h1 { font-size: 27px; }
+  .bar { grid-template-columns: minmax(0, 1fr) 50px; grid-template-areas: "label value" "plot plot" "rel rel"; }
+  .axis { grid-template-columns: minmax(0, 1fr); }
+  .axis .ticks { grid-column: 1; }
+}
+</style>
+
+<div class="page">
+  <header>
+    <span class="eyebrow">Research demo · not a diagnostic tool</span>
+    <h1>EEG Five-Model Readout</h1>
+    <p class="lede">Five graph neural networks, one per psychiatric disorder, each trained to tell its disorder apart from healthy controls on 19-electrode resting EEG. Every subject below is from the <strong>held-out test split</strong>: none was used for tuning, training or calibration.</p>
+  </header>
+
+  <div class="layout">
+    <aside class="picker" aria-label="Held-out subjects">
+      <div class="picker-head">
+        <h2>Subjects</h2>
+        <p id="picker-count"></p>
+        <div class="chips" id="chips" role="group" aria-label="Filter by recorded diagnosis"></div>
+      </div>
+      <div class="search">
+        <label class="eyebrow" for="q" style="display:block;margin-bottom:6px">Subject no.</label>
+        <input id="q" type="search" inputmode="numeric" placeholder="e.g. 730" autocomplete="off">
+      </div>
+      <div class="list" id="list" role="listbox" aria-label="Subjects" tabindex="-1"></div>
+    </aside>
+
+    <main class="readout">
+      <section class="panel verdict" aria-live="polite">
+        <div class="verdict-top">
+          <div>
+            <p class="subject-line">Subject <span class="mono" id="s-id"></span></p>
+            <div class="dx-line">Recorded diagnosis: <span id="s-dx"></span></div>
+          </div>
+          <span class="pill" id="s-pill"></span>
+        </div>
+        <div class="score-row">
+          <div class="score-num"><span id="s-score"></span><small>combined score</small></div>
+          <div class="scale" aria-hidden="true">
+            <div class="track"></div>
+            <div class="fill" id="s-fill"></div>
+            <div class="thr" id="s-thr"></div>
+            <div class="ticks"><span style="left:0">0</span><span id="thr-tick"></span><span style="left:100%">1</span></div>
+          </div>
+        </div>
+        <p class="caption" id="combined-caption"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="h-models">
+        <h2 id="h-models">Per-disorder models</h2>
+        <p class="sub">Each bar is one model's calibrated probability that this EEG looks like its disorder rather than a healthy control. The five are independent and do not add up to 1.</p>
+        <div class="bars" id="bars"></div>
+        <div class="axis" aria-hidden="true"><div class="ticks" id="axis-ticks"></div></div>
+        <p class="note" id="bars-note"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="h-cohort">
+        <h2 id="h-cohort">Where this subject sits</h2>
+        <p class="sub">Combined score for every held-out subject. The overlap between the two rows is the honest limit of the screen. Select a dot to open that subject.</p>
+        <div class="legend">
+          <span><i style="background:var(--muted)"></i>healthy control</span>
+          <span><i style="background:var(--series)"></i>patient (any disorder)</span>
+          <span><i style="background:transparent;border:2px solid var(--ink)"></i>selected subject</span>
+        </div>
+        <div class="strip-wrap strip" id="strip"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-table">
+        <h2 id="h-table">How reliable each number is</h2>
+        <p class="sub">Measured on the same held-out subjects. AUC 0.5 is chance; brackets are 95% bootstrap intervals. With only <span id="n-ctl"></span> healthy controls in the test split, intervals are wide.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Model</th><th>Test cases</th><th>vs healthy</th><th>vs other disorders</th><th>vs any patient</th></tr>
+            </thead>
+            <tbody id="rel-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer>
+        <span id="provenance"></span>
+        <span>New recordings in the Park CSV format: <code>python per_disorder.py predict --ids &lt;no.&gt; --out results/per_disorder</code></span>
+      </footer>
+    </main>
+  </div>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const DATA = /*__DATA__*/;
+
+const LABEL = {
+  healthy: "Healthy control", schizophrenia: "Schizophrenia", mood: "Mood disorder",
+  addictive: "Addictive disorder", trauma: "Trauma & stress", anxiety: "Anxiety disorder",
+};
+const DX_KEY = {
+  "Healthy control": "healthy", "Schizophrenia": "schizophrenia", "Mood disorder": "mood",
+  "Addictive disorder": "addictive", "Trauma and stress related disorder": "trauma",
+  "Anxiety disorder": "anxiety",
+};
+const THR = DATA.threshold;
+const fmt = (v, d = 3) => v.toFixed(d);
+const ciTxt = (v, c) => `${fmt(v, 2)} [${fmt(c[0], 2)}, ${fmt(c[1], 2)}]`;
+const pct = v => `${(v * 100).toFixed(1)}%`;
+const $ = id => document.getElementById(id);
+
+const subjects = DATA.subjects.map(s => ({ ...s, key: DX_KEY[s.diagnosis] }));
+const byId = new Map(subjects.map(s => [s.id, s]));
+let filter = "all";
+let current = byId.get(DATA.start) || subjects[0];
+
+const ICON_OUT = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" fill="var(--flag-out)"/><path d="M8 6v3.6" stroke="var(--ground)" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.6" r="0.95" fill="var(--ground)"/></svg>';
+const ICON_IN = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="var(--flag-in)"/><path d="m4.8 8.2 2.1 2.1 4.3-4.5" stroke="var(--ground)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* ---------- static text ---------- */
+function staticText() {
+  const c = DATA.combined;
+  $("n-ctl").textContent = c.n_controls;
+  $("picker-count").textContent = `${subjects.length} held-out subjects · ${c.n_patients} patients, ${c.n_controls} controls`;
+  $("thr-tick").textContent = THR;
+  $("thr-tick").style.left = `${THR * 100}%`;
+  $("s-thr").style.left = `${THR * 100}%`;
+  $("combined-caption").innerHTML =
+    `Mean of the five model outputs; <span class="mono">${THR}</span> or above is flagged. ` +
+    `On held-out subjects this flag caught <span class="mono">${pct(c.sensitivity)}</span> of patients ` +
+    `and wrongly flagged <span class="mono">${pct(1 - c.specificity)}</span> of healthy controls ` +
+    `(AUC <span class="mono">${ciTxt(c.auc, c.auc_ci)}</span>). It screens for “unlike healthy”, not for a named disorder.`;
+  const lo = Math.min(...DATA.models.map(m => m.other)), hi = Math.max(...DATA.models.map(m => m.other));
+  $("bars-note").textContent =
+    `For most patients all five bars rise together. Each model separates its disorder from healthy controls, ` +
+    `but none separates it from the other disorders (AUC ${fmt(lo, 2)}–${fmt(hi, 2)}, where 0.5 is chance). ` +
+    `The tallest bar is not a diagnosis.`;
+  $("axis-ticks").innerHTML = [0, 0.25, THR, 0.75, 1]
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .map(v => `<span style="left:${v * 100}%">${v}</span>`).join("");
+  $("rel-table").innerHTML = DATA.models.map(m => `
+      <tr><td>${LABEL[m.key]}</td><td class="num">${m.n_cases}</td>
+      <td class="num">${ciTxt(m.auc, m.ci)}</td><td class="num">${ciTxt(m.other, m.other_ci)}</td>
+      <td class="num">${ciTxt(m.any, m.any_ci)}</td></tr>`).join("") + `
+      <tr class="combined"><td>Combined score (mean of 5)</td><td class="num">${c.n_patients}</td>
+      <td class="dim">—</td><td class="dim">—</td><td class="num">${ciTxt(c.auc, c.auc_ci)}</td></tr>`;
+  $("provenance").textContent =
+    `Generated ${DATA.generated} from results/per_disorder (commit ${DATA.commit}) · Park et al. 2021 corpus, SMG-SNU Boramae Medical Center · laptop CPU run.`;
+}
+
+/* ---------- picker ---------- */
+function renderChips() {
+  const counts = { all: subjects.length };
+  subjects.forEach(s => counts[s.key] = (counts[s.key] || 0) + 1);
+  const keys = ["all", "healthy", "schizophrenia", "mood", "addictive", "trauma", "anxiety"];
+  $("chips").innerHTML = keys.map(k => `
+    <button class="chip" type="button" id="chip-${k}" data-k="${k}" aria-pressed="${k === filter}">
+      ${k === "all" ? "All" : LABEL[k]}<span class="n">${counts[k] || 0}</span></button>`).join("");
+}
+function visible() {
+  const q = $("q").value.trim();
+  return subjects.filter(s => (filter === "all" || s.key === filter) && (!q || s.id.startsWith(q)));
+}
+function renderList() {
+  const rows = visible();
+  $("list").innerHTML = rows.length ? rows.map(s => `
+    <button class="row" type="button" role="option" id="row-${s.id}" data-id="${s.id}"
+      aria-selected="${s.id === current.id}">
+      <span class="id">${s.id}</span><span class="dx">${s.diagnosis}</span>
+      <span class="mini ${s.combined >= THR ? "out" : ""}">${fmt(s.combined, 2)}</span></button>`).join("")
+    : `<div class="empty">No held-out subject matches. Clear the number or pick another filter.</div>`;
+}
+function select(id, focus = false) {
+  const s = byId.get(id);
+  if (!s) return;
+  current = s;
+  document.querySelectorAll(".row").forEach(r => r.setAttribute("aria-selected", r.dataset.id === id));
+  const row = $(`row-${id}`);
+  if (row) { row.scrollIntoView({ block: "nearest" }); if (focus) row.focus(); }
+  renderReadout();
+  renderStrip();
+}
+
+/* ---------- readout ---------- */
+function renderReadout() {
+  const s = current, out = s.combined >= THR;
+  $("s-id").textContent = s.id;
+  $("s-dx").textContent = s.diagnosis;
+  $("s-score").textContent = fmt(s.combined);
+  $("s-fill").style.width = `${s.combined * 100}%`;
+  $("s-pill").innerHTML = (out ? ICON_OUT : ICON_IN) + (out ? "Outside the healthy range" : "Within the healthy range");
+  $("bars").innerHTML = DATA.models.map(m => {
+    const v = s.p[m.key], own = m.key === s.key;
+    return `<div class="bar" data-k="${m.key}">
+      <div class="label">${LABEL[m.key]}${own ? '<span class="tag">recorded dx</span>' : ""}</div>
+      <div class="plot" data-tip="${m.key}"><div class="track"></div>
+        <div class="fill" style="width:${v * 100}%"></div><div class="thr" style="left:${THR * 100}%"></div></div>
+      <div class="value">${fmt(v)}</div>
+      <div class="rel">vs healthy <b>${fmt(m.auc, 2)}</b> · vs other disorders <b>${fmt(m.other, 2)}</b></div>
+    </div>`;
+  }).join("");
+}
+
+/* ---------- cohort strip ---------- */
+function jitter(id) { let h = 2166136261; for (const ch of id) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return ((h >>> 0) % 1000) / 1000 - 0.5; }
+function renderStrip() {
+  const box = $("strip");
+  const W = Math.max(300, box.clientWidth), padL = W < 460 ? 78 : 118, padR = 14, rowH = 58, top = 10;
+  const H = top + rowH * 2 + 26;
+  const x = v => padL + v * (W - padL - padR);
+  const css = getComputedStyle(document.documentElement);
+  const col = n => css.getPropertyValue(n).trim();
+  const rows = [["healthy", "Healthy controls", s => s.key === "healthy"], ["patient", "Patients", s => s.key !== "healthy"]];
+  let g = "";
+  [0, 0.25, 0.5, 0.75, 1].forEach(t => {
+    g += `<line x1="${x(t)}" x2="${x(t)}" y1="${top}" y2="${top + rowH * 2}" stroke="${col("--grid")}" stroke-width="1"/>`;
+    g += `<text x="${x(t)}" y="${top + rowH * 2 + 17}" fill="${col("--muted")}" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="${t === 0 ? "start" : t === 1 ? "end" : "middle"}">${t}</text>`;
+  });
+  g += `<line x1="${x(THR)}" x2="${x(THR)}" y1="${top - 4}" y2="${top + rowH * 2}" stroke="${col("--ink")}" stroke-width="2" opacity="0.55"/>`;
+  let sel = "";
+  rows.forEach(([key, label, pred], i) => {
+    const cy = top + rowH * i + rowH / 2;
+    const members = subjects.filter(pred);
+    g += `<text x="0" y="${cy + 4}" fill="${col("--ink-2")}" font-family="Source Sans 3, sans-serif" font-size="13">${label}</text>`;
+    g += `<text x="0" y="${cy + 19}" fill="${col("--muted")}" font-family="IBM Plex Mono, monospace" font-size="11">n=${members.length}</text>`;
+    members.forEach(s => {
+      const cx = x(s.combined), yy = cy + jitter(s.id) * (rowH - 18);
+      const fill = key === "healthy" ? col("--muted") : col("--series");
+      const dot = `<circle cx="${cx}" cy="${yy}" r="4.5" fill="${fill}" stroke="${col("--surface")}" stroke-width="2" data-id="${s.id}" style="cursor:pointer"/>`;
+      if (s.id === current.id) sel = `<circle cx="${cx}" cy="${yy}" r="8.5" fill="none" stroke="${col("--ink")}" stroke-width="2" pointer-events="none"/>` + dot;
+      else g += dot;
+    });
+  });
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Combined score of all held-out subjects by group">${g}${sel}</svg>`;
+}
+
+/* ---------- tooltip ---------- */
+const tip = $("tip");
+function showTip(html, e) {
+  tip.innerHTML = html;
+  tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  let left = e.clientX + 14, top = e.clientY + 14;
+  if (left + r.width > innerWidth - 8) left = e.clientX - r.width - 14;
+  if (top + r.height > innerHeight - 8) top = e.clientY - r.height - 14;
+  tip.style.left = `${left}px`;
+  tip.style.top = `${top}px`;
+}
+document.addEventListener("pointermove", e => {
+  const dot = e.target.closest && e.target.closest("circle[data-id]");
+  const plot = e.target.closest && e.target.closest(".plot[data-tip]");
+  if (dot) {
+    const s = byId.get(dot.dataset.id);
+    showTip(`<b>Subject <span class="mono">${s.id}</span></b><br>${s.diagnosis}<br>combined <span class="mono">${fmt(s.combined)}</span>`, e);
+  } else if (plot) {
+    const m = DATA.models.find(mm => mm.key === plot.dataset.tip);
+    showTip(`<b>${LABEL[m.key]} model</b><br>P = <span class="mono">${fmt(current.p[m.key])}</span> for subject ${current.id}<br>` +
+            `vs healthy AUC <span class="mono">${ciTxt(m.auc, m.ci)}</span><br>vs other disorders <span class="mono">${ciTxt(m.other, m.other_ci)}</span>`, e);
+  } else tip.hidden = true;
+});
+document.addEventListener("pointerleave", () => tip.hidden = true);
+
+/* ---------- events ---------- */
+$("chips").addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (!b) return;
+  filter = b.dataset.k;
+  renderChips();
+  renderList();
+});
+$("q").addEventListener("input", renderList);
+$("list").addEventListener("click", e => { const r = e.target.closest(".row"); if (r) select(r.dataset.id); });
+$("list").addEventListener("keydown", e => {
+  if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+  const rows = [...document.querySelectorAll(".row")];
+  const i = rows.findIndex(r => r.dataset.id === current.id);
+  const next = rows[Math.min(rows.length - 1, Math.max(0, i + (e.key === "ArrowDown" ? 1 : -1)))];
+  if (next) { e.preventDefault(); select(next.dataset.id, true); }
+});
+$("strip").addEventListener("click", e => {
+  const d = e.target.closest("circle[data-id]");
+  if (!d) return;
+  const s = byId.get(d.dataset.id);
+  if (filter !== "all" && s.key !== filter) { filter = "all"; renderChips(); }
+  $("q").value = "";
+  renderList();
+  select(s.id);
+});
+new ResizeObserver(() => renderStrip()).observe($("strip"));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderStrip);
+new MutationObserver(renderStrip).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+staticText();
+renderChips();
+renderList();
+select(current.id);
+</script>

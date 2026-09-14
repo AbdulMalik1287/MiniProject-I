@@ -390,6 +390,11 @@ def main():
         "The models detect psychiatric illness, not which illness.",
         f"The ensemble reaches balanced accuracy {e['bal_acc']:.3f} [{e['bal_acc_ci'][0]:.2f}, "
         f"{e['bal_acc_ci'][1]:.2f}] over {len(D.ALL_CLASSES)} classes (chance {1 / len(D.ALL_CLASSES):.3f}).",
+        *([f"As a screen for 'outside the healthy range', the pre-declared combined score (mean of the five) "
+           f"reaches AUC {ev['combined']['mean']['auc']:.3f} [{ev['combined']['mean']['auc_ci'][0]:.2f}, "
+           f"{ev['combined']['mean']['auc_ci'][1]:.2f}]: it catches {ev['combined']['mean']['sensitivity']:.0%} "
+           f"of patients and wrongly flags {1 - ev['combined']['mean']['specificity']:.0%} of healthy controls. "
+           "Combining did not beat the single models."] if "combined" in ev else []),
         f"Graph sparsification mattered: the selected GNN is GATv2 with mean+max pooling on a top-"
         f"{cfg['topk']} coherence graph, and the three best of eight configurations all use sparse graphs.",
         "On raw EEG from two independent hospitals, the same GNN (not re-tuned) detects schizophrenia "
@@ -531,6 +536,32 @@ def main():
         note=f"Ensemble confusion matrix. Accuracy {e['accuracy']:.3f}, balanced accuracy "
              f"{e['bal_acc']:.3f} [{e['bal_acc_ci'][0]:.2f}, {e['bal_acc_ci'][1]:.2f}], majority-class "
              f"rate {e['majority_rate']:.3f}, chance {1 / len(D.ALL_CLASSES):.3f}.")
+
+    if "combined" in ev:
+        doc.add_heading("Outside the healthy range: combining the five models", 3)
+        doc.add_paragraph(
+            "Because every model detects illness but none names it, the display headline is a single "
+            "score: the mean of the five calibrated probabilities, flagged at 0.5. This rule was fixed "
+            "before the test split was scored for it; the maximum is reported only as a secondary check, "
+            "so the test split was not used to choose between rules.")
+        comb_rows = []
+        for rule, r in ev["combined"].items():
+            comb_rows.append((f"combined, {rule}", ci({"auc": r["auc"], "ci": r["auc_ci"]}),
+                              f"{r['sensitivity']:.2f}", f"{r['specificity']:.2f}"))
+        for d in dis:
+            v = ev["per_disorder"][d]
+            comb_rows.append((f"single {D.SHORT[d]} model", ci({"auc": v["auc_any_patient"],
+                                                               "ci": v["auc_any_patient_ci"]}), "-", "-"))
+        cm_ = ev["combined"]["mean"]
+        table(doc, ["score", "AUC any patient vs healthy [95% CI]", "sensitivity at 0.5",
+                    "specificity at 0.5"], comb_rows, widths=[1.8, 2.4, 1.1, 1.1],
+              note=f"Combining did not measurably help: the mean ({cm_['auc']:.3f}) sits inside the "
+                   "range of the single models, and the anxiety model alone scored higher. With 19 "
+                   "healthy controls none of these differences is resolvable, and switching the "
+                   "headline to the best single model after seeing these numbers would be test-set "
+                   "selection. At 0.5 the flag catches "
+                   f"{cm_['sensitivity']:.0%} of patients and wrongly flags {1 - cm_['specificity']:.0%} "
+                   "of healthy controls.")
 
     doc.add_heading("5.4 Raw EEG across hospitals", 2)
     doc.add_paragraph(
