@@ -209,6 +209,46 @@ signature.
 
 Phase 3 ran on a laptop CPU (Blackwell unreachable on 2026-09-13).
 
+## Phase 4: neurological disorders
+
+Alzheimer's, frontotemporal dementia and Parkinson's from four CC0 OpenNeuro datasets,
+each with its own controls, same pipeline and same GNN config (not re-tuned). Kept apart
+from the psychiatric models: different hospitals, older patients, and eyes-open
+Parkinson's recordings, so the probabilities are not comparable.
+
+```bash
+python fetch_neuro.py                                   # ~10 GB, resumable
+python raw_eeg.py features --datasets ds004504 ds004584 ds003490 ds002778
+python raw_eeg.py run --disease alzheimers | ftd | alzheimers_vs_ftd | parkinsons
+```
+
+| task | AUC [95% CI] |
+|---|---|
+| Alzheimer's vs controls, Thessaloniki (36 / 29) | **0.885 [0.80, 0.97]** |
+| FTD vs controls, Thessaloniki (23 / 29) | 0.787 [0.64, 0.92] |
+| Alzheimer's vs FTD, same hospital (36 / 23) | 0.634 [0.49, 0.77] - not distinguishable from chance |
+| Parkinson's within Iowa / New Mexico / San Diego | 0.575 / 0.702 / 0.667 |
+| Parkinson's pooled, 3 hospitals (135 / 85) | 0.685 [0.61, 0.76] |
+| **Parkinson's trained elsewhere, tested at Iowa** | **0.680 [0.58, 0.78]** |
+| **... tested at New Mexico** | **0.741 [0.56, 0.88]** |
+| **... tested at San Diego** | **0.783 [0.59, 0.94]** |
+
+- Alzheimer's is the strongest disease-vs-healthy result in the project, but it is
+  single-hospital: no second open Alzheimer's dataset with controls exists to test transfer.
+- Telling Alzheimer's from FTD fails, the same "detects illness, not which illness"
+  pattern as the psychiatric models - here in a fair, same-hospital test.
+- Unlike schizophrenia, **Parkinson's transfers**: models trained on two hospitals stay
+  above chance at the third, at every site.
+- **Blink caveat:** the Parkinson's recordings are eyes open, reduced blinking is a sign of
+  Parkinson's, and controls lost more windows to artifacts than patients at all three
+  sites (25 vs 16%, 29 vs 19%, 13 vs 11%). Part of the transfer may be blink rate rather
+  than cortical rhythm. A rerun without Fp1/Fp2 is the test; it has not been run yet.
+
+Handling per site: Parkinson's patients' OFF-medication session where both exist; Iowa's
+Pz reference re-inserted as zeros so the average reference reconstructs it; only New
+Mexico's instructed eyes-open minute; mains notch 50 Hz (Greece) or 60 Hz (US). The San
+Diego authors ask to be contacted before a manuscript using their data is submitted.
+
 ## Setup (blackwell)
 
 ```bash

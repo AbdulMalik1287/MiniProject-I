@@ -58,6 +58,69 @@ def load(p):
     return json.loads(Path(p).read_text())
 
 
+SITE = {"aseeg": "ASEEG", "warsaw": "Warsaw", "mumtaz": "Mumtaz", "ds004504": "Thessaloniki",
+        "ds004584": "Iowa", "ds003490": "New Mexico", "ds002778": "San Diego"}
+TASK_TAG = {"schizophrenia": "SZ", "mood": "MDD", "alzheimers": "AD", "ftd": "FTD",
+            "alzheimers_vs_ftd": "AD vs FTD", "parkinsons": "PD"}
+NEURO_TASKS = ["alzheimers", "ftd", "alzheimers_vs_ftd", "parkinsons"]
+
+
+def verdict(v):
+    """Plain reading of an AUC interval, decided by the interval rather than by the writer."""
+    if v["ci"][0] > 0.5:
+        return "above chance"
+    if v["ci"][1] < 0.5:
+        return "below chance"
+    return "not distinguishable from chance"
+
+
+def neuro_summary(raws):
+    """Summary bullets for whichever neurological results exist, with data-driven wording."""
+    def a(t, k):
+        v = raws[t][k]
+        return f"AUC {v['auc']:.2f} [{v['ci'][0]:.2f}, {v['ci'][1]:.2f}], {verdict(v)}"
+
+    out = []
+    if "alzheimers" in raws:
+        out.append("Alzheimer's disease vs healthy controls (Thessaloniki, same GNN, not re-tuned): "
+                   f"{a('alzheimers', 'within:ds004504')}.")
+    if "ftd" in raws:
+        out.append(f"Frontotemporal dementia vs healthy controls (same hospital): {a('ftd', 'within:ds004504')}.")
+    if "alzheimers_vs_ftd" in raws:
+        out.append("Telling Alzheimer's from frontotemporal dementia - the only between-disease test that is "
+                   "fair, because both groups come from one hospital: "
+                   f"{a('alzheimers_vs_ftd', 'within:ds004504')}.")
+    if "parkinsons" in raws:
+        r = raws["parkinsons"]
+        within = "; ".join(f"{SITE[d]} {a('parkinsons', f'within:{d}')}" for d in r["datasets"]
+                           if f"within:{d}" in r)
+        out.append(f"Parkinson's disease vs healthy controls within each hospital: {within}.")
+        loso = [d for d in r["datasets"] if f"loso:{d}" in r]
+        if loso:
+            out.append("Parkinson's trained on the other hospitals and tested on one never seen: " +
+                       "; ".join(f"{SITE[d]} {a('parkinsons', f'loso:{d}')}" for d in loso) + ".")
+            sz = raws.get("schizophrenia", {})
+            sz_t = [v for k, v in sz.items() if k.startswith("transfer:")]
+            if all(r[f"loso:{d}"]["ci"][0] > 0.5 for d in loso) and sz_t and all(verdict(v) != "above chance" for v in sz_t):
+                out.append("Unlike schizophrenia, whose models fell to chance at an unseen hospital, the "
+                           "Parkinson's models stay above chance at every hospital they never saw - the first "
+                           "result here that transfers across sites. See the blink caveat in section 5.5 "
+                           "before reading it as a purely cortical signature.")
+    return out
+
+
+def rejection_by_group(qc, datasets, group):
+    recs = [r for d in datasets for r in qc.get(d, []) if qc_group(d, r) == group]
+    return sum(r["rejected"] for r in recs) / max(sum(r["windows_total"] for r in recs), 1)
+
+
+def qc_group(ds, r):
+    """Group of a QC record; caches written before group labels existed store label 0/1."""
+    if "group" in r:
+        return r["group"]
+    return R.DATASETS[ds]["patient"] if r["label"] == 1 else "control"
+
+
 # ---------------------------------------------------------------- docx helpers
 
 
@@ -291,7 +354,10 @@ def main():
     pd_dir = RES / "per_disorder"
     tune, ev = load(pd_dir / "tune.json"), load(pd_dir / "evaluate.json")
     calib = load(pd_dir / "models" / "calibration.json")
-    raw_sz, raw_md = load(RES / "raw" / "raw_schizophrenia.json"), load(RES / "raw" / "raw_mood.json")
+    raws = {t: load(RES / "raw" / f"raw_{t}.json") for t in R.TASKS
+            if (RES / "raw" / f"raw_{t}.json").exists()}
+    raw_sz, raw_md = raws["schizophrenia"], raws["mood"]
+    neuro = [t for t in NEURO_TASKS if t in raws]
     cfg, base_rows, base_n, sel_rows, sel_n, fc_n, cands = architectures()
     in_dim = P.node_feature_dim(cfg["node_features"])
     dis = D.DISORDERS
@@ -340,33 +406,51 @@ def main():
     act = np.array(ev["activation"])
     heatmap(FIG / "activation.png", act, [D.SHORT[c] for c in D.ALL_CLASSES], short,
             "Which models fire for which patients")
-    names = {"aseeg": "ASEEG", "warsaw": "Warsaw", "mumtaz": "Mumtaz"}
-
-    def raw_label(disease, key):
+    def raw_label(task, key):
+        tag = TASK_TAG[task]
         kind, _, rest = key.partition(":")
         if kind == "within":
-            return f"{disease}: within {names[rest]}"
+            return f"{tag}: within {SITE[rest]}"
         if kind == "pooled":
-            return f"{disease}: pooled, scored on {names[rest]}" if rest else f"{disease}: pooled (both hospitals)"
+            n = len(raws[task]["datasets"])
+            return f"{tag}: pooled, scored on {SITE[rest]}" if rest else f"{tag}: pooled ({n} hospitals)"
+        if kind == "loso":
+            return f"{tag}: trained elsewhere, test {SITE[rest]}"
         a, b = rest.split("->")
-        return f"{disease}: train {names[a]}, test {names[b]}"
+        return f"{tag}: train {SITE[a]}, test {SITE[b]}"
 
-    raw_rows = []
-    for rep, disease in ((raw_sz, "SZ"), (raw_md, "MDD")):
-        for k, v in rep.items():
-            if isinstance(v, dict) and "auc" in v:
-                raw_rows.append((raw_label(disease, k), v))
+    def raw_rows_for(tasks, for_figure=False):
+        rows = []
+        for t in tasks:
+            many = len(raws[t]["datasets"]) > 2
+            for k, v in raws[t].items():
+                if not (isinstance(v, dict) and "auc" in v):
+                    continue
+                # With three hospitals the figure keeps leave-one-out and drops the six
+                # pairwise transfers and per-site pooled scores; the table keeps them all.
+                if for_figure and many and (k.startswith("transfer:") or k.startswith("pooled:")):
+                    continue
+                rows.append((raw_label(t, k), v))
+        return rows
+
+    raw_rows = raw_rows_for(["schizophrenia", "mood"])
     dot_whisker(FIG / "raw_auc.png", [r[0] for r in raw_rows],
                 [("subject-level AUC", S1, [(v["auc"], *v["ci"]) for _, v in raw_rows])],
                 "subject-level AUC with 95% bootstrap CI", "Raw EEG: within, pooled and cross-hospital",
                 xlim=(0.2, 1.0))
+    if neuro:
+        fig_rows = raw_rows_for(neuro, for_figure=True)
+        dot_whisker(FIG / "neuro_auc.png", [r[0] for r in fig_rows],
+                    [("subject-level AUC", S1, [(v["auc"], *v["ci"]) for _, v in fig_rows])],
+                    "subject-level AUC with 95% bootstrap CI",
+                    "Neurological disorders: within, pooled and cross-hospital", xlim=(0.2, 1.0))
 
     # ---- document
     doc = Document()
     st = doc.styles["Normal"]
     st.font.name, st.font.size = "Calibri", Pt(10)
-    doc.add_heading("Brain Signal Processing: EEG + Graph Neural Networks for Psychiatric "
-                    "Disorder Classification", 0)
+    doc.add_heading("Brain Signal Processing: EEG + Graph Neural Networks for "
+                    f"{'Brain' if neuro else 'Psychiatric'} Disorder Classification", 0)
     p = doc.add_paragraph()
     p.add_run("Results and architectures. ").bold = True
     p.add_run("Mini Project I, Department of CSE, IIIT Nagpur, July-December 2026. "
@@ -402,28 +486,43 @@ def main():
         f"{raw_sz['within:warsaw']['auc']:.2f} Warsaw; pooled {raw_sz['pooled']['auc']:.2f}), but a model "
         "trained at one hospital is at chance at the other (AUC "
         f"{raw_sz['transfer:aseeg->warsaw']['auc']:.2f} and {raw_sz['transfer:warsaw->aseeg']['auc']:.2f}). "
-        "What is learned is largely hospital-specific: the disease signature, as captured by these "
-        "features, does not transfer across sites.",
+        "For schizophrenia, what is learned is largely hospital-specific: the signature, as captured by "
+        "these features, does not transfer across sites.",
         f"Depression within Mumtaz reaches AUC {raw_md['within:mumtaz']['auc']:.2f}, but with no second open "
         "dataset it cannot be checked across hospitals, and the schizophrenia transfer result means a "
         "single-site score should not be read as a transferable disease signature.",
+        *neuro_summary(raws),
     ])
 
     doc.add_heading("2. Datasets", 1)
-    qc = {ds: load(RES / "raw" / f"{ds}_qc.json") for ds in ("aseeg", "warsaw", "mumtaz")}
-    qn_ = lambda ds, lab: sum(r["label"] == lab for r in qc[ds])  # noqa: E731
+    qc = {ds: load(RES / "raw" / f"{ds}_qc.json") for ds in R.DATASETS if (RES / "raw" / f"{ds}_qc.json").exists()}
+    qn_ = lambda ds, grp: sum(qc_group(ds, r) == grp for r in qc[ds])  # noqa: E731
+    neuro_rows = []
+    if "ds004504" in qc:
+        neuro_rows.append(("ds004504 (Miltiadous 2023)", "OpenNeuro, CC0, Thessaloniki",
+                           f"{qn_('ds004504', 'alzheimers')} AD / {qn_('ds004504', 'ftd')} FTD / "
+                           f"{qn_('ds004504', 'control')} controls", "19-ch raw, eyes closed", "AD / FTD track"))
+    for ds, where, note in (("ds004584", "Iowa", "63-ch, eyes open, Pz reference"),
+                            ("ds003490", "New Mexico", "64-ch, eyes-open minute, OFF meds"),
+                            ("ds002778", "San Diego", "32-ch BioSemi, eyes open, OFF meds")):
+        if ds in qc:
+            neuro_rows.append((ds, f"OpenNeuro, CC0, {where}",
+                               f"{qn_(ds, 'parkinsons')} PD / {qn_(ds, 'control')} controls", note, "PD track"))
     table(doc, ["dataset", "source", "subjects", "signal", "role"], [
         ("TUH Abnormal + MPI LEMON", "EEG-GCNN FigShare features", "1,593 (1,385 / 208)",
          "8-ch bipolar, precomputed", "baseline reproduction"),
         ("Park et al. 2021", "SMG-SNU Boramae, Seoul", "945 (OCD excluded -> 899)",
          "19-ch, precomputed PSD + coherence", "per-disorder GNNs"),
         ("ASEEG (Bagherzadeh 2026)", "Zenodo 18029536, CC-BY",
-         f"{qn_('aseeg', 1)} SZ / {qn_('aseeg', 0)} controls", "19-ch raw, 128 Hz", "raw SZ track"),
+         f"{qn_('aseeg', 'schizophrenia')} SZ / {qn_('aseeg', 'control')} controls", "19-ch raw, 128 Hz",
+         "raw SZ track"),
         ("Warsaw (Olejarczyk 2017)", "RepOD 0107441",
-         f"{qn_('warsaw', 1)} SZ / {qn_('warsaw', 0)} controls", "19-ch raw EDF", "raw SZ track"),
+         f"{qn_('warsaw', 'schizophrenia')} SZ / {qn_('warsaw', 'control')} controls", "19-ch raw EDF",
+         "raw SZ track"),
         ("Mumtaz 2016", "figshare 4244171, CC-BY",
-         f"{qn_('mumtaz', 1)} MDD / {qn_('mumtaz', 0)} controls", "19-ch raw EDF, 256 Hz",
+         f"{qn_('mumtaz', 'mood')} MDD / {qn_('mumtaz', 'control')} controls", "19-ch raw EDF, 256 Hz",
          "raw depression track"),
+        *neuro_rows,
     ], widths=[1.4, 1.5, 1.3, 1.3, 1.0],
         note="Mumtaz: 6 of 64 eyes-closed files are dead links on figshare. OCD dropped from Park "
              "(46 subjects; 9 in the test split, AUC CI roughly +/-0.22).")
@@ -578,18 +677,69 @@ def main():
             "front/back mirror that geometry alone cannot. Output:")
         code(doc, "\n".join(l for l in ch_txt.read_text().splitlines()
                             if l.strip() and not l.startswith("reference:")))
-    table(doc, ["dataset", "group", "subjects", "windows kept", "rejected"], [
-        (ds, name, str(sum(r["label"] == lab for r in qc[ds])),
-         str(sum(r["kept"] for r in qc[ds] if r["label"] == lab)),
-         f"{sum(r['rejected'] for r in qc[ds] if r['label'] == lab) / max(sum(r['windows_total'] for r in qc[ds] if r['label'] == lab), 1):.1%}")
-        for ds in ("aseeg", "warsaw", "mumtaz") for lab, name in ((0, "controls"), (1, "patients"))],
-        note="Windows with any channel peak-to-peak above 300 uV or flat are rejected; at most 30 "
+    def qc_table(datasets, note):
+        rows = []
+        for ds in datasets:
+            for grp in sorted({qc_group(ds, r) for r in qc[ds]}):
+                recs = [r for r in qc[ds] if qc_group(ds, r) == grp]
+                rej = sum(r["rejected"] for r in recs) / max(sum(r["windows_total"] for r in recs), 1)
+                rows.append((SITE[ds], grp, str(len(recs)), str(sum(r["kept"] for r in recs)), f"{rej:.1%}"))
+        table(doc, ["dataset", "group", "subjects", "windows kept", "rejected"], rows, note=note)
+
+    qc_table([d for d in ("aseeg", "warsaw", "mumtaz") if d in qc],
+             "Windows with any channel peak-to-peak above 300 uV or flat are rejected; at most 30 "
              "clean 10 s windows per subject. Mumtaz patients lose more windows (recording "
              "differences between groups are a possible confound).")
     figure(doc, FIG / "raw_auc.png", "Figure 8. Raw-EEG results. Transfer = train on one hospital, "
                                      "test on the other, never seen.")
-    table(doc, ["evaluation", "AUC [95% CI]", "patients", "controls"], [
+    table(doc, ["evaluation", "AUC [95% CI]", "positive", "negative"], [
         (name, ci(v), str(v["n_patients"]), str(v["n_controls"])) for name, v in raw_rows])
+
+    if neuro:
+        doc.add_heading("5.5 Neurological disorders", 2)
+        doc.add_paragraph(
+            "Alzheimer's disease, frontotemporal dementia and Parkinson's disease come from separate "
+            "open datasets, each with its own healthy controls, run through the same pipeline and the "
+            "same GNN configuration (tuned on Park, not re-tuned). They are kept apart from the "
+            "psychiatric models: different hospitals, older patients, and in the Parkinson's datasets "
+            "eyes-open recordings, so their probabilities are not comparable with the psychiatric ones, "
+            "and no model is ever asked to choose between a disease from one hospital and a disease "
+            "from another. The one between-disease test is Alzheimer's vs frontotemporal dementia, "
+            "which is fair because both come from the same hospital and the same protocol.")
+        bullets(doc, [
+            "Parkinson's patients: the OFF-medication session where a dataset offers both (New Mexico, "
+            "San Diego); Iowa does not state medication state.",
+            "Iowa records against Pz, one of the 19 electrodes; Pz enters as zeros and the average "
+            "reference reconstructs it exactly.",
+            "New Mexico recordings interleave instructed eyes-open and eyes-closed minutes; only the "
+            "eyes-open minute is used, to match the other two Parkinson's sites.",
+            "Mains notch at 50 Hz (Thessaloniki) or 60 Hz (the three US sites).",
+        ])
+        qc_table([d for d in ("ds004504", "ds004584", "ds003490", "ds002778") if d in qc],
+                 "Same rejection rule and 30-window cap as section 5.4.")
+        pd_sites = [d for d in ("ds004584", "ds003490", "ds002778") if d in qc]
+        if pd_sites:
+            per_site = [(d, rejection_by_group(qc, [d], "control"), rejection_by_group(qc, [d], "parkinsons"))
+                        for d in pd_sites]
+            higher = [d for d, c_, p_ in per_site if c_ > p_]
+            doc.add_paragraph(
+                "Blink check. In eyes-open recordings, large-amplitude rejections are typically blinks and eye "
+                "movements (not verified channel by channel here), and a reduced spontaneous blink rate is a "
+                "clinical sign of Parkinson's. Controls lost more windows than "
+                f"patients at {len(higher)} of {len(per_site)} Parkinson's hospitals (" +
+                "; ".join(f"{SITE[d]} controls {c_:.0%} vs patients {p_:.0%}" for d, c_, p_ in per_site) +
+                "). Where that gap exists, blinking differs between the groups, and the blinks that survive "
+                "rejection reach the model through frontal slow-wave power and coherence. The cross-hospital "
+                "transfer may therefore partly reflect blink rate rather than cortical rhythms. The direct test "
+                "is to rerun without the frontal-pole electrodes (Fp1, Fp2) and see whether transfer survives; "
+                "it has not been run yet.")
+        figure(doc, FIG / "neuro_auc.png",
+               "Figure 9. Neurological results. For Parkinson's the figure shows leave-one-hospital-out "
+               "(trained on the other two hospitals); the table below also lists every pairwise transfer.")
+        table(doc, ["evaluation", "AUC [95% CI]", "positive", "negative"], [
+            (name, ci(v), str(v["n_patients"]), str(v["n_controls"])) for name, v in raw_rows_for(neuro)],
+            note="'positive' and 'negative' are the two groups of each task: patients vs controls, "
+                 "and for AD vs FTD, Alzheimer's vs frontotemporal dementia.")
 
     doc.add_heading("6. Problems found and fixed", 1)
     bullets(doc, [
@@ -618,6 +768,16 @@ def main():
         "standard 10-20 export order.",
         "Per-disorder and raw-EEG results were computed on a laptop CPU (Blackwell node unreachable on "
         "2026-09-13); the baseline and the Park graph study ran on the Blackwell node.",
+        *(["Neurological results come from single hospitals for Alzheimer's and frontotemporal dementia "
+           "(no second open dataset with controls was found), from older patients than the psychiatric "
+           "sets, and for Parkinson's from eyes-open recordings. None of these probabilities is "
+           "comparable with the psychiatric models'. The San Diego Parkinson's authors ask to be "
+           "contacted before a manuscript using their data is submitted.",
+           "Parkinson's recordings are eyes-open, so they contain blinks, and a reduced spontaneous "
+           "blink rate is itself a clinical sign of Parkinson's. Blink activity reaches the model through "
+           "frontal slow-wave power and coherence, so part of any Parkinson's result may reflect blinking "
+           "rather than cortical rhythms; an ablation without the frontal-pole electrodes would test this."]
+          if neuro else []),
     ])
 
     doc.add_heading("8. Reproduce", 1)
@@ -626,8 +786,10 @@ def main():
         "python per_disorder.py tune | train | calibrate | evaluate",
         "python per_disorder.py predict --ids <subject no.>   # per-disorder probabilities",
         "python infer_channel_order.py                        # ASEEG channel order",
+        "python fetch_neuro.py                                # Alzheimer's/FTD/Parkinson's data (CC0)",
         "python raw_eeg.py features",
         "python raw_eeg.py run --disease schizophrenia | mood",
+        "python raw_eeg.py run --disease alzheimers | ftd | alzheimers_vs_ftd | parkinsons",
         "python make_report.py                                # this document",
     ]))
 

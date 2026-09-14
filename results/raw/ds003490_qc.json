@@ -1,0 +1,352 @@
+[
+ {
+  "subject": "ds003490-sub-001",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-002",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-003",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 5,
+  "kept": 1
+ },
+ {
+  "subject": "ds003490-sub-004",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-005",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 6,
+  "kept": 0
+ },
+ {
+  "subject": "ds003490-sub-006",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 1,
+  "kept": 5
+ },
+ {
+  "subject": "ds003490-sub-007",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-008",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-009",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 4,
+  "kept": 2
+ },
+ {
+  "subject": "ds003490-sub-010",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 1,
+  "kept": 5
+ },
+ {
+  "subject": "ds003490-sub-011",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-012",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-013",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-014",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-015",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-016",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-017",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-018",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-019",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-020",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 5,
+  "kept": 1
+ },
+ {
+  "subject": "ds003490-sub-021",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 5,
+  "kept": 1
+ },
+ {
+  "subject": "ds003490-sub-022",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-023",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 6,
+  "kept": 0
+ },
+ {
+  "subject": "ds003490-sub-024",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-025",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-026",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 6,
+  "kept": 0
+ },
+ {
+  "subject": "ds003490-sub-027",
+  "group": "parkinsons",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-028",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 6,
+  "kept": 0
+ },
+ {
+  "subject": "ds003490-sub-029",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-030",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-031",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 1,
+  "kept": 5
+ },
+ {
+  "subject": "ds003490-sub-032",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-033",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-034",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-035",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-036",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-037",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 5,
+  "kept": 1
+ },
+ {
+  "subject": "ds003490-sub-038",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-039",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 2,
+  "kept": 4
+ },
+ {
+  "subject": "ds003490-sub-040",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-041",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-042",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-043",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 6,
+  "kept": 0
+ },
+ {
+  "subject": "ds003490-sub-044",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 1,
+  "kept": 5
+ },
+ {
+  "subject": "ds003490-sub-045",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 4,
+  "kept": 2
+ },
+ {
+  "subject": "ds003490-sub-046",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-047",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-048",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 0,
+  "kept": 6
+ },
+ {
+  "subject": "ds003490-sub-049",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 2,
+  "kept": 4
+ },
+ {
+  "subject": "ds003490-sub-050",
+  "group": "control",
+  "windows_total": 6,
+  "rejected": 6,
+  "kept": 0
+ }
+]
