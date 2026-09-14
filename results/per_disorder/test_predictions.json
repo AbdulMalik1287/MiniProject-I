@@ -1,0 +1,2162 @@
+[
+ {
+  "id": "2",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.1934,
+   "mood": 0.4446,
+   "addictive": 0.4602,
+   "trauma": 0.2751,
+   "anxiety": 0.4394
+  },
+  "combined": 0.3625
+ },
+ {
+  "id": "15",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.2053,
+   "mood": 0.4366,
+   "addictive": 0.8028,
+   "trauma": 0.2915,
+   "anxiety": 0.3592
+  },
+  "combined": 0.4191
+ },
+ {
+  "id": "21",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.5716,
+   "mood": 0.8233,
+   "addictive": 0.5643,
+   "trauma": 0.648,
+   "anxiety": 0.57
+  },
+  "combined": 0.6354
+ },
+ {
+  "id": "22",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.3272,
+   "mood": 0.8799,
+   "addictive": 0.6884,
+   "trauma": 0.593,
+   "anxiety": 0.6275
+  },
+  "combined": 0.6232
+ },
+ {
+  "id": "35",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.6868,
+   "mood": 0.9645,
+   "addictive": 0.5733,
+   "trauma": 0.8599,
+   "anxiety": 0.7215
+  },
+  "combined": 0.7612
+ },
+ {
+  "id": "39",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.7183,
+   "mood": 0.9311,
+   "addictive": 0.6891,
+   "trauma": 0.827,
+   "anxiety": 0.5068
+  },
+  "combined": 0.7345
+ },
+ {
+  "id": "47",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.5623,
+   "mood": 0.7991,
+   "addictive": 0.4623,
+   "trauma": 0.6587,
+   "anxiety": 0.6152
+  },
+  "combined": 0.6195
+ },
+ {
+  "id": "54",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.2729,
+   "mood": 0.4778,
+   "addictive": 0.4241,
+   "trauma": 0.3683,
+   "anxiety": 0.3316
+  },
+  "combined": 0.3749
+ },
+ {
+  "id": "56",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.5166,
+   "mood": 0.7577,
+   "addictive": 0.6102,
+   "trauma": 0.7457,
+   "anxiety": 0.6834
+  },
+  "combined": 0.6627
+ },
+ {
+  "id": "58",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.2647,
+   "mood": 0.6474,
+   "addictive": 0.3511,
+   "trauma": 0.4724,
+   "anxiety": 0.6273
+  },
+  "combined": 0.4726
+ },
+ {
+  "id": "67",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.4454,
+   "mood": 0.7556,
+   "addictive": 0.6249,
+   "trauma": 0.7841,
+   "anxiety": 0.5808
+  },
+  "combined": 0.6382
+ },
+ {
+  "id": "78",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.8014,
+   "mood": 0.8376,
+   "addictive": 0.6153,
+   "trauma": 0.809,
+   "anxiety": 0.697
+  },
+  "combined": 0.752
+ },
+ {
+  "id": "80",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.5506,
+   "mood": 0.6393,
+   "addictive": 0.4867,
+   "trauma": 0.4898,
+   "anxiety": 0.4258
+  },
+  "combined": 0.5185
+ },
+ {
+  "id": "82",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.5453,
+   "mood": 0.2984,
+   "addictive": 0.4401,
+   "trauma": 0.4686,
+   "anxiety": 0.5262
+  },
+  "combined": 0.4557
+ },
+ {
+  "id": "84",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.4953,
+   "mood": 0.9032,
+   "addictive": 0.6346,
+   "trauma": 0.6933,
+   "anxiety": 0.4994
+  },
+  "combined": 0.6452
+ },
+ {
+  "id": "87",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.7502,
+   "mood": 0.8509,
+   "addictive": 0.4784,
+   "trauma": 0.856,
+   "anxiety": 0.5661
+  },
+  "combined": 0.7003
+ },
+ {
+  "id": "88",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.5653,
+   "mood": 0.795,
+   "addictive": 0.5182,
+   "trauma": 0.7508,
+   "anxiety": 0.5763
+  },
+  "combined": 0.6411
+ },
+ {
+  "id": "94",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.5035,
+   "mood": 0.8297,
+   "addictive": 0.5857,
+   "trauma": 0.8496,
+   "anxiety": 0.486
+  },
+  "combined": 0.6509
+ },
+ {
+  "id": "95",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.5803,
+   "mood": 0.6065,
+   "addictive": 0.4561,
+   "trauma": 0.3629,
+   "anxiety": 0.5511
+  },
+  "combined": 0.5114
+ },
+ {
+  "id": "97",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.6649,
+   "mood": 0.806,
+   "addictive": 0.5981,
+   "trauma": 0.7276,
+   "anxiety": 0.6095
+  },
+  "combined": 0.6812
+ },
+ {
+  "id": "102",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.584,
+   "mood": 0.6908,
+   "addictive": 0.38,
+   "trauma": 0.6238,
+   "anxiety": 0.412
+  },
+  "combined": 0.5381
+ },
+ {
+  "id": "104",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.5239,
+   "mood": 0.8818,
+   "addictive": 0.5149,
+   "trauma": 0.7774,
+   "anxiety": 0.4478
+  },
+  "combined": 0.6292
+ },
+ {
+  "id": "108",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.6593,
+   "mood": 0.819,
+   "addictive": 0.4886,
+   "trauma": 0.7549,
+   "anxiety": 0.6419
+  },
+  "combined": 0.6727
+ },
+ {
+  "id": "120",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.5035,
+   "mood": 0.3026,
+   "addictive": 0.2797,
+   "trauma": 0.1209,
+   "anxiety": 0.3274
+  },
+  "combined": 0.3068
+ },
+ {
+  "id": "121",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.3752,
+   "mood": 0.5428,
+   "addictive": 0.5698,
+   "trauma": 0.5638,
+   "anxiety": 0.6336
+  },
+  "combined": 0.5371
+ },
+ {
+  "id": "127",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.3342,
+   "mood": 0.7251,
+   "addictive": 0.4128,
+   "trauma": 0.6865,
+   "anxiety": 0.4397
+  },
+  "combined": 0.5196
+ },
+ {
+  "id": "130",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.4504,
+   "mood": 0.9172,
+   "addictive": 0.6409,
+   "trauma": 0.7362,
+   "anxiety": 0.3967
+  },
+  "combined": 0.6283
+ },
+ {
+  "id": "133",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.5183,
+   "mood": 0.7018,
+   "addictive": 0.4979,
+   "trauma": 0.5211,
+   "anxiety": 0.4682
+  },
+  "combined": 0.5415
+ },
+ {
+  "id": "134",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.1802,
+   "mood": 0.2415,
+   "addictive": 0.3865,
+   "trauma": 0.1053,
+   "anxiety": 0.2779
+  },
+  "combined": 0.2383
+ },
+ {
+  "id": "135",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.2686,
+   "mood": 0.5413,
+   "addictive": 0.3561,
+   "trauma": 0.5414,
+   "anxiety": 0.4433
+  },
+  "combined": 0.4302
+ },
+ {
+  "id": "142",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.2176,
+   "mood": 0.6747,
+   "addictive": 0.4678,
+   "trauma": 0.5501,
+   "anxiety": 0.2687
+  },
+  "combined": 0.4358
+ },
+ {
+  "id": "150",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.3378,
+   "mood": 0.6806,
+   "addictive": 0.473,
+   "trauma": 0.5267,
+   "anxiety": 0.6458
+  },
+  "combined": 0.5328
+ },
+ {
+  "id": "153",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.1282,
+   "mood": 0.456,
+   "addictive": 0.4377,
+   "trauma": 0.4068,
+   "anxiety": 0.4796
+  },
+  "combined": 0.3817
+ },
+ {
+  "id": "166",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.7467,
+   "mood": 0.5225,
+   "addictive": 0.6283,
+   "trauma": 0.6982,
+   "anxiety": 0.6156
+  },
+  "combined": 0.6423
+ },
+ {
+  "id": "167",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.6482,
+   "mood": 0.6066,
+   "addictive": 0.6359,
+   "trauma": 0.6131,
+   "anxiety": 0.5596
+  },
+  "combined": 0.6127
+ },
+ {
+  "id": "171",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.2132,
+   "mood": 0.1587,
+   "addictive": 0.4036,
+   "trauma": 0.0844,
+   "anxiety": 0.3435
+  },
+  "combined": 0.2407
+ },
+ {
+  "id": "179",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.2069,
+   "mood": 0.4514,
+   "addictive": 0.2831,
+   "trauma": 0.189,
+   "anxiety": 0.2556
+  },
+  "combined": 0.2772
+ },
+ {
+  "id": "187",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.1372,
+   "mood": 0.2744,
+   "addictive": 0.2833,
+   "trauma": 0.1197,
+   "anxiety": 0.2388
+  },
+  "combined": 0.2107
+ },
+ {
+  "id": "194",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.1657,
+   "mood": 0.2162,
+   "addictive": 0.4483,
+   "trauma": 0.4675,
+   "anxiety": 0.3657
+  },
+  "combined": 0.3327
+ },
+ {
+  "id": "205",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.4712,
+   "mood": 0.5941,
+   "addictive": 0.5275,
+   "trauma": 0.3548,
+   "anxiety": 0.4589
+  },
+  "combined": 0.4813
+ },
+ {
+  "id": "207",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.3167,
+   "mood": 0.562,
+   "addictive": 0.5416,
+   "trauma": 0.748,
+   "anxiety": 0.5845
+  },
+  "combined": 0.5506
+ },
+ {
+  "id": "213",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.3229,
+   "mood": 0.3022,
+   "addictive": 0.3615,
+   "trauma": 0.2936,
+   "anxiety": 0.3777
+  },
+  "combined": 0.3316
+ },
+ {
+  "id": "214",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.2563,
+   "mood": 0.2497,
+   "addictive": 0.4353,
+   "trauma": 0.2962,
+   "anxiety": 0.3807
+  },
+  "combined": 0.3236
+ },
+ {
+  "id": "221",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.2153,
+   "mood": 0.685,
+   "addictive": 0.5336,
+   "trauma": 0.5907,
+   "anxiety": 0.4592
+  },
+  "combined": 0.4968
+ },
+ {
+  "id": "224",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.5735,
+   "mood": 0.8863,
+   "addictive": 0.6587,
+   "trauma": 0.7945,
+   "anxiety": 0.6403
+  },
+  "combined": 0.7107
+ },
+ {
+  "id": "225",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.1876,
+   "mood": 0.5217,
+   "addictive": 0.5864,
+   "trauma": 0.2908,
+   "anxiety": 0.4787
+  },
+  "combined": 0.413
+ },
+ {
+  "id": "228",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.4848,
+   "mood": 0.6423,
+   "addictive": 0.5877,
+   "trauma": 0.6742,
+   "anxiety": 0.6306
+  },
+  "combined": 0.6039
+ },
+ {
+  "id": "229",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.5448,
+   "mood": 0.8891,
+   "addictive": 0.4679,
+   "trauma": 0.6623,
+   "anxiety": 0.6897
+  },
+  "combined": 0.6507
+ },
+ {
+  "id": "238",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.4493,
+   "mood": 0.6204,
+   "addictive": 0.55,
+   "trauma": 0.4455,
+   "anxiety": 0.4466
+  },
+  "combined": 0.5024
+ },
+ {
+  "id": "243",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.5348,
+   "mood": 0.845,
+   "addictive": 0.7906,
+   "trauma": 0.7489,
+   "anxiety": 0.4618
+  },
+  "combined": 0.6762
+ },
+ {
+  "id": "251",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.3758,
+   "mood": 0.6202,
+   "addictive": 0.5045,
+   "trauma": 0.4524,
+   "anxiety": 0.4271
+  },
+  "combined": 0.476
+ },
+ {
+  "id": "252",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.6608,
+   "mood": 0.9636,
+   "addictive": 0.7424,
+   "trauma": 0.886,
+   "anxiety": 0.664
+  },
+  "combined": 0.7834
+ },
+ {
+  "id": "256",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.2202,
+   "mood": 0.3493,
+   "addictive": 0.3896,
+   "trauma": 0.1855,
+   "anxiety": 0.3174
+  },
+  "combined": 0.2924
+ },
+ {
+  "id": "285",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.3366,
+   "mood": 0.3519,
+   "addictive": 0.2884,
+   "trauma": 0.1992,
+   "anxiety": 0.3457
+  },
+  "combined": 0.3044
+ },
+ {
+  "id": "289",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.4201,
+   "mood": 0.6554,
+   "addictive": 0.4274,
+   "trauma": 0.4215,
+   "anxiety": 0.4884
+  },
+  "combined": 0.4826
+ },
+ {
+  "id": "290",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.4831,
+   "mood": 0.8324,
+   "addictive": 0.7566,
+   "trauma": 0.8264,
+   "anxiety": 0.7065
+  },
+  "combined": 0.721
+ },
+ {
+  "id": "304",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.4504,
+   "mood": 0.3181,
+   "addictive": 0.5082,
+   "trauma": 0.531,
+   "anxiety": 0.509
+  },
+  "combined": 0.4634
+ },
+ {
+  "id": "306",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.5482,
+   "mood": 0.8182,
+   "addictive": 0.6102,
+   "trauma": 0.7739,
+   "anxiety": 0.5892
+  },
+  "combined": 0.6679
+ },
+ {
+  "id": "332",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.4352,
+   "mood": 0.7631,
+   "addictive": 0.6264,
+   "trauma": 0.7891,
+   "anxiety": 0.561
+  },
+  "combined": 0.635
+ },
+ {
+  "id": "342",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.1319,
+   "mood": 0.2814,
+   "addictive": 0.2595,
+   "trauma": 0.1343,
+   "anxiety": 0.2782
+  },
+  "combined": 0.2171
+ },
+ {
+  "id": "345",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.5958,
+   "mood": 0.5855,
+   "addictive": 0.5841,
+   "trauma": 0.5227,
+   "anxiety": 0.6018
+  },
+  "combined": 0.578
+ },
+ {
+  "id": "346",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4131,
+   "mood": 0.6563,
+   "addictive": 0.5226,
+   "trauma": 0.439,
+   "anxiety": 0.5731
+  },
+  "combined": 0.5208
+ },
+ {
+  "id": "348",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.2378,
+   "mood": 0.6727,
+   "addictive": 0.5527,
+   "trauma": 0.3326,
+   "anxiety": 0.446
+  },
+  "combined": 0.4483
+ },
+ {
+  "id": "351",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4552,
+   "mood": 0.5391,
+   "addictive": 0.4525,
+   "trauma": 0.4911,
+   "anxiety": 0.4723
+  },
+  "combined": 0.4821
+ },
+ {
+  "id": "352",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.3417,
+   "mood": 0.6026,
+   "addictive": 0.6559,
+   "trauma": 0.4705,
+   "anxiety": 0.4678
+  },
+  "combined": 0.5077
+ },
+ {
+  "id": "354",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.6303,
+   "mood": 0.7197,
+   "addictive": 0.5757,
+   "trauma": 0.578,
+   "anxiety": 0.5022
+  },
+  "combined": 0.6012
+ },
+ {
+  "id": "355",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.3804,
+   "mood": 0.5652,
+   "addictive": 0.4926,
+   "trauma": 0.677,
+   "anxiety": 0.3504
+  },
+  "combined": 0.4931
+ },
+ {
+  "id": "357",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.7454,
+   "mood": 0.7401,
+   "addictive": 0.6134,
+   "trauma": 0.9056,
+   "anxiety": 0.7027
+  },
+  "combined": 0.7414
+ },
+ {
+  "id": "361",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.5337,
+   "mood": 0.7424,
+   "addictive": 0.6426,
+   "trauma": 0.7766,
+   "anxiety": 0.6007
+  },
+  "combined": 0.6592
+ },
+ {
+  "id": "365",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.2736,
+   "mood": 0.5294,
+   "addictive": 0.5844,
+   "trauma": 0.8015,
+   "anxiety": 0.5501
+  },
+  "combined": 0.5478
+ },
+ {
+  "id": "369",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.7466,
+   "mood": 0.8222,
+   "addictive": 0.5648,
+   "trauma": 0.7242,
+   "anxiety": 0.5601
+  },
+  "combined": 0.6836
+ },
+ {
+  "id": "376",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.4747,
+   "mood": 0.6675,
+   "addictive": 0.5211,
+   "trauma": 0.5033,
+   "anxiety": 0.555
+  },
+  "combined": 0.5443
+ },
+ {
+  "id": "379",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.304,
+   "mood": 0.7702,
+   "addictive": 0.5659,
+   "trauma": 0.332,
+   "anxiety": 0.4994
+  },
+  "combined": 0.4943
+ },
+ {
+  "id": "384",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.3673,
+   "mood": 0.4655,
+   "addictive": 0.3668,
+   "trauma": 0.5398,
+   "anxiety": 0.4697
+  },
+  "combined": 0.4418
+ },
+ {
+  "id": "391",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.512,
+   "mood": 0.7961,
+   "addictive": 0.5578,
+   "trauma": 0.6178,
+   "anxiety": 0.4547
+  },
+  "combined": 0.5877
+ },
+ {
+  "id": "418",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.3848,
+   "mood": 0.3003,
+   "addictive": 0.4704,
+   "trauma": 0.6023,
+   "anxiety": 0.4487
+  },
+  "combined": 0.4413
+ },
+ {
+  "id": "421",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.5703,
+   "mood": 0.8789,
+   "addictive": 0.553,
+   "trauma": 0.8012,
+   "anxiety": 0.5747
+  },
+  "combined": 0.6756
+ },
+ {
+  "id": "428",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.3101,
+   "mood": 0.4904,
+   "addictive": 0.5697,
+   "trauma": 0.5563,
+   "anxiety": 0.4225
+  },
+  "combined": 0.4698
+ },
+ {
+  "id": "436",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.7228,
+   "mood": 0.905,
+   "addictive": 0.6704,
+   "trauma": 0.8844,
+   "anxiety": 0.669
+  },
+  "combined": 0.7703
+ },
+ {
+  "id": "438",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.4927,
+   "mood": 0.6625,
+   "addictive": 0.3635,
+   "trauma": 0.5792,
+   "anxiety": 0.5246
+  },
+  "combined": 0.5245
+ },
+ {
+  "id": "441",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.6805,
+   "mood": 0.8305,
+   "addictive": 0.5941,
+   "trauma": 0.6626,
+   "anxiety": 0.4697
+  },
+  "combined": 0.6475
+ },
+ {
+  "id": "442",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.2992,
+   "mood": 0.5271,
+   "addictive": 0.3939,
+   "trauma": 0.493,
+   "anxiety": 0.6205
+  },
+  "combined": 0.4667
+ },
+ {
+  "id": "443",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.3126,
+   "mood": 0.2497,
+   "addictive": 0.3672,
+   "trauma": 0.3191,
+   "anxiety": 0.3741
+  },
+  "combined": 0.3245
+ },
+ {
+  "id": "445",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.5481,
+   "mood": 0.6426,
+   "addictive": 0.4515,
+   "trauma": 0.3424,
+   "anxiety": 0.4202
+  },
+  "combined": 0.481
+ },
+ {
+  "id": "448",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.2366,
+   "mood": 0.7792,
+   "addictive": 0.5441,
+   "trauma": 0.815,
+   "anxiety": 0.4521
+  },
+  "combined": 0.5654
+ },
+ {
+  "id": "452",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4572,
+   "mood": 0.7926,
+   "addictive": 0.6107,
+   "trauma": 0.6189,
+   "anxiety": 0.5256
+  },
+  "combined": 0.601
+ },
+ {
+  "id": "455",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.2802,
+   "mood": 0.5551,
+   "addictive": 0.435,
+   "trauma": 0.5088,
+   "anxiety": 0.4533
+  },
+  "combined": 0.4465
+ },
+ {
+  "id": "459",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4884,
+   "mood": 0.672,
+   "addictive": 0.5216,
+   "trauma": 0.831,
+   "anxiety": 0.6605
+  },
+  "combined": 0.6347
+ },
+ {
+  "id": "462",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.6779,
+   "mood": 0.7823,
+   "addictive": 0.7097,
+   "trauma": 0.5811,
+   "anxiety": 0.4875
+  },
+  "combined": 0.6477
+ },
+ {
+  "id": "466",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.3935,
+   "mood": 0.7272,
+   "addictive": 0.5354,
+   "trauma": 0.6627,
+   "anxiety": 0.6189
+  },
+  "combined": 0.5875
+ },
+ {
+  "id": "468",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.4384,
+   "mood": 0.5644,
+   "addictive": 0.5104,
+   "trauma": 0.3606,
+   "anxiety": 0.4422
+  },
+  "combined": 0.4632
+ },
+ {
+  "id": "469",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.4093,
+   "mood": 0.8262,
+   "addictive": 0.4961,
+   "trauma": 0.6245,
+   "anxiety": 0.4267
+  },
+  "combined": 0.5565
+ },
+ {
+  "id": "474",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.5343,
+   "mood": 0.7319,
+   "addictive": 0.4839,
+   "trauma": 0.657,
+   "anxiety": 0.4409
+  },
+  "combined": 0.5696
+ },
+ {
+  "id": "483",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4667,
+   "mood": 0.8125,
+   "addictive": 0.4364,
+   "trauma": 0.5763,
+   "anxiety": 0.5351
+  },
+  "combined": 0.5654
+ },
+ {
+  "id": "485",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.5393,
+   "mood": 0.4559,
+   "addictive": 0.6157,
+   "trauma": 0.5451,
+   "anxiety": 0.5959
+  },
+  "combined": 0.5504
+ },
+ {
+  "id": "490",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.2007,
+   "mood": 0.7829,
+   "addictive": 0.4587,
+   "trauma": 0.2279,
+   "anxiety": 0.2634
+  },
+  "combined": 0.3867
+ },
+ {
+  "id": "494",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.6643,
+   "mood": 0.8363,
+   "addictive": 0.5568,
+   "trauma": 0.7939,
+   "anxiety": 0.5793
+  },
+  "combined": 0.6861
+ },
+ {
+  "id": "498",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.5154,
+   "mood": 0.7666,
+   "addictive": 0.4759,
+   "trauma": 0.4046,
+   "anxiety": 0.5113
+  },
+  "combined": 0.5348
+ },
+ {
+  "id": "499",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.5791,
+   "mood": 0.7515,
+   "addictive": 0.5629,
+   "trauma": 0.7423,
+   "anxiety": 0.6134
+  },
+  "combined": 0.6498
+ },
+ {
+  "id": "503",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.7057,
+   "mood": 0.9249,
+   "addictive": 0.4372,
+   "trauma": 0.8094,
+   "anxiety": 0.6437
+  },
+  "combined": 0.7042
+ },
+ {
+  "id": "508",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.7208,
+   "mood": 0.6525,
+   "addictive": 0.3871,
+   "trauma": 0.6202,
+   "anxiety": 0.5226
+  },
+  "combined": 0.5806
+ },
+ {
+  "id": "521",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.3489,
+   "mood": 0.8247,
+   "addictive": 0.5534,
+   "trauma": 0.4325,
+   "anxiety": 0.4684
+  },
+  "combined": 0.5256
+ },
+ {
+  "id": "523",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4226,
+   "mood": 0.6992,
+   "addictive": 0.4395,
+   "trauma": 0.5373,
+   "anxiety": 0.4921
+  },
+  "combined": 0.5182
+ },
+ {
+  "id": "525",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.4724,
+   "mood": 0.804,
+   "addictive": 0.5545,
+   "trauma": 0.6399,
+   "anxiety": 0.6243
+  },
+  "combined": 0.619
+ },
+ {
+  "id": "529",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.5249,
+   "mood": 0.8353,
+   "addictive": 0.6155,
+   "trauma": 0.6048,
+   "anxiety": 0.4655
+  },
+  "combined": 0.6092
+ },
+ {
+  "id": "531",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.7558,
+   "mood": 0.8462,
+   "addictive": 0.5201,
+   "trauma": 0.8058,
+   "anxiety": 0.5092
+  },
+  "combined": 0.6874
+ },
+ {
+  "id": "532",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4744,
+   "mood": 0.6168,
+   "addictive": 0.3573,
+   "trauma": 0.5555,
+   "anxiety": 0.5172
+  },
+  "combined": 0.5042
+ },
+ {
+  "id": "560",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.503,
+   "mood": 0.794,
+   "addictive": 0.6477,
+   "trauma": 0.7188,
+   "anxiety": 0.7083
+  },
+  "combined": 0.6744
+ },
+ {
+  "id": "566",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.2639,
+   "mood": 0.745,
+   "addictive": 0.3338,
+   "trauma": 0.3662,
+   "anxiety": 0.4579
+  },
+  "combined": 0.4334
+ },
+ {
+  "id": "567",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.4419,
+   "mood": 0.4585,
+   "addictive": 0.4697,
+   "trauma": 0.4041,
+   "anxiety": 0.5465
+  },
+  "combined": 0.4642
+ },
+ {
+  "id": "568",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.1127,
+   "mood": 0.4894,
+   "addictive": 0.3803,
+   "trauma": 0.3216,
+   "anxiety": 0.2904
+  },
+  "combined": 0.3189
+ },
+ {
+  "id": "570",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4547,
+   "mood": 0.5125,
+   "addictive": 0.4424,
+   "trauma": 0.5174,
+   "anxiety": 0.4132
+  },
+  "combined": 0.468
+ },
+ {
+  "id": "574",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4414,
+   "mood": 0.8811,
+   "addictive": 0.5101,
+   "trauma": 0.7751,
+   "anxiety": 0.6647
+  },
+  "combined": 0.6545
+ },
+ {
+  "id": "577",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4342,
+   "mood": 0.3438,
+   "addictive": 0.4277,
+   "trauma": 0.7011,
+   "anxiety": 0.5021
+  },
+  "combined": 0.4818
+ },
+ {
+  "id": "585",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.6812,
+   "mood": 0.843,
+   "addictive": 0.629,
+   "trauma": 0.5903,
+   "anxiety": 0.6664
+  },
+  "combined": 0.682
+ },
+ {
+  "id": "587",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.5977,
+   "mood": 0.6625,
+   "addictive": 0.3963,
+   "trauma": 0.7595,
+   "anxiety": 0.5536
+  },
+  "combined": 0.5939
+ },
+ {
+  "id": "590",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4611,
+   "mood": 0.7304,
+   "addictive": 0.4477,
+   "trauma": 0.5761,
+   "anxiety": 0.6259
+  },
+  "combined": 0.5682
+ },
+ {
+  "id": "595",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.2243,
+   "mood": 0.5562,
+   "addictive": 0.3787,
+   "trauma": 0.4034,
+   "anxiety": 0.5017
+  },
+  "combined": 0.4128
+ },
+ {
+  "id": "603",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.5751,
+   "mood": 0.6006,
+   "addictive": 0.5715,
+   "trauma": 0.6139,
+   "anxiety": 0.5558
+  },
+  "combined": 0.5834
+ },
+ {
+  "id": "607",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.7753,
+   "mood": 0.9457,
+   "addictive": 0.7236,
+   "trauma": 0.9303,
+   "anxiety": 0.8148
+  },
+  "combined": 0.8379
+ },
+ {
+  "id": "611",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.4919,
+   "mood": 0.845,
+   "addictive": 0.5317,
+   "trauma": 0.5221,
+   "anxiety": 0.5872
+  },
+  "combined": 0.5956
+ },
+ {
+  "id": "612",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.4888,
+   "mood": 0.5595,
+   "addictive": 0.3194,
+   "trauma": 0.3244,
+   "anxiety": 0.4101
+  },
+  "combined": 0.4204
+ },
+ {
+  "id": "626",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.5462,
+   "mood": 0.8268,
+   "addictive": 0.6369,
+   "trauma": 0.6397,
+   "anxiety": 0.623
+  },
+  "combined": 0.6545
+ },
+ {
+  "id": "628",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.4676,
+   "mood": 0.9561,
+   "addictive": 0.621,
+   "trauma": 0.6516,
+   "anxiety": 0.471
+  },
+  "combined": 0.6334
+ },
+ {
+  "id": "633",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.7053,
+   "mood": 0.8125,
+   "addictive": 0.4779,
+   "trauma": 0.6125,
+   "anxiety": 0.5981
+  },
+  "combined": 0.6412
+ },
+ {
+  "id": "634",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.496,
+   "mood": 0.7357,
+   "addictive": 0.3479,
+   "trauma": 0.6798,
+   "anxiety": 0.4536
+  },
+  "combined": 0.5426
+ },
+ {
+  "id": "636",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.2405,
+   "mood": 0.676,
+   "addictive": 0.5714,
+   "trauma": 0.7499,
+   "anxiety": 0.4797
+  },
+  "combined": 0.5435
+ },
+ {
+  "id": "641",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.5696,
+   "mood": 0.7221,
+   "addictive": 0.6356,
+   "trauma": 0.7094,
+   "anxiety": 0.4722
+  },
+  "combined": 0.6218
+ },
+ {
+  "id": "644",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.3451,
+   "mood": 0.6837,
+   "addictive": 0.4216,
+   "trauma": 0.5481,
+   "anxiety": 0.3637
+  },
+  "combined": 0.4724
+ },
+ {
+  "id": "645",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.5468,
+   "mood": 0.6531,
+   "addictive": 0.3325,
+   "trauma": 0.4113,
+   "anxiety": 0.5321
+  },
+  "combined": 0.4952
+ },
+ {
+  "id": "646",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.4606,
+   "mood": 0.6657,
+   "addictive": 0.5146,
+   "trauma": 0.7416,
+   "anxiety": 0.5643
+  },
+  "combined": 0.5894
+ },
+ {
+  "id": "650",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.7748,
+   "mood": 0.8961,
+   "addictive": 0.5198,
+   "trauma": 0.6984,
+   "anxiety": 0.5599
+  },
+  "combined": 0.6898
+ },
+ {
+  "id": "659",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.662,
+   "mood": 0.7756,
+   "addictive": 0.5532,
+   "trauma": 0.7953,
+   "anxiety": 0.6769
+  },
+  "combined": 0.6926
+ },
+ {
+  "id": "674",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.5595,
+   "mood": 0.8587,
+   "addictive": 0.4901,
+   "trauma": 0.8335,
+   "anxiety": 0.7035
+  },
+  "combined": 0.689
+ },
+ {
+  "id": "675",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.6257,
+   "mood": 0.7948,
+   "addictive": 0.5486,
+   "trauma": 0.8036,
+   "anxiety": 0.5737
+  },
+  "combined": 0.6693
+ },
+ {
+  "id": "686",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.3937,
+   "mood": 0.8261,
+   "addictive": 0.5418,
+   "trauma": 0.791,
+   "anxiety": 0.5324
+  },
+  "combined": 0.617
+ },
+ {
+  "id": "696",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.6171,
+   "mood": 0.7575,
+   "addictive": 0.5815,
+   "trauma": 0.8078,
+   "anxiety": 0.6474
+  },
+  "combined": 0.6823
+ },
+ {
+  "id": "704",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.2865,
+   "mood": 0.3445,
+   "addictive": 0.4291,
+   "trauma": 0.4988,
+   "anxiety": 0.4103
+  },
+  "combined": 0.3938
+ },
+ {
+  "id": "706",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.5324,
+   "mood": 0.9261,
+   "addictive": 0.7079,
+   "trauma": 0.8317,
+   "anxiety": 0.6443
+  },
+  "combined": 0.7285
+ },
+ {
+  "id": "707",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.5156,
+   "mood": 0.921,
+   "addictive": 0.559,
+   "trauma": 0.8593,
+   "anxiety": 0.7164
+  },
+  "combined": 0.7143
+ },
+ {
+  "id": "711",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.5244,
+   "mood": 0.7341,
+   "addictive": 0.4905,
+   "trauma": 0.7459,
+   "anxiety": 0.6608
+  },
+  "combined": 0.6311
+ },
+ {
+  "id": "714",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.5297,
+   "mood": 0.7037,
+   "addictive": 0.5707,
+   "trauma": 0.6802,
+   "anxiety": 0.582
+  },
+  "combined": 0.6133
+ },
+ {
+  "id": "730",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.8801,
+   "mood": 0.9904,
+   "addictive": 0.7997,
+   "trauma": 0.9825,
+   "anxiety": 0.6317
+  },
+  "combined": 0.8569
+ },
+ {
+  "id": "731",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4417,
+   "mood": 0.5998,
+   "addictive": 0.4207,
+   "trauma": 0.5905,
+   "anxiety": 0.4835
+  },
+  "combined": 0.5072
+ },
+ {
+  "id": "734",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.4718,
+   "mood": 0.5773,
+   "addictive": 0.3873,
+   "trauma": 0.5423,
+   "anxiety": 0.3844
+  },
+  "combined": 0.4726
+ },
+ {
+  "id": "738",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.6069,
+   "mood": 0.8248,
+   "addictive": 0.4063,
+   "trauma": 0.7706,
+   "anxiety": 0.6172
+  },
+  "combined": 0.6452
+ },
+ {
+  "id": "740",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.5663,
+   "mood": 0.806,
+   "addictive": 0.6291,
+   "trauma": 0.5741,
+   "anxiety": 0.5861
+  },
+  "combined": 0.6323
+ },
+ {
+  "id": "745",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.5873,
+   "mood": 0.8968,
+   "addictive": 0.6629,
+   "trauma": 0.8327,
+   "anxiety": 0.6253
+  },
+  "combined": 0.721
+ },
+ {
+  "id": "750",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.4267,
+   "mood": 0.5848,
+   "addictive": 0.3583,
+   "trauma": 0.3996,
+   "anxiety": 0.4415
+  },
+  "combined": 0.4422
+ },
+ {
+  "id": "780",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.7484,
+   "mood": 0.7374,
+   "addictive": 0.5207,
+   "trauma": 0.6787,
+   "anxiety": 0.6174
+  },
+  "combined": 0.6605
+ },
+ {
+  "id": "786",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.7406,
+   "mood": 0.7456,
+   "addictive": 0.4688,
+   "trauma": 0.7025,
+   "anxiety": 0.487
+  },
+  "combined": 0.6289
+ },
+ {
+  "id": "788",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.7156,
+   "mood": 0.9783,
+   "addictive": 0.7972,
+   "trauma": 0.8862,
+   "anxiety": 0.6965
+  },
+  "combined": 0.8148
+ },
+ {
+  "id": "793",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.4712,
+   "mood": 0.4468,
+   "addictive": 0.6048,
+   "trauma": 0.6014,
+   "anxiety": 0.5174
+  },
+  "combined": 0.5283
+ },
+ {
+  "id": "794",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.4484,
+   "mood": 0.6443,
+   "addictive": 0.327,
+   "trauma": 0.2589,
+   "anxiety": 0.3778
+  },
+  "combined": 0.4113
+ },
+ {
+  "id": "801",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.801,
+   "mood": 0.6925,
+   "addictive": 0.5739,
+   "trauma": 0.7855,
+   "anxiety": 0.5072
+  },
+  "combined": 0.672
+ },
+ {
+  "id": "808",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.3716,
+   "mood": 0.8313,
+   "addictive": 0.5195,
+   "trauma": 0.6978,
+   "anxiety": 0.6327
+  },
+  "combined": 0.6106
+ },
+ {
+  "id": "809",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.7339,
+   "mood": 0.7623,
+   "addictive": 0.7538,
+   "trauma": 0.7231,
+   "anxiety": 0.3376
+  },
+  "combined": 0.6621
+ },
+ {
+  "id": "811",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.431,
+   "mood": 0.7635,
+   "addictive": 0.3742,
+   "trauma": 0.6578,
+   "anxiety": 0.4671
+  },
+  "combined": 0.5387
+ },
+ {
+  "id": "814",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.5885,
+   "mood": 0.6203,
+   "addictive": 0.6605,
+   "trauma": 0.6588,
+   "anxiety": 0.5372
+  },
+  "combined": 0.6131
+ },
+ {
+  "id": "818",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.7245,
+   "mood": 0.9022,
+   "addictive": 0.6926,
+   "trauma": 0.9395,
+   "anxiety": 0.6947
+  },
+  "combined": 0.7907
+ },
+ {
+  "id": "821",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.5014,
+   "mood": 0.6801,
+   "addictive": 0.5482,
+   "trauma": 0.7056,
+   "anxiety": 0.685
+  },
+  "combined": 0.6241
+ },
+ {
+  "id": "824",
+  "diagnosis": "Schizophrenia",
+  "p": {
+   "schizophrenia": 0.6735,
+   "mood": 0.6094,
+   "addictive": 0.4526,
+   "trauma": 0.6223,
+   "anxiety": 0.5939
+  },
+  "combined": 0.5903
+ },
+ {
+  "id": "826",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.5694,
+   "mood": 0.8275,
+   "addictive": 0.3993,
+   "trauma": 0.5855,
+   "anxiety": 0.463
+  },
+  "combined": 0.5689
+ },
+ {
+  "id": "842",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.279,
+   "mood": 0.8265,
+   "addictive": 0.5956,
+   "trauma": 0.7397,
+   "anxiety": 0.6117
+  },
+  "combined": 0.6105
+ },
+ {
+  "id": "846",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.4947,
+   "mood": 0.87,
+   "addictive": 0.3495,
+   "trauma": 0.3677,
+   "anxiety": 0.5465
+  },
+  "combined": 0.5257
+ },
+ {
+  "id": "850",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.7993,
+   "mood": 0.8544,
+   "addictive": 0.6316,
+   "trauma": 0.7702,
+   "anxiety": 0.6051
+  },
+  "combined": 0.7321
+ },
+ {
+  "id": "854",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.4873,
+   "mood": 0.7973,
+   "addictive": 0.4449,
+   "trauma": 0.8732,
+   "anxiety": 0.5633
+  },
+  "combined": 0.6332
+ },
+ {
+  "id": "862",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.7266,
+   "mood": 0.9371,
+   "addictive": 0.7181,
+   "trauma": 0.8649,
+   "anxiety": 0.7363
+  },
+  "combined": 0.7966
+ },
+ {
+  "id": "868",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.3945,
+   "mood": 0.4584,
+   "addictive": 0.3632,
+   "trauma": 0.1179,
+   "anxiety": 0.3907
+  },
+  "combined": 0.3449
+ },
+ {
+  "id": "886",
+  "diagnosis": "Anxiety disorder",
+  "p": {
+   "schizophrenia": 0.3921,
+   "mood": 0.7702,
+   "addictive": 0.3468,
+   "trauma": 0.2239,
+   "anxiety": 0.3629
+  },
+  "combined": 0.4192
+ },
+ {
+  "id": "887",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.1992,
+   "mood": 0.1983,
+   "addictive": 0.3002,
+   "trauma": 0.0903,
+   "anxiety": 0.4832
+  },
+  "combined": 0.2543
+ },
+ {
+  "id": "890",
+  "diagnosis": "Trauma and stress related disorder",
+  "p": {
+   "schizophrenia": 0.2527,
+   "mood": 0.7055,
+   "addictive": 0.519,
+   "trauma": 0.7783,
+   "anxiety": 0.7004
+  },
+  "combined": 0.5912
+ },
+ {
+  "id": "891",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.32,
+   "mood": 0.7341,
+   "addictive": 0.4936,
+   "trauma": 0.5479,
+   "anxiety": 0.3911
+  },
+  "combined": 0.4973
+ },
+ {
+  "id": "897",
+  "diagnosis": "Mood disorder",
+  "p": {
+   "schizophrenia": 0.179,
+   "mood": 0.4013,
+   "addictive": 0.3775,
+   "trauma": 0.121,
+   "anxiety": 0.3593
+  },
+  "combined": 0.2876
+ },
+ {
+  "id": "906",
+  "diagnosis": "Addictive disorder",
+  "p": {
+   "schizophrenia": 0.3523,
+   "mood": 0.4518,
+   "addictive": 0.6659,
+   "trauma": 0.5719,
+   "anxiety": 0.3991
+  },
+  "combined": 0.4882
+ },
+ {
+  "id": "926",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.1564,
+   "mood": 0.1929,
+   "addictive": 0.2616,
+   "trauma": 0.3147,
+   "anxiety": 0.3524
+  },
+  "combined": 0.2556
+ },
+ {
+  "id": "930",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.2111,
+   "mood": 0.7902,
+   "addictive": 0.6255,
+   "trauma": 0.3799,
+   "anxiety": 0.2971
+  },
+  "combined": 0.4608
+ },
+ {
+  "id": "937",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.6751,
+   "mood": 0.6061,
+   "addictive": 0.6002,
+   "trauma": 0.408,
+   "anxiety": 0.5304
+  },
+  "combined": 0.564
+ },
+ {
+  "id": "940",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.7248,
+   "mood": 0.9722,
+   "addictive": 0.6883,
+   "trauma": 0.9284,
+   "anxiety": 0.2836
+  },
+  "combined": 0.7195
+ },
+ {
+  "id": "942",
+  "diagnosis": "Healthy control",
+  "p": {
+   "schizophrenia": 0.6985,
+   "mood": 0.8866,
+   "addictive": 0.5319,
+   "trauma": 0.5871,
+   "anxiety": 0.5196
+  },
+  "combined": 0.6448
+ }
+]
