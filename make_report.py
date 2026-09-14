@@ -99,7 +99,19 @@ def neuro_summary(raws):
         if loso:
             out.append("Parkinson's trained on the other hospitals and tested on one never seen: " +
                        "; ".join(f"{SITE[d]} {a('parkinsons', f'loso:{d}')}" for d in loso) + ".")
+            sz = raws.get("schizophrenia", {})
+            sz_t = [v for k, v in sz.items() if k.startswith("transfer:")]
+            if all(r[f"loso:{d}"]["ci"][0] > 0.5 for d in loso) and sz_t and all(verdict(v) != "above chance" for v in sz_t):
+                out.append("Unlike schizophrenia, whose models fell to chance at an unseen hospital, the "
+                           "Parkinson's models stay above chance at every hospital they never saw - the first "
+                           "result here that transfers across sites. See the blink caveat in section 5.5 "
+                           "before reading it as a purely cortical signature.")
     return out
+
+
+def rejection_by_group(qc, datasets, group):
+    recs = [r for d in datasets for r in qc.get(d, []) if qc_group(d, r) == group]
+    return sum(r["rejected"] for r in recs) / max(sum(r["windows_total"] for r in recs), 1)
 
 
 def qc_group(ds, r):
@@ -474,8 +486,8 @@ def main():
         f"{raw_sz['within:warsaw']['auc']:.2f} Warsaw; pooled {raw_sz['pooled']['auc']:.2f}), but a model "
         "trained at one hospital is at chance at the other (AUC "
         f"{raw_sz['transfer:aseeg->warsaw']['auc']:.2f} and {raw_sz['transfer:warsaw->aseeg']['auc']:.2f}). "
-        "What is learned is largely hospital-specific: the disease signature, as captured by these "
-        "features, does not transfer across sites.",
+        "For schizophrenia, what is learned is largely hospital-specific: the signature, as captured by "
+        "these features, does not transfer across sites.",
         f"Depression within Mumtaz reaches AUC {raw_md['within:mumtaz']['auc']:.2f}, but with no second open "
         "dataset it cannot be checked across hospitals, and the schizophrenia transfer result means a "
         "single-site score should not be read as a transferable disease signature.",
@@ -705,6 +717,22 @@ def main():
         ])
         qc_table([d for d in ("ds004504", "ds004584", "ds003490", "ds002778") if d in qc],
                  "Same rejection rule and 30-window cap as section 5.4.")
+        pd_sites = [d for d in ("ds004584", "ds003490", "ds002778") if d in qc]
+        if pd_sites:
+            per_site = [(d, rejection_by_group(qc, [d], "control"), rejection_by_group(qc, [d], "parkinsons"))
+                        for d in pd_sites]
+            higher = [d for d, c_, p_ in per_site if c_ > p_]
+            doc.add_paragraph(
+                "Blink check. In eyes-open recordings, large-amplitude rejections are typically blinks and eye "
+                "movements (not verified channel by channel here), and a reduced spontaneous blink rate is a "
+                "clinical sign of Parkinson's. Controls lost more windows than "
+                f"patients at {len(higher)} of {len(per_site)} Parkinson's hospitals (" +
+                "; ".join(f"{SITE[d]} controls {c_:.0%} vs patients {p_:.0%}" for d, c_, p_ in per_site) +
+                "). Where that gap exists, blinking differs between the groups, and the blinks that survive "
+                "rejection reach the model through frontal slow-wave power and coherence. The cross-hospital "
+                "transfer may therefore partly reflect blink rate rather than cortical rhythms. The direct test "
+                "is to rerun without the frontal-pole electrodes (Fp1, Fp2) and see whether transfer survives; "
+                "it has not been run yet.")
         figure(doc, FIG / "neuro_auc.png",
                "Figure 9. Neurological results. For Parkinson's the figure shows leave-one-hospital-out "
                "(trained on the other two hospitals); the table below also lists every pairwise transfer.")

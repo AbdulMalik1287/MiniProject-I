@@ -1,0 +1,219 @@
+[
+ {
+  "subject": "ds002778-sub-hc1",
+  "group": "control",
+  "windows_total": 19,
+  "rejected": 8,
+  "kept": 11
+ },
+ {
+  "subject": "ds002778-sub-hc10",
+  "group": "control",
+  "windows_total": 20,
+  "rejected": 0,
+  "kept": 20
+ },
+ {
+  "subject": "ds002778-sub-hc18",
+  "group": "control",
+  "windows_total": 18,
+  "rejected": 0,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-hc2",
+  "group": "control",
+  "windows_total": 19,
+  "rejected": 0,
+  "kept": 19
+ },
+ {
+  "subject": "ds002778-sub-hc20",
+  "group": "control",
+  "windows_total": 18,
+  "rejected": 0,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-hc21",
+  "group": "control",
+  "windows_total": 18,
+  "rejected": 1,
+  "kept": 17
+ },
+ {
+  "subject": "ds002778-sub-hc24",
+  "group": "control",
+  "windows_total": 19,
+  "rejected": 5,
+  "kept": 14
+ },
+ {
+  "subject": "ds002778-sub-hc25",
+  "group": "control",
+  "windows_total": 20,
+  "rejected": 1,
+  "kept": 19
+ },
+ {
+  "subject": "ds002778-sub-hc29",
+  "group": "control",
+  "windows_total": 19,
+  "rejected": 11,
+  "kept": 8
+ },
+ {
+  "subject": "ds002778-sub-hc30",
+  "group": "control",
+  "windows_total": 18,
+  "rejected": 6,
+  "kept": 12
+ },
+ {
+  "subject": "ds002778-sub-hc31",
+  "group": "control",
+  "windows_total": 18,
+  "rejected": 4,
+  "kept": 14
+ },
+ {
+  "subject": "ds002778-sub-hc32",
+  "group": "control",
+  "windows_total": 19,
+  "rejected": 0,
+  "kept": 19
+ },
+ {
+  "subject": "ds002778-sub-hc33",
+  "group": "control",
+  "windows_total": 19,
+  "rejected": 1,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-hc4",
+  "group": "control",
+  "windows_total": 18,
+  "rejected": 0,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-hc7",
+  "group": "control",
+  "windows_total": 19,
+  "rejected": 1,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-hc8",
+  "group": "control",
+  "windows_total": 19,
+  "rejected": 1,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-pd11",
+  "group": "parkinsons",
+  "windows_total": 18,
+  "rejected": 0,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-pd12",
+  "group": "parkinsons",
+  "windows_total": 20,
+  "rejected": 0,
+  "kept": 20
+ },
+ {
+  "subject": "ds002778-sub-pd13",
+  "group": "parkinsons",
+  "windows_total": 18,
+  "rejected": 0,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-pd14",
+  "group": "parkinsons",
+  "windows_total": 29,
+  "rejected": 8,
+  "kept": 21
+ },
+ {
+  "subject": "ds002778-sub-pd16",
+  "group": "parkinsons",
+  "windows_total": 18,
+  "rejected": 0,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-pd17",
+  "group": "parkinsons",
+  "windows_total": 18,
+  "rejected": 1,
+  "kept": 17
+ },
+ {
+  "subject": "ds002778-sub-pd19",
+  "group": "parkinsons",
+  "windows_total": 18,
+  "rejected": 0,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-pd22",
+  "group": "parkinsons",
+  "windows_total": 18,
+  "rejected": 0,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-pd23",
+  "group": "parkinsons",
+  "windows_total": 20,
+  "rejected": 1,
+  "kept": 19
+ },
+ {
+  "subject": "ds002778-sub-pd26",
+  "group": "parkinsons",
+  "windows_total": 19,
+  "rejected": 2,
+  "kept": 17
+ },
+ {
+  "subject": "ds002778-sub-pd28",
+  "group": "parkinsons",
+  "windows_total": 20,
+  "rejected": 2,
+  "kept": 18
+ },
+ {
+  "subject": "ds002778-sub-pd3",
+  "group": "parkinsons",
+  "windows_total": 20,
+  "rejected": 0,
+  "kept": 20
+ },
+ {
+  "subject": "ds002778-sub-pd5",
+  "group": "parkinsons",
+  "windows_total": 19,
+  "rejected": 3,
+  "kept": 16
+ },
+ {
+  "subject": "ds002778-sub-pd6",
+  "group": "parkinsons",
+  "windows_total": 19,
+  "rejected": 2,
+  "kept": 17
+ },
+ {
+  "subject": "ds002778-sub-pd9",
+  "group": "parkinsons",
+  "windows_total": 19,
+  "rejected": 13,
+  "kept": 6
+ }
+]
