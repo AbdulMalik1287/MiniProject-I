@@ -246,6 +246,37 @@ td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 tr.combined td { font-weight: 600; border-top: 1px solid var(--hairline); }
 .dim { color: var(--muted); }
 
+/* neurological forest rows */
+.forest { display: grid; gap: 4px; }
+.forest-group { font: 600 15px/1.2 var(--display); margin: 10px 0 2px; color: var(--ink); }
+.forest-group span { font: 12px var(--body); color: var(--muted); margin-left: 8px; }
+.frow {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr) 128px;
+  gap: 14px;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--grid);
+}
+.frow .fl { font-size: 13.5px; color: var(--ink-2); }
+.frow .fplot { position: relative; height: 20px; }
+.frow .fplot .base { position: absolute; left: 0; right: 0; top: 9px; height: 2px; background: var(--grid); }
+.frow .fplot .chance { position: absolute; top: 1px; height: 18px; width: 2px; background: var(--ink); opacity: 0.45; transform: translateX(-1px); }
+.frow .fplot .ci { position: absolute; top: 8px; height: 4px; border-radius: 2px; background: var(--series); opacity: 0.45; }
+.frow .fplot .pt { position: absolute; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--series); border: 2px solid var(--surface); transform: translateX(-6px); }
+.frow .fv { font: 12.5px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.frow .fv .dim { display: block; font-size: 11px; }
+.faxis { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr) 128px; gap: 14px; }
+.faxis .ticks { grid-column: 2; position: relative; height: 14px; font: 11px var(--mono); color: var(--muted); }
+.faxis .ticks span { position: absolute; transform: translateX(-50%); }
+.faxis .ticks span:first-child { transform: none; }
+.faxis .ticks span:last-child { transform: translateX(-100%); }
+@media (max-width: 620px) {
+  .frow, .faxis { grid-template-columns: minmax(0, 1fr) 104px; }
+  .frow .fl { grid-column: 1 / -1; }
+  .faxis .ticks { grid-column: 1; }
+}
+
 footer { font-size: 12.5px; color: var(--muted); display: grid; gap: 4px; }
 footer code { font-family: var(--mono); color: var(--ink-2); }
 
@@ -355,6 +386,13 @@ footer code { font-family: var(--mono); color: var(--ink-2); }
         </div>
       </section>
 
+      <section class="panel" aria-labelledby="h-neuro" id="neuro-panel" hidden>
+        <h2 id="h-neuro">Neurological disorders</h2>
+        <p class="sub">Separate GNNs for Alzheimer's, frontotemporal dementia and Parkinson's, each trained on one hospital's patients against that hospital's own controls. Different hospitals, older patients and, for Parkinson's, eyes-open recordings: these results are not comparable with the psychiatric models above, and no model is asked to choose between diseases from different hospitals.</p>
+        <div class="forest" id="forest"></div>
+        <div class="faxis" aria-hidden="true"><div class="ticks"><span style="left:0">0</span><span style="left:50%">0.5 chance</span><span style="left:100%">1</span></div></div>
+      </section>
+
       <footer>
         <span id="provenance"></span>
         <span>New recordings in the Park CSV format: <code>python per_disorder.py predict --ids &lt;no.&gt; --out results/per_disorder</code></span>
@@ -419,6 +457,24 @@ function staticText() {
       <td class="dim">—</td><td class="dim">—</td><td class="num">${ciTxt(c.auc, c.auc_ci)}</td></tr>`;
   $("provenance").textContent =
     `Generated ${DATA.generated} from results/per_disorder (commit ${DATA.commit}) · Park et al. 2021 corpus, SMG-SNU Boramae Medical Center · laptop CPU run.`;
+}
+
+/* ---------- neurological results ---------- */
+function renderNeuro() {
+  if (!DATA.neuro || !DATA.neuro.length) return;
+  $("neuro-panel").hidden = false;
+  const verdict = c => c[0] > 0.5 ? "above chance" : c[1] < 0.5 ? "below chance" : "not distinguishable from chance";
+  $("forest").innerHTML = DATA.neuro.map(g => `
+    <div class="forest-group">${g.title}<span>${g.detail}</span></div>` + g.rows.map(r => `
+    <div class="frow">
+      <div class="fl">${r.label}</div>
+      <div class="fplot" title="${r.label}: AUC ${fmt(r.auc, 2)} [${fmt(r.ci[0], 2)}, ${fmt(r.ci[1], 2)}], ${verdict(r.ci)}">
+        <div class="base"></div><div class="chance" style="left:50%"></div>
+        <div class="ci" style="left:${r.ci[0] * 100}%;width:${(r.ci[1] - r.ci[0]) * 100}%"></div>
+        <div class="pt" style="left:${r.auc * 100}%"></div>
+      </div>
+      <div class="fv">${fmt(r.auc, 2)} [${fmt(r.ci[0], 2)}, ${fmt(r.ci[1], 2)}]<span class="dim">${r.n}</span></div>
+    </div>`).join("")).join("");
 }
 
 /* ---------- picker ---------- */
@@ -564,6 +620,7 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderStri
 new MutationObserver(renderStrip).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
 staticText();
+renderNeuro();
 renderChips();
 renderList();
 select(current.id);
