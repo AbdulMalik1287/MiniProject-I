@@ -1,0 +1,29 @@
+{
+  "disease": "ftd",
+  "positive": "ftd",
+  "negative": "control",
+  "datasets": [
+    "ds004504"
+  ],
+  "eyes": "closed",
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 20,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gatv2",
+    "pool": "meanmax",
+    "topk": 4
+  },
+  "within:ds004504": {
+    "auc": 0.7871064467766116,
+    "ci": [
+      0.6439356803327392,
+      0.9170377458798512
+    ],
+    "n_patients": 23,
+    "n_controls": 29
+  }
+}
