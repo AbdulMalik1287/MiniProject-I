@@ -1,0 +1,570 @@
+<title>EEG Five-Model Readout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #f3f6f6;
+  --surface: #fbfcfc;
+  --ink: #102221;
+  --ink-2: #4a5a59;
+  --muted: #71807e;
+  --hairline: #d7dfde;
+  --grid: #e3e9e8;
+  --series: #2a78d6;
+  --series-track: #e4ecf3;
+  --selected: #e3edf9;
+  --flag-out: #ec835a;
+  --flag-in: #0ca30c;
+  --focus: #2a78d6;
+  --shadow: 0 1px 2px rgba(16, 34, 33, 0.06), 0 4px 14px rgba(16, 34, 33, 0.06);
+  --display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0d1312;
+    --surface: #141c1b;
+    --ink: #edf3f2;
+    --ink-2: #a7b5b3;
+    --muted: #82908e;
+    --hairline: #26302f;
+    --grid: #1f2928;
+    --series: #3987e5;
+    --series-track: #1c2a38;
+    --selected: #172538;
+    --flag-out: #ec835a;
+    --flag-in: #0ca30c;
+    --focus: #6da7ec;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0d1312;
+  --surface: #141c1b;
+  --ink: #edf3f2;
+  --ink-2: #a7b5b3;
+  --muted: #82908e;
+  --hairline: #26302f;
+  --grid: #1f2928;
+  --series: #3987e5;
+  --series-track: #1c2a38;
+  --selected: #172538;
+  --flag-out: #ec835a;
+  --flag-in: #0ca30c;
+  --focus: #6da7ec;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 15px/1.5 var(--body);
+  padding-inline: 20px;
+  padding-block: 28px 40px;
+}
+.page { max-width: 1180px; margin-inline: auto; display: grid; gap: 22px; }
+
+header { display: grid; gap: 6px; }
+.eyebrow {
+  font: 500 12px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  font: 600 32px/1.1 var(--display);
+  letter-spacing: 0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+.lede { margin: 0; color: var(--ink-2); max-width: 68ch; }
+.lede strong { color: var(--ink); font-weight: 600; }
+
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; align-items: start; }
+
+/* ---------- subject picker ---------- */
+.picker {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  max-height: calc(100vh - 56px);
+  position: sticky;
+  top: 16px;
+  overflow: hidden;
+}
+.picker-head { padding: 14px 14px 10px; display: grid; gap: 10px; border-bottom: 1px solid var(--hairline); }
+.picker-head h2 { font: 600 18px/1.2 var(--display); margin: 0; }
+.picker-head p { margin: 0; font-size: 13px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  font: 500 12px/1 var(--body);
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.chip .n { font-family: var(--mono); color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--selected); border-color: var(--series); color: var(--ink); }
+.search { padding: 10px 14px; border-bottom: 1px solid var(--hairline); }
+.search input {
+  width: 100%;
+  font: 14px var(--mono);
+  color: var(--ink);
+  background: var(--ground);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  padding: 7px 9px;
+}
+.list { overflow-y: auto; min-height: 0; }
+.row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 54px;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--grid);
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.row:hover { background: var(--grid); }
+.row[aria-selected="true"] { background: var(--selected); }
+.row .id { font: 500 13px var(--mono); }
+.row .dx { font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .mini { font: 12px var(--mono); color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.row .mini.out { color: var(--ink); }
+.empty { padding: 14px; font-size: 13px; color: var(--muted); }
+
+/* ---------- readout ---------- */
+.readout { display: grid; gap: 18px; min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--hairline); border-radius: 10px; padding: 18px 20px; display: grid; gap: 14px; }
+.panel h2 { font: 600 20px/1.2 var(--display); margin: 0; }
+.panel .sub { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 70ch; }
+
+.verdict { box-shadow: var(--shadow); gap: 16px; }
+.verdict-top { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; justify-content: space-between; }
+.subject-line { font: 600 24px/1.15 var(--display); margin: 0; }
+.subject-line .mono { font: 500 22px var(--mono); }
+.dx-line { color: var(--ink-2); font-size: 14px; }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 14px/1 var(--body);
+  padding: 7px 12px 7px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: var(--ground);
+  color: var(--ink);
+}
+.pill svg { width: 16px; height: 16px; flex: none; }
+.score-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
+.score-num { font: 500 40px/1 var(--mono); font-variant-numeric: normal; letter-spacing: -0.02em; }
+.score-num small { display: block; font: 500 11px/1.4 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+.scale { position: relative; height: 46px; }
+.scale .track { position: absolute; left: 0; right: 0; top: 12px; height: 10px; border-radius: 5px; background: var(--series-track); }
+.scale .fill { position: absolute; left: 0; top: 12px; height: 10px; border-radius: 5px; background: var(--series); }
+.scale .thr { position: absolute; top: 4px; width: 2px; height: 26px; background: var(--ink); transform: translateX(-1px); }
+.scale .ticks { position: absolute; left: 0; right: 0; top: 30px; font: 11px var(--mono); color: var(--muted); }
+.scale .ticks span { position: absolute; transform: translateX(-50%); }
+.scale .ticks span:first-child { transform: none; }
+.scale .ticks span:last-child { transform: translateX(-100%); }
+.caption { margin: 0; font-size: 13px; color: var(--ink-2); max-width: 78ch; }
+.caption .mono { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+
+/* model bars */
+.bars { display: grid; gap: 12px; }
+.bar {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) 56px;
+  grid-template-areas: "label plot value" "label rel rel";
+  gap: 3px 14px;
+  align-items: center;
+}
+.bar .label { grid-area: label; font-weight: 600; font-size: 14px; display: grid; gap: 3px; align-self: start; padding-top: 2px; }
+.tag {
+  justify-self: start;
+  font: 500 10.5px/1 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  padding: 3px 5px;
+}
+.bar .plot { grid-area: plot; position: relative; height: 18px; }
+.bar .plot .track { position: absolute; inset: 5px 0; border-radius: 4px; background: var(--series-track); }
+.bar .plot .fill { position: absolute; left: 0; top: 5px; height: 8px; border-radius: 0 4px 4px 0; background: var(--series); }
+.bar .plot .thr { position: absolute; top: 0; height: 18px; width: 2px; background: var(--ink); opacity: 0.55; transform: translateX(-1px); }
+.bar .value { grid-area: value; font: 500 14px var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.bar .rel { grid-area: rel; font: 12px var(--mono); color: var(--muted); }
+.bar .rel b { font-weight: 500; color: var(--ink-2); }
+.axis { display: grid; grid-template-columns: 170px minmax(0, 1fr) 56px; gap: 14px; }
+.axis .ticks { position: relative; height: 14px; font: 11px var(--mono); color: var(--muted); grid-column: 2; }
+.axis .ticks span { position: absolute; transform: translateX(-50%); }
+.axis .ticks span:first-child { transform: none; }
+.axis .ticks span:last-child { transform: translateX(-100%); }
+.note {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  border-top: 1px solid var(--hairline);
+  padding-top: 12px;
+  max-width: 80ch;
+}
+
+/* cohort strip */
+.strip-wrap { position: relative; }
+.strip svg { display: block; width: 100%; height: auto; overflow: visible; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); align-items: center; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+
+/* table */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 13.5px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { font: 500 11.5px/1.2 var(--mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); border-bottom-color: var(--hairline); }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+tr.combined td { font-weight: 600; border-top: 1px solid var(--hairline); }
+.dim { color: var(--muted); }
+
+footer { font-size: 12.5px; color: var(--muted); display: grid; gap: 4px; }
+footer code { font-family: var(--mono); color: var(--ink-2); }
+
+.tip {
+  position: fixed;
+  z-index: 10;
+  pointer-events: none;
+  background: var(--ink);
+  color: var(--ground);
+  font: 12.5px/1.35 var(--body);
+  padding: 7px 9px;
+  border-radius: 6px;
+  max-width: 260px;
+  box-shadow: var(--shadow);
+}
+.tip .mono { font-family: var(--mono); }
+
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .picker { position: static; max-height: none; }
+  .list { max-height: 42vh; }
+  .bar, .axis { grid-template-columns: 116px minmax(0, 1fr) 50px; }
+  .score-row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+}
+@media (max-width: 420px) {
+  body { padding-inline: 16px; }
+  h1 { font-size: 27px; }
+  .bar { grid-template-columns: minmax(0, 1fr) 50px; grid-template-areas: "label value" "plot plot" "rel rel"; }
+  .axis { grid-template-columns: minmax(0, 1fr); }
+  .axis .ticks { grid-column: 1; }
+}
+</style>
+
+<div class="page">
+  <header>
+    <span class="eyebrow">Research demo · not a diagnostic tool</span>
+    <h1>EEG Five-Model Readout</h1>
+    <p class="lede">Five graph neural networks, one per psychiatric disorder, each trained to tell its disorder apart from healthy controls on 19-electrode resting EEG. Every subject below is from the <strong>held-out test split</strong>: none was used for tuning, training or calibration.</p>
+  </header>
+
+  <div class="layout">
+    <aside class="picker" aria-label="Held-out subjects">
+      <div class="picker-head">
+        <h2>Subjects</h2>
+        <p id="picker-count"></p>
+        <div class="chips" id="chips" role="group" aria-label="Filter by recorded diagnosis"></div>
+      </div>
+      <div class="search">
+        <label class="eyebrow" for="q" style="display:block;margin-bottom:6px">Subject no.</label>
+        <input id="q" type="search" inputmode="numeric" placeholder="e.g. 730" autocomplete="off">
+      </div>
+      <div class="list" id="list" role="listbox" aria-label="Subjects" tabindex="-1"></div>
+    </aside>
+
+    <main class="readout">
+      <section class="panel verdict" aria-live="polite">
+        <div class="verdict-top">
+          <div>
+            <p class="subject-line">Subject <span class="mono" id="s-id"></span></p>
+            <div class="dx-line">Recorded diagnosis: <span id="s-dx"></span></div>
+          </div>
+          <span class="pill" id="s-pill"></span>
+        </div>
+        <div class="score-row">
+          <div class="score-num"><span id="s-score"></span><small>combined score</small></div>
+          <div class="scale" aria-hidden="true">
+            <div class="track"></div>
+            <div class="fill" id="s-fill"></div>
+            <div class="thr" id="s-thr"></div>
+            <div class="ticks"><span style="left:0">0</span><span id="thr-tick"></span><span style="left:100%">1</span></div>
+          </div>
+        </div>
+        <p class="caption" id="combined-caption"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="h-models">
+        <h2 id="h-models">Per-disorder models</h2>
+        <p class="sub">Each bar is one model's calibrated probability that this EEG looks like its disorder rather than a healthy control. The five are independent and do not add up to 1.</p>
+        <div class="bars" id="bars"></div>
+        <div class="axis" aria-hidden="true"><div class="ticks" id="axis-ticks"></div></div>
+        <p class="note" id="bars-note"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="h-cohort">
+        <h2 id="h-cohort">Where this subject sits</h2>
+        <p class="sub">Combined score for every held-out subject. The overlap between the two rows is the honest limit of the screen. Select a dot to open that subject.</p>
+        <div class="legend">
+          <span><i style="background:var(--muted)"></i>healthy control</span>
+          <span><i style="background:var(--series)"></i>patient (any disorder)</span>
+          <span><i style="background:transparent;border:2px solid var(--ink)"></i>selected subject</span>
+        </div>
+        <div class="strip-wrap strip" id="strip"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-table">
+        <h2 id="h-table">How reliable each number is</h2>
+        <p class="sub">Measured on the same held-out subjects. AUC 0.5 is chance; brackets are 95% bootstrap intervals. With only <span id="n-ctl"></span> healthy controls in the test split, intervals are wide.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Model</th><th>Test cases</th><th>vs healthy</th><th>vs other disorders</th><th>vs any patient</th></tr>
+            </thead>
+            <tbody id="rel-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer>
+        <span id="provenance"></span>
+        <span>New recordings in the Park CSV format: <code>python per_disorder.py predict --ids &lt;no.&gt; --out results/per_disorder</code></span>
+      </footer>
+    </main>
+  </div>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const DATA = {"threshold":0.5,"start":"730","generated":"2026-09-14","commit":"ee7d14a","models":[{"key":"schizophrenia","auc":0.7048054919908467,"ci":[0.5264331774376417,0.862084747100134],"other":0.48424700693131695,"other_ci":[0.3726893011702824,0.6097096474953616],"any":0.696959790781301,"any_ci":[0.5293310639992974,0.8305937784490451],"n_cases":23},{"key":"mood","auc":0.7090367428003973,"ci":[0.5447771669809228,0.8641750320542889],"other":0.5057651991614256,"other_ci":[0.4084218336840969,0.6015342756599494],"any":0.7021902582543315,"any_ci":[0.5302213837539149,0.8484861524018151],"n_cases":53},{"key":"addictive","auc":0.6955903271692745,"ci":[0.5283204487328528,0.8383877840909091],"other":0.5924149956408021,"other_ci":[0.4933638024798241,0.6940673503325941],"any":0.6312520431513566,"any_ci":[0.4776527192528523,0.7694978632478632],"n_cases":37},{"key":"trauma","auc":0.7327935222672065,"ci":[0.5689636015325671,0.878161041744633],"other":0.5364672364672365,"other_ci":[0.41176846319778865,0.6634313725490195],"any":0.7185354691075515,"any_ci":[0.5680071519963256,0.8380360589389073],"n_cases":26},{"key":"anxiety","auc":0.7966507177033493,"ci":[0.648293695468618,0.9178762541806019],"other":0.5078482668410725,"other_ci":[0.3669292068198666,0.6491067677070829],"any":0.7920889179470416,"any_ci":[0.6657748681281456,0.8949939326294176],"n_cases":22}],"combined":{"auc":0.737822817914351,"auc_ci":[0.5931189106252398,0.853125],"sensitivity":0.7018633540372671,"specificity":0.5789473684210527,"n_patients":161,"n_controls":19},"subjects":[{"id":"2","diagnosis":"Addictive disorder","p":{"schizophrenia":0.1934,"mood":0.4446,"addictive":0.4602,"trauma":0.2751,"anxiety":0.4394},"combined":0.3625},{"id":"15","diagnosis":"Addictive disorder","p":{"schizophrenia":0.2053,"mood":0.4366,"addictive":0.8028,"trauma":0.2915,"anxiety":0.3592},"combined":0.4191},{"id":"21","diagnosis":"Addictive disorder","p":{"schizophrenia":0.5716,"mood":0.8233,"addictive":0.5643,"trauma":0.648,"anxiety":0.57},"combined":0.6354},{"id":"22","diagnosis":"Addictive disorder","p":{"schizophrenia":0.3272,"mood":0.8799,"addictive":0.6884,"trauma":0.593,"anxiety":0.6275},"combined":0.6232},{"id":"35","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.6868,"mood":0.9645,"addictive":0.5733,"trauma":0.8599,"anxiety":0.7215},"combined":0.7612},{"id":"39","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.7183,"mood":0.9311,"addictive":0.6891,"trauma":0.827,"anxiety":0.5068},"combined":0.7345},{"id":"47","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.5623,"mood":0.7991,"addictive":0.4623,"trauma":0.6587,"anxiety":0.6152},"combined":0.6195},{"id":"54","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.2729,"mood":0.4778,"addictive":0.4241,"trauma":0.3683,"anxiety":0.3316},"combined":0.3749},{"id":"56","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.5166,"mood":0.7577,"addictive":0.6102,"trauma":0.7457,"anxiety":0.6834},"combined":0.6627},{"id":"58","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.2647,"mood":0.6474,"addictive":0.3511,"trauma":0.4724,"anxiety":0.6273},"combined":0.4726},{"id":"67","diagnosis":"Addictive disorder","p":{"schizophrenia":0.4454,"mood":0.7556,"addictive":0.6249,"trauma":0.7841,"anxiety":0.5808},"combined":0.6382},{"id":"78","diagnosis":"Addictive disorder","p":{"schizophrenia":0.8014,"mood":0.8376,"addictive":0.6153,"trauma":0.809,"anxiety":0.697},"combined":0.752},{"id":"80","diagnosis":"Addictive disorder","p":{"schizophrenia":0.5506,"mood":0.6393,"addictive":0.4867,"trauma":0.4898,"anxiety":0.4258},"combined":0.5185},{"id":"82","diagnosis":"Addictive disorder","p":{"schizophrenia":0.5453,"mood":0.2984,"addictive":0.4401,"trauma":0.4686,"anxiety":0.5262},"combined":0.4557},{"id":"84","diagnosis":"Addictive disorder","p":{"schizophrenia":0.4953,"mood":0.9032,"addictive":0.6346,"trauma":0.6933,"anxiety":0.4994},"combined":0.6452},{"id":"87","diagnosis":"Addictive disorder","p":{"schizophrenia":0.7502,"mood":0.8509,"addictive":0.4784,"trauma":0.856,"anxiety":0.5661},"combined":0.7003},{"id":"88","diagnosis":"Addictive disorder","p":{"schizophrenia":0.5653,"mood":0.795,"addictive":0.5182,"trauma":0.7508,"anxiety":0.5763},"combined":0.6411},{"id":"94","diagnosis":"Mood disorder","p":{"schizophrenia":0.5035,"mood":0.8297,"addictive":0.5857,"trauma":0.8496,"anxiety":0.486},"combined":0.6509},{"id":"95","diagnosis":"Mood disorder","p":{"schizophrenia":0.5803,"mood":0.6065,"addictive":0.4561,"trauma":0.3629,"anxiety":0.5511},"combined":0.5114},{"id":"97","diagnosis":"Mood disorder","p":{"schizophrenia":0.6649,"mood":0.806,"addictive":0.5981,"trauma":0.7276,"anxiety":0.6095},"combined":0.6812},{"id":"102","diagnosis":"Mood disorder","p":{"schizophrenia":0.584,"mood":0.6908,"addictive":0.38,"trauma":0.6238,"anxiety":0.412},"combined":0.5381},{"id":"104","diagnosis":"Mood disorder","p":{"schizophrenia":0.5239,"mood":0.8818,"addictive":0.5149,"trauma":0.7774,"anxiety":0.4478},"combined":0.6292},{"id":"108","diagnosis":"Mood disorder","p":{"schizophrenia":0.6593,"mood":0.819,"addictive":0.4886,"trauma":0.7549,"anxiety":0.6419},"combined":0.6727},{"id":"120","diagnosis":"Healthy control","p":{"schizophrenia":0.5035,"mood":0.3026,"addictive":0.2797,"trauma":0.1209,"anxiety":0.3274},"combined":0.3068},{"id":"121","diagnosis":"Healthy control","p":{"schizophrenia":0.3752,"mood":0.5428,"addictive":0.5698,"trauma":0.5638,"anxiety":0.6336},"combined":0.5371},{"id":"127","diagnosis":"Healthy control","p":{"schizophrenia":0.3342,"mood":0.7251,"addictive":0.4128,"trauma":0.6865,"anxiety":0.4397},"combined":0.5196},{"id":"130","diagnosis":"Healthy control","p":{"schizophrenia":0.4504,"mood":0.9172,"addictive":0.6409,"trauma":0.7362,"anxiety":0.3967},"combined":0.6283},{"id":"133","diagnosis":"Healthy control","p":{"schizophrenia":0.5183,"mood":0.7018,"addictive":0.4979,"trauma":0.5211,"anxiety":0.4682},"combined":0.5415},{"id":"134","diagnosis":"Healthy control","p":{"schizophrenia":0.1802,"mood":0.2415,"addictive":0.3865,"trauma":0.1053,"anxiety":0.2779},"combined":0.2383},{"id":"135","diagnosis":"Healthy control","p":{"schizophrenia":0.2686,"mood":0.5413,"addictive":0.3561,"trauma":0.5414,"anxiety":0.4433},"combined":0.4302},{"id":"142","diagnosis":"Addictive disorder","p":{"schizophrenia":0.2176,"mood":0.6747,"addictive":0.4678,"trauma":0.5501,"anxiety":0.2687},"combined":0.4358},{"id":"150","diagnosis":"Addictive disorder","p":{"schizophrenia":0.3378,"mood":0.6806,"addictive":0.473,"trauma":0.5267,"anxiety":0.6458},"combined":0.5328},{"id":"153","diagnosis":"Addictive disorder","p":{"schizophrenia":0.1282,"mood":0.456,"addictive":0.4377,"trauma":0.4068,"anxiety":0.4796},"combined":0.3817},{"id":"166","diagnosis":"Addictive disorder","p":{"schizophrenia":0.7467,"mood":0.5225,"addictive":0.6283,"trauma":0.6982,"anxiety":0.6156},"combined":0.6423},{"id":"167","diagnosis":"Addictive disorder","p":{"schizophrenia":0.6482,"mood":0.6066,"addictive":0.6359,"trauma":0.6131,"anxiety":0.5596},"combined":0.6127},{"id":"171","diagnosis":"Addictive disorder","p":{"schizophrenia":0.2132,"mood":0.1587,"addictive":0.4036,"trauma":0.0844,"anxiety":0.3435},"combined":0.2407},{"id":"179","diagnosis":"Healthy control","p":{"schizophrenia":0.2069,"mood":0.4514,"addictive":0.2831,"trauma":0.189,"anxiety":0.2556},"combined":0.2772},{"id":"187","diagnosis":"Healthy control","p":{"schizophrenia":0.1372,"mood":0.2744,"addictive":0.2833,"trauma":0.1197,"anxiety":0.2388},"combined":0.2107},{"id":"194","diagnosis":"Healthy control","p":{"schizophrenia":0.1657,"mood":0.2162,"addictive":0.4483,"trauma":0.4675,"anxiety":0.3657},"combined":0.3327},{"id":"205","diagnosis":"Healthy control","p":{"schizophrenia":0.4712,"mood":0.5941,"addictive":0.5275,"trauma":0.3548,"anxiety":0.4589},"combined":0.4813},{"id":"207","diagnosis":"Healthy control","p":{"schizophrenia":0.3167,"mood":0.562,"addictive":0.5416,"trauma":0.748,"anxiety":0.5845},"combined":0.5506},{"id":"213","diagnosis":"Healthy control","p":{"schizophrenia":0.3229,"mood":0.3022,"addictive":0.3615,"trauma":0.2936,"anxiety":0.3777},"combined":0.3316},{"id":"214","diagnosis":"Healthy control","p":{"schizophrenia":0.2563,"mood":0.2497,"addictive":0.4353,"trauma":0.2962,"anxiety":0.3807},"combined":0.3236},{"id":"221","diagnosis":"Addictive disorder","p":{"schizophrenia":0.2153,"mood":0.685,"addictive":0.5336,"trauma":0.5907,"anxiety":0.4592},"combined":0.4968},{"id":"224","diagnosis":"Addictive disorder","p":{"schizophrenia":0.5735,"mood":0.8863,"addictive":0.6587,"trauma":0.7945,"anxiety":0.6403},"combined":0.7107},{"id":"225","diagnosis":"Addictive disorder","p":{"schizophrenia":0.1876,"mood":0.5217,"addictive":0.5864,"trauma":0.2908,"anxiety":0.4787},"combined":0.413},{"id":"228","diagnosis":"Addictive disorder","p":{"schizophrenia":0.4848,"mood":0.6423,"addictive":0.5877,"trauma":0.6742,"anxiety":0.6306},"combined":0.6039},{"id":"229","diagnosis":"Addictive disorder","p":{"schizophrenia":0.5448,"mood":0.8891,"addictive":0.4679,"trauma":0.6623,"anxiety":0.6897},"combined":0.6507},{"id":"238","diagnosis":"Addictive disorder","p":{"schizophrenia":0.4493,"mood":0.6204,"addictive":0.55,"trauma":0.4455,"anxiety":0.4466},"combined":0.5024},{"id":"243","diagnosis":"Addictive disorder","p":{"schizophrenia":0.5348,"mood":0.845,"addictive":0.7906,"trauma":0.7489,"anxiety":0.4618},"combined":0.6762},{"id":"251","diagnosis":"Addictive disorder","p":{"schizophrenia":0.3758,"mood":0.6202,"addictive":0.5045,"trauma":0.4524,"anxiety":0.4271},"combined":0.476},{"id":"252","diagnosis":"Addictive disorder","p":{"schizophrenia":0.6608,"mood":0.9636,"addictive":0.7424,"trauma":0.886,"anxiety":0.664},"combined":0.7834},{"id":"256","diagnosis":"Addictive disorder","p":{"schizophrenia":0.2202,"mood":0.3493,"addictive":0.3896,"trauma":0.1855,"anxiety":0.3174},"combined":0.2924},{"id":"285","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.3366,"mood":0.3519,"addictive":0.2884,"trauma":0.1992,"anxiety":0.3457},"combined":0.3044},{"id":"289","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.4201,"mood":0.6554,"addictive":0.4274,"trauma":0.4215,"anxiety":0.4884},"combined":0.4826},{"id":"290","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.4831,"mood":0.8324,"addictive":0.7566,"trauma":0.8264,"anxiety":0.7065},"combined":0.721},{"id":"304","diagnosis":"Schizophrenia","p":{"schizophrenia":0.4504,"mood":0.3181,"addictive":0.5082,"trauma":0.531,"anxiety":0.509},"combined":0.4634},{"id":"306","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.5482,"mood":0.8182,"addictive":0.6102,"trauma":0.7739,"anxiety":0.5892},"combined":0.6679},{"id":"332","diagnosis":"Schizophrenia","p":{"schizophrenia":0.4352,"mood":0.7631,"addictive":0.6264,"trauma":0.7891,"anxiety":0.561},"combined":0.635},{"id":"342","diagnosis":"Mood disorder","p":{"schizophrenia":0.1319,"mood":0.2814,"addictive":0.2595,"trauma":0.1343,"anxiety":0.2782},"combined":0.2171},{"id":"345","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.5958,"mood":0.5855,"addictive":0.5841,"trauma":0.5227,"anxiety":0.6018},"combined":0.578},{"id":"346","diagnosis":"Mood disorder","p":{"schizophrenia":0.4131,"mood":0.6563,"addictive":0.5226,"trauma":0.439,"anxiety":0.5731},"combined":0.5208},{"id":"348","diagnosis":"Mood disorder","p":{"schizophrenia":0.2378,"mood":0.6727,"addictive":0.5527,"trauma":0.3326,"anxiety":0.446},"combined":0.4483},{"id":"351","diagnosis":"Mood disorder","p":{"schizophrenia":0.4552,"mood":0.5391,"addictive":0.4525,"trauma":0.4911,"anxiety":0.4723},"combined":0.4821},{"id":"352","diagnosis":"Mood disorder","p":{"schizophrenia":0.3417,"mood":0.6026,"addictive":0.6559,"trauma":0.4705,"anxiety":0.4678},"combined":0.5077},{"id":"354","diagnosis":"Mood disorder","p":{"schizophrenia":0.6303,"mood":0.7197,"addictive":0.5757,"trauma":0.578,"anxiety":0.5022},"combined":0.6012},{"id":"355","diagnosis":"Mood disorder","p":{"schizophrenia":0.3804,"mood":0.5652,"addictive":0.4926,"trauma":0.677,"anxiety":0.3504},"combined":0.4931},{"id":"357","diagnosis":"Schizophrenia","p":{"schizophrenia":0.7454,"mood":0.7401,"addictive":0.6134,"trauma":0.9056,"anxiety":0.7027},"combined":0.7414},{"id":"361","diagnosis":"Mood disorder","p":{"schizophrenia":0.5337,"mood":0.7424,"addictive":0.6426,"trauma":0.7766,"anxiety":0.6007},"combined":0.6592},{"id":"365","diagnosis":"Mood disorder","p":{"schizophrenia":0.2736,"mood":0.5294,"addictive":0.5844,"trauma":0.8015,"anxiety":0.5501},"combined":0.5478},{"id":"369","diagnosis":"Mood disorder","p":{"schizophrenia":0.7466,"mood":0.8222,"addictive":0.5648,"trauma":0.7242,"anxiety":0.5601},"combined":0.6836},{"id":"376","diagnosis":"Schizophrenia","p":{"schizophrenia":0.4747,"mood":0.6675,"addictive":0.5211,"trauma":0.5033,"anxiety":0.555},"combined":0.5443},{"id":"379","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.304,"mood":0.7702,"addictive":0.5659,"trauma":0.332,"anxiety":0.4994},"combined":0.4943},{"id":"384","diagnosis":"Mood disorder","p":{"schizophrenia":0.3673,"mood":0.4655,"addictive":0.3668,"trauma":0.5398,"anxiety":0.4697},"combined":0.4418},{"id":"391","diagnosis":"Addictive disorder","p":{"schizophrenia":0.512,"mood":0.7961,"addictive":0.5578,"trauma":0.6178,"anxiety":0.4547},"combined":0.5877},{"id":"418","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.3848,"mood":0.3003,"addictive":0.4704,"trauma":0.6023,"anxiety":0.4487},"combined":0.4413},{"id":"421","diagnosis":"Mood disorder","p":{"schizophrenia":0.5703,"mood":0.8789,"addictive":0.553,"trauma":0.8012,"anxiety":0.5747},"combined":0.6756},{"id":"428","diagnosis":"Schizophrenia","p":{"schizophrenia":0.3101,"mood":0.4904,"addictive":0.5697,"trauma":0.5563,"anxiety":0.4225},"combined":0.4698},{"id":"436","diagnosis":"Mood disorder","p":{"schizophrenia":0.7228,"mood":0.905,"addictive":0.6704,"trauma":0.8844,"anxiety":0.669},"combined":0.7703},{"id":"438","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.4927,"mood":0.6625,"addictive":0.3635,"trauma":0.5792,"anxiety":0.5246},"combined":0.5245},{"id":"441","diagnosis":"Mood disorder","p":{"schizophrenia":0.6805,"mood":0.8305,"addictive":0.5941,"trauma":0.6626,"anxiety":0.4697},"combined":0.6475},{"id":"442","diagnosis":"Schizophrenia","p":{"schizophrenia":0.2992,"mood":0.5271,"addictive":0.3939,"trauma":0.493,"anxiety":0.6205},"combined":0.4667},{"id":"443","diagnosis":"Addictive disorder","p":{"schizophrenia":0.3126,"mood":0.2497,"addictive":0.3672,"trauma":0.3191,"anxiety":0.3741},"combined":0.3245},{"id":"445","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.5481,"mood":0.6426,"addictive":0.4515,"trauma":0.3424,"anxiety":0.4202},"combined":0.481},{"id":"448","diagnosis":"Schizophrenia","p":{"schizophrenia":0.2366,"mood":0.7792,"addictive":0.5441,"trauma":0.815,"anxiety":0.4521},"combined":0.5654},{"id":"452","diagnosis":"Mood disorder","p":{"schizophrenia":0.4572,"mood":0.7926,"addictive":0.6107,"trauma":0.6189,"anxiety":0.5256},"combined":0.601},{"id":"455","diagnosis":"Schizophrenia","p":{"schizophrenia":0.2802,"mood":0.5551,"addictive":0.435,"trauma":0.5088,"anxiety":0.4533},"combined":0.4465},{"id":"459","diagnosis":"Mood disorder","p":{"schizophrenia":0.4884,"mood":0.672,"addictive":0.5216,"trauma":0.831,"anxiety":0.6605},"combined":0.6347},{"id":"462","diagnosis":"Mood disorder","p":{"schizophrenia":0.6779,"mood":0.7823,"addictive":0.7097,"trauma":0.5811,"anxiety":0.4875},"combined":0.6477},{"id":"466","diagnosis":"Schizophrenia","p":{"schizophrenia":0.3935,"mood":0.7272,"addictive":0.5354,"trauma":0.6627,"anxiety":0.6189},"combined":0.5875},{"id":"468","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.4384,"mood":0.5644,"addictive":0.5104,"trauma":0.3606,"anxiety":0.4422},"combined":0.4632},{"id":"469","diagnosis":"Schizophrenia","p":{"schizophrenia":0.4093,"mood":0.8262,"addictive":0.4961,"trauma":0.6245,"anxiety":0.4267},"combined":0.5565},{"id":"474","diagnosis":"Mood disorder","p":{"schizophrenia":0.5343,"mood":0.7319,"addictive":0.4839,"trauma":0.657,"anxiety":0.4409},"combined":0.5696},{"id":"483","diagnosis":"Mood disorder","p":{"schizophrenia":0.4667,"mood":0.8125,"addictive":0.4364,"trauma":0.5763,"anxiety":0.5351},"combined":0.5654},{"id":"485","diagnosis":"Mood disorder","p":{"schizophrenia":0.5393,"mood":0.4559,"addictive":0.6157,"trauma":0.5451,"anxiety":0.5959},"combined":0.5504},{"id":"490","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.2007,"mood":0.7829,"addictive":0.4587,"trauma":0.2279,"anxiety":0.2634},"combined":0.3867},{"id":"494","diagnosis":"Addictive disorder","p":{"schizophrenia":0.6643,"mood":0.8363,"addictive":0.5568,"trauma":0.7939,"anxiety":0.5793},"combined":0.6861},{"id":"498","diagnosis":"Schizophrenia","p":{"schizophrenia":0.5154,"mood":0.7666,"addictive":0.4759,"trauma":0.4046,"anxiety":0.5113},"combined":0.5348},{"id":"499","diagnosis":"Schizophrenia","p":{"schizophrenia":0.5791,"mood":0.7515,"addictive":0.5629,"trauma":0.7423,"anxiety":0.6134},"combined":0.6498},{"id":"503","diagnosis":"Mood disorder","p":{"schizophrenia":0.7057,"mood":0.9249,"addictive":0.4372,"trauma":0.8094,"anxiety":0.6437},"combined":0.7042},{"id":"508","diagnosis":"Mood disorder","p":{"schizophrenia":0.7208,"mood":0.6525,"addictive":0.3871,"trauma":0.6202,"anxiety":0.5226},"combined":0.5806},{"id":"521","diagnosis":"Addictive disorder","p":{"schizophrenia":0.3489,"mood":0.8247,"addictive":0.5534,"trauma":0.4325,"anxiety":0.4684},"combined":0.5256},{"id":"523","diagnosis":"Mood disorder","p":{"schizophrenia":0.4226,"mood":0.6992,"addictive":0.4395,"trauma":0.5373,"anxiety":0.4921},"combined":0.5182},{"id":"525","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.4724,"mood":0.804,"addictive":0.5545,"trauma":0.6399,"anxiety":0.6243},"combined":0.619},{"id":"529","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.5249,"mood":0.8353,"addictive":0.6155,"trauma":0.6048,"anxiety":0.4655},"combined":0.6092},{"id":"531","diagnosis":"Mood disorder","p":{"schizophrenia":0.7558,"mood":0.8462,"addictive":0.5201,"trauma":0.8058,"anxiety":0.5092},"combined":0.6874},{"id":"532","diagnosis":"Mood disorder","p":{"schizophrenia":0.4744,"mood":0.6168,"addictive":0.3573,"trauma":0.5555,"anxiety":0.5172},"combined":0.5042},{"id":"560","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.503,"mood":0.794,"addictive":0.6477,"trauma":0.7188,"anxiety":0.7083},"combined":0.6744},{"id":"566","diagnosis":"Mood disorder","p":{"schizophrenia":0.2639,"mood":0.745,"addictive":0.3338,"trauma":0.3662,"anxiety":0.4579},"combined":0.4334},{"id":"567","diagnosis":"Schizophrenia","p":{"schizophrenia":0.4419,"mood":0.4585,"addictive":0.4697,"trauma":0.4041,"anxiety":0.5465},"combined":0.4642},{"id":"568","diagnosis":"Mood disorder","p":{"schizophrenia":0.1127,"mood":0.4894,"addictive":0.3803,"trauma":0.3216,"anxiety":0.2904},"combined":0.3189},{"id":"570","diagnosis":"Mood disorder","p":{"schizophrenia":0.4547,"mood":0.5125,"addictive":0.4424,"trauma":0.5174,"anxiety":0.4132},"combined":0.468},{"id":"574","diagnosis":"Mood disorder","p":{"schizophrenia":0.4414,"mood":0.8811,"addictive":0.5101,"trauma":0.7751,"anxiety":0.6647},"combined":0.6545},{"id":"577","diagnosis":"Mood disorder","p":{"schizophrenia":0.4342,"mood":0.3438,"addictive":0.4277,"trauma":0.7011,"anxiety":0.5021},"combined":0.4818},{"id":"585","diagnosis":"Mood disorder","p":{"schizophrenia":0.6812,"mood":0.843,"addictive":0.629,"trauma":0.5903,"anxiety":0.6664},"combined":0.682},{"id":"587","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.5977,"mood":0.6625,"addictive":0.3963,"trauma":0.7595,"anxiety":0.5536},"combined":0.5939},{"id":"590","diagnosis":"Mood disorder","p":{"schizophrenia":0.4611,"mood":0.7304,"addictive":0.4477,"trauma":0.5761,"anxiety":0.6259},"combined":0.5682},{"id":"595","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.2243,"mood":0.5562,"addictive":0.3787,"trauma":0.4034,"anxiety":0.5017},"combined":0.4128},{"id":"603","diagnosis":"Addictive disorder","p":{"schizophrenia":0.5751,"mood":0.6006,"addictive":0.5715,"trauma":0.6139,"anxiety":0.5558},"combined":0.5834},{"id":"607","diagnosis":"Mood disorder","p":{"schizophrenia":0.7753,"mood":0.9457,"addictive":0.7236,"trauma":0.9303,"anxiety":0.8148},"combined":0.8379},{"id":"611","diagnosis":"Schizophrenia","p":{"schizophrenia":0.4919,"mood":0.845,"addictive":0.5317,"trauma":0.5221,"anxiety":0.5872},"combined":0.5956},{"id":"612","diagnosis":"Schizophrenia","p":{"schizophrenia":0.4888,"mood":0.5595,"addictive":0.3194,"trauma":0.3244,"anxiety":0.4101},"combined":0.4204},{"id":"626","diagnosis":"Schizophrenia","p":{"schizophrenia":0.5462,"mood":0.8268,"addictive":0.6369,"trauma":0.6397,"anxiety":0.623},"combined":0.6545},{"id":"628","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.4676,"mood":0.9561,"addictive":0.621,"trauma":0.6516,"anxiety":0.471},"combined":0.6334},{"id":"633","diagnosis":"Schizophrenia","p":{"schizophrenia":0.7053,"mood":0.8125,"addictive":0.4779,"trauma":0.6125,"anxiety":0.5981},"combined":0.6412},{"id":"634","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.496,"mood":0.7357,"addictive":0.3479,"trauma":0.6798,"anxiety":0.4536},"combined":0.5426},{"id":"636","diagnosis":"Mood disorder","p":{"schizophrenia":0.2405,"mood":0.676,"addictive":0.5714,"trauma":0.7499,"anxiety":0.4797},"combined":0.5435},{"id":"641","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.5696,"mood":0.7221,"addictive":0.6356,"trauma":0.7094,"anxiety":0.4722},"combined":0.6218},{"id":"644","diagnosis":"Mood disorder","p":{"schizophrenia":0.3451,"mood":0.6837,"addictive":0.4216,"trauma":0.5481,"anxiety":0.3637},"combined":0.4724},{"id":"645","diagnosis":"Schizophrenia","p":{"schizophrenia":0.5468,"mood":0.6531,"addictive":0.3325,"trauma":0.4113,"anxiety":0.5321},"combined":0.4952},{"id":"646","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.4606,"mood":0.6657,"addictive":0.5146,"trauma":0.7416,"anxiety":0.5643},"combined":0.5894},{"id":"650","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.7748,"mood":0.8961,"addictive":0.5198,"trauma":0.6984,"anxiety":0.5599},"combined":0.6898},{"id":"659","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.662,"mood":0.7756,"addictive":0.5532,"trauma":0.7953,"anxiety":0.6769},"combined":0.6926},{"id":"674","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.5595,"mood":0.8587,"addictive":0.4901,"trauma":0.8335,"anxiety":0.7035},"combined":0.689},{"id":"675","diagnosis":"Mood disorder","p":{"schizophrenia":0.6257,"mood":0.7948,"addictive":0.5486,"trauma":0.8036,"anxiety":0.5737},"combined":0.6693},{"id":"686","diagnosis":"Schizophrenia","p":{"schizophrenia":0.3937,"mood":0.8261,"addictive":0.5418,"trauma":0.791,"anxiety":0.5324},"combined":0.617},{"id":"696","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.6171,"mood":0.7575,"addictive":0.5815,"trauma":0.8078,"anxiety":0.6474},"combined":0.6823},{"id":"704","diagnosis":"Mood disorder","p":{"schizophrenia":0.2865,"mood":0.3445,"addictive":0.4291,"trauma":0.4988,"anxiety":0.4103},"combined":0.3938},{"id":"706","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.5324,"mood":0.9261,"addictive":0.7079,"trauma":0.8317,"anxiety":0.6443},"combined":0.7285},{"id":"707","diagnosis":"Addictive disorder","p":{"schizophrenia":0.5156,"mood":0.921,"addictive":0.559,"trauma":0.8593,"anxiety":0.7164},"combined":0.7143},{"id":"711","diagnosis":"Mood disorder","p":{"schizophrenia":0.5244,"mood":0.7341,"addictive":0.4905,"trauma":0.7459,"anxiety":0.6608},"combined":0.6311},{"id":"714","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.5297,"mood":0.7037,"addictive":0.5707,"trauma":0.6802,"anxiety":0.582},"combined":0.6133},{"id":"730","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.8801,"mood":0.9904,"addictive":0.7997,"trauma":0.9825,"anxiety":0.6317},"combined":0.8569},{"id":"731","diagnosis":"Mood disorder","p":{"schizophrenia":0.4417,"mood":0.5998,"addictive":0.4207,"trauma":0.5905,"anxiety":0.4835},"combined":0.5072},{"id":"734","diagnosis":"Schizophrenia","p":{"schizophrenia":0.4718,"mood":0.5773,"addictive":0.3873,"trauma":0.5423,"anxiety":0.3844},"combined":0.4726},{"id":"738","diagnosis":"Schizophrenia","p":{"schizophrenia":0.6069,"mood":0.8248,"addictive":0.4063,"trauma":0.7706,"anxiety":0.6172},"combined":0.6452},{"id":"740","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.5663,"mood":0.806,"addictive":0.6291,"trauma":0.5741,"anxiety":0.5861},"combined":0.6323},{"id":"745","diagnosis":"Mood disorder","p":{"schizophrenia":0.5873,"mood":0.8968,"addictive":0.6629,"trauma":0.8327,"anxiety":0.6253},"combined":0.721},{"id":"750","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.4267,"mood":0.5848,"addictive":0.3583,"trauma":0.3996,"anxiety":0.4415},"combined":0.4422},{"id":"780","diagnosis":"Mood disorder","p":{"schizophrenia":0.7484,"mood":0.7374,"addictive":0.5207,"trauma":0.6787,"anxiety":0.6174},"combined":0.6605},{"id":"786","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.7406,"mood":0.7456,"addictive":0.4688,"trauma":0.7025,"anxiety":0.487},"combined":0.6289},{"id":"788","diagnosis":"Schizophrenia","p":{"schizophrenia":0.7156,"mood":0.9783,"addictive":0.7972,"trauma":0.8862,"anxiety":0.6965},"combined":0.8148},{"id":"793","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.4712,"mood":0.4468,"addictive":0.6048,"trauma":0.6014,"anxiety":0.5174},"combined":0.5283},{"id":"794","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.4484,"mood":0.6443,"addictive":0.327,"trauma":0.2589,"anxiety":0.3778},"combined":0.4113},{"id":"801","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.801,"mood":0.6925,"addictive":0.5739,"trauma":0.7855,"anxiety":0.5072},"combined":0.672},{"id":"808","diagnosis":"Mood disorder","p":{"schizophrenia":0.3716,"mood":0.8313,"addictive":0.5195,"trauma":0.6978,"anxiety":0.6327},"combined":0.6106},{"id":"809","diagnosis":"Mood disorder","p":{"schizophrenia":0.7339,"mood":0.7623,"addictive":0.7538,"trauma":0.7231,"anxiety":0.3376},"combined":0.6621},{"id":"811","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.431,"mood":0.7635,"addictive":0.3742,"trauma":0.6578,"anxiety":0.4671},"combined":0.5387},{"id":"814","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.5885,"mood":0.6203,"addictive":0.6605,"trauma":0.6588,"anxiety":0.5372},"combined":0.6131},{"id":"818","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.7245,"mood":0.9022,"addictive":0.6926,"trauma":0.9395,"anxiety":0.6947},"combined":0.7907},{"id":"821","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.5014,"mood":0.6801,"addictive":0.5482,"trauma":0.7056,"anxiety":0.685},"combined":0.6241},{"id":"824","diagnosis":"Schizophrenia","p":{"schizophrenia":0.6735,"mood":0.6094,"addictive":0.4526,"trauma":0.6223,"anxiety":0.5939},"combined":0.5903},{"id":"826","diagnosis":"Addictive disorder","p":{"schizophrenia":0.5694,"mood":0.8275,"addictive":0.3993,"trauma":0.5855,"anxiety":0.463},"combined":0.5689},{"id":"842","diagnosis":"Mood disorder","p":{"schizophrenia":0.279,"mood":0.8265,"addictive":0.5956,"trauma":0.7397,"anxiety":0.6117},"combined":0.6105},{"id":"846","diagnosis":"Mood disorder","p":{"schizophrenia":0.4947,"mood":0.87,"addictive":0.3495,"trauma":0.3677,"anxiety":0.5465},"combined":0.5257},{"id":"850","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.7993,"mood":0.8544,"addictive":0.6316,"trauma":0.7702,"anxiety":0.6051},"combined":0.7321},{"id":"854","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.4873,"mood":0.7973,"addictive":0.4449,"trauma":0.8732,"anxiety":0.5633},"combined":0.6332},{"id":"862","diagnosis":"Addictive disorder","p":{"schizophrenia":0.7266,"mood":0.9371,"addictive":0.7181,"trauma":0.8649,"anxiety":0.7363},"combined":0.7966},{"id":"868","diagnosis":"Addictive disorder","p":{"schizophrenia":0.3945,"mood":0.4584,"addictive":0.3632,"trauma":0.1179,"anxiety":0.3907},"combined":0.3449},{"id":"886","diagnosis":"Anxiety disorder","p":{"schizophrenia":0.3921,"mood":0.7702,"addictive":0.3468,"trauma":0.2239,"anxiety":0.3629},"combined":0.4192},{"id":"887","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.1992,"mood":0.1983,"addictive":0.3002,"trauma":0.0903,"anxiety":0.4832},"combined":0.2543},{"id":"890","diagnosis":"Trauma and stress related disorder","p":{"schizophrenia":0.2527,"mood":0.7055,"addictive":0.519,"trauma":0.7783,"anxiety":0.7004},"combined":0.5912},{"id":"891","diagnosis":"Mood disorder","p":{"schizophrenia":0.32,"mood":0.7341,"addictive":0.4936,"trauma":0.5479,"anxiety":0.3911},"combined":0.4973},{"id":"897","diagnosis":"Mood disorder","p":{"schizophrenia":0.179,"mood":0.4013,"addictive":0.3775,"trauma":0.121,"anxiety":0.3593},"combined":0.2876},{"id":"906","diagnosis":"Addictive disorder","p":{"schizophrenia":0.3523,"mood":0.4518,"addictive":0.6659,"trauma":0.5719,"anxiety":0.3991},"combined":0.4882},{"id":"926","diagnosis":"Healthy control","p":{"schizophrenia":0.1564,"mood":0.1929,"addictive":0.2616,"trauma":0.3147,"anxiety":0.3524},"combined":0.2556},{"id":"930","diagnosis":"Healthy control","p":{"schizophrenia":0.2111,"mood":0.7902,"addictive":0.6255,"trauma":0.3799,"anxiety":0.2971},"combined":0.4608},{"id":"937","diagnosis":"Healthy control","p":{"schizophrenia":0.6751,"mood":0.6061,"addictive":0.6002,"trauma":0.408,"anxiety":0.5304},"combined":0.564},{"id":"940","diagnosis":"Healthy control","p":{"schizophrenia":0.7248,"mood":0.9722,"addictive":0.6883,"trauma":0.9284,"anxiety":0.2836},"combined":0.7195},{"id":"942","diagnosis":"Healthy control","p":{"schizophrenia":0.6985,"mood":0.8866,"addictive":0.5319,"trauma":0.5871,"anxiety":0.5196},"combined":0.6448}]};
+
+const LABEL = {
+  healthy: "Healthy control", schizophrenia: "Schizophrenia", mood: "Mood disorder",
+  addictive: "Addictive disorder", trauma: "Trauma & stress", anxiety: "Anxiety disorder",
+};
+const DX_KEY = {
+  "Healthy control": "healthy", "Schizophrenia": "schizophrenia", "Mood disorder": "mood",
+  "Addictive disorder": "addictive", "Trauma and stress related disorder": "trauma",
+  "Anxiety disorder": "anxiety",
+};
+const THR = DATA.threshold;
+const fmt = (v, d = 3) => v.toFixed(d);
+const ciTxt = (v, c) => `${fmt(v, 2)} [${fmt(c[0], 2)}, ${fmt(c[1], 2)}]`;
+const pct = v => `${(v * 100).toFixed(1)}%`;
+const $ = id => document.getElementById(id);
+
+const subjects = DATA.subjects.map(s => ({ ...s, key: DX_KEY[s.diagnosis] }));
+const byId = new Map(subjects.map(s => [s.id, s]));
+let filter = "all";
+let current = byId.get(DATA.start) || subjects[0];
+
+const ICON_OUT = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" fill="var(--flag-out)"/><path d="M8 6v3.6" stroke="var(--ground)" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.6" r="0.95" fill="var(--ground)"/></svg>';
+const ICON_IN = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="var(--flag-in)"/><path d="m4.8 8.2 2.1 2.1 4.3-4.5" stroke="var(--ground)" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* ---------- static text ---------- */
+function staticText() {
+  const c = DATA.combined;
+  $("n-ctl").textContent = c.n_controls;
+  $("picker-count").textContent = `${subjects.length} held-out subjects · ${c.n_patients} patients, ${c.n_controls} controls`;
+  $("thr-tick").textContent = THR;
+  $("thr-tick").style.left = `${THR * 100}%`;
+  $("s-thr").style.left = `${THR * 100}%`;
+  $("combined-caption").innerHTML =
+    `Mean of the five model outputs; <span class="mono">${THR}</span> or above is flagged. ` +
+    `On held-out subjects this flag caught <span class="mono">${pct(c.sensitivity)}</span> of patients ` +
+    `and wrongly flagged <span class="mono">${pct(1 - c.specificity)}</span> of healthy controls ` +
+    `(AUC <span class="mono">${ciTxt(c.auc, c.auc_ci)}</span>). It screens for “unlike healthy”, not for a named disorder.`;
+  const lo = Math.min(...DATA.models.map(m => m.other)), hi = Math.max(...DATA.models.map(m => m.other));
+  $("bars-note").textContent =
+    `For most patients all five bars rise together. Each model separates its disorder from healthy controls, ` +
+    `but none separates it from the other disorders (AUC ${fmt(lo, 2)}–${fmt(hi, 2)}, where 0.5 is chance). ` +
+    `The tallest bar is not a diagnosis.`;
+  $("axis-ticks").innerHTML = [0, 0.25, THR, 0.75, 1]
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .map(v => `<span style="left:${v * 100}%">${v}</span>`).join("");
+  $("rel-table").innerHTML = DATA.models.map(m => `
+      <tr><td>${LABEL[m.key]}</td><td class="num">${m.n_cases}</td>
+      <td class="num">${ciTxt(m.auc, m.ci)}</td><td class="num">${ciTxt(m.other, m.other_ci)}</td>
+      <td class="num">${ciTxt(m.any, m.any_ci)}</td></tr>`).join("") + `
+      <tr class="combined"><td>Combined score (mean of 5)</td><td class="num">${c.n_patients}</td>
+      <td class="dim">—</td><td class="dim">—</td><td class="num">${ciTxt(c.auc, c.auc_ci)}</td></tr>`;
+  $("provenance").textContent =
+    `Generated ${DATA.generated} from results/per_disorder (commit ${DATA.commit}) · Park et al. 2021 corpus, SMG-SNU Boramae Medical Center · laptop CPU run.`;
+}
+
+/* ---------- picker ---------- */
+function renderChips() {
+  const counts = { all: subjects.length };
+  subjects.forEach(s => counts[s.key] = (counts[s.key] || 0) + 1);
+  const keys = ["all", "healthy", "schizophrenia", "mood", "addictive", "trauma", "anxiety"];
+  $("chips").innerHTML = keys.map(k => `
+    <button class="chip" type="button" id="chip-${k}" data-k="${k}" aria-pressed="${k === filter}">
+      ${k === "all" ? "All" : LABEL[k]}<span class="n">${counts[k] || 0}</span></button>`).join("");
+}
+function visible() {
+  const q = $("q").value.trim();
+  return subjects.filter(s => (filter === "all" || s.key === filter) && (!q || s.id.startsWith(q)));
+}
+function renderList() {
+  const rows = visible();
+  $("list").innerHTML = rows.length ? rows.map(s => `
+    <button class="row" type="button" role="option" id="row-${s.id}" data-id="${s.id}"
+      aria-selected="${s.id === current.id}">
+      <span class="id">${s.id}</span><span class="dx">${s.diagnosis}</span>
+      <span class="mini ${s.combined >= THR ? "out" : ""}">${fmt(s.combined, 2)}</span></button>`).join("")
+    : `<div class="empty">No held-out subject matches. Clear the number or pick another filter.</div>`;
+}
+function select(id, focus = false) {
+  const s = byId.get(id);
+  if (!s) return;
+  current = s;
+  document.querySelectorAll(".row").forEach(r => r.setAttribute("aria-selected", r.dataset.id === id));
+  const row = $(`row-${id}`);
+  if (row) { row.scrollIntoView({ block: "nearest" }); if (focus) row.focus(); }
+  renderReadout();
+  renderStrip();
+}
+
+/* ---------- readout ---------- */
+function renderReadout() {
+  const s = current, out = s.combined >= THR;
+  $("s-id").textContent = s.id;
+  $("s-dx").textContent = s.diagnosis;
+  $("s-score").textContent = fmt(s.combined);
+  $("s-fill").style.width = `${s.combined * 100}%`;
+  $("s-pill").innerHTML = (out ? ICON_OUT : ICON_IN) + (out ? "Outside the healthy range" : "Within the healthy range");
+  $("bars").innerHTML = DATA.models.map(m => {
+    const v = s.p[m.key], own = m.key === s.key;
+    return `<div class="bar" data-k="${m.key}">
+      <div class="label">${LABEL[m.key]}${own ? '<span class="tag">recorded dx</span>' : ""}</div>
+      <div class="plot" data-tip="${m.key}"><div class="track"></div>
+        <div class="fill" style="width:${v * 100}%"></div><div class="thr" style="left:${THR * 100}%"></div></div>
+      <div class="value">${fmt(v)}</div>
+      <div class="rel">vs healthy <b>${fmt(m.auc, 2)}</b> · vs other disorders <b>${fmt(m.other, 2)}</b></div>
+    </div>`;
+  }).join("");
+}
+
+/* ---------- cohort strip ---------- */
+function jitter(id) { let h = 2166136261; for (const ch of id) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return ((h >>> 0) % 1000) / 1000 - 0.5; }
+function renderStrip() {
+  const box = $("strip");
+  const W = Math.max(300, box.clientWidth), padL = W < 460 ? 78 : 118, padR = 14, rowH = 58, top = 10;
+  const H = top + rowH * 2 + 26;
+  const x = v => padL + v * (W - padL - padR);
+  const css = getComputedStyle(document.documentElement);
+  const col = n => css.getPropertyValue(n).trim();
+  const rows = [["healthy", "Healthy controls", s => s.key === "healthy"], ["patient", "Patients", s => s.key !== "healthy"]];
+  let g = "";
+  [0, 0.25, 0.5, 0.75, 1].forEach(t => {
+    g += `<line x1="${x(t)}" x2="${x(t)}" y1="${top}" y2="${top + rowH * 2}" stroke="${col("--grid")}" stroke-width="1"/>`;
+    g += `<text x="${x(t)}" y="${top + rowH * 2 + 17}" fill="${col("--muted")}" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="${t === 0 ? "start" : t === 1 ? "end" : "middle"}">${t}</text>`;
+  });
+  g += `<line x1="${x(THR)}" x2="${x(THR)}" y1="${top - 4}" y2="${top + rowH * 2}" stroke="${col("--ink")}" stroke-width="2" opacity="0.55"/>`;
+  let sel = "";
+  rows.forEach(([key, label, pred], i) => {
+    const cy = top + rowH * i + rowH / 2;
+    const members = subjects.filter(pred);
+    g += `<text x="0" y="${cy + 4}" fill="${col("--ink-2")}" font-family="Source Sans 3, sans-serif" font-size="13">${label}</text>`;
+    g += `<text x="0" y="${cy + 19}" fill="${col("--muted")}" font-family="IBM Plex Mono, monospace" font-size="11">n=${members.length}</text>`;
+    members.forEach(s => {
+      const cx = x(s.combined), yy = cy + jitter(s.id) * (rowH - 18);
+      const fill = key === "healthy" ? col("--muted") : col("--series");
+      const dot = `<circle cx="${cx}" cy="${yy}" r="4.5" fill="${fill}" stroke="${col("--surface")}" stroke-width="2" data-id="${s.id}" style="cursor:pointer"/>`;
+      if (s.id === current.id) sel = `<circle cx="${cx}" cy="${yy}" r="8.5" fill="none" stroke="${col("--ink")}" stroke-width="2" pointer-events="none"/>` + dot;
+      else g += dot;
+    });
+  });
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Combined score of all held-out subjects by group">${g}${sel}</svg>`;
+}
+
+/* ---------- tooltip ---------- */
+const tip = $("tip");
+function showTip(html, e) {
+  tip.innerHTML = html;
+  tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  let left = e.clientX + 14, top = e.clientY + 14;
+  if (left + r.width > innerWidth - 8) left = e.clientX - r.width - 14;
+  if (top + r.height > innerHeight - 8) top = e.clientY - r.height - 14;
+  tip.style.left = `${left}px`;
+  tip.style.top = `${top}px`;
+}
+document.addEventListener("pointermove", e => {
+  const dot = e.target.closest && e.target.closest("circle[data-id]");
+  const plot = e.target.closest && e.target.closest(".plot[data-tip]");
+  if (dot) {
+    const s = byId.get(dot.dataset.id);
+    showTip(`<b>Subject <span class="mono">${s.id}</span></b><br>${s.diagnosis}<br>combined <span class="mono">${fmt(s.combined)}</span>`, e);
+  } else if (plot) {
+    const m = DATA.models.find(mm => mm.key === plot.dataset.tip);
+    showTip(`<b>${LABEL[m.key]} model</b><br>P = <span class="mono">${fmt(current.p[m.key])}</span> for subject ${current.id}<br>` +
+            `vs healthy AUC <span class="mono">${ciTxt(m.auc, m.ci)}</span><br>vs other disorders <span class="mono">${ciTxt(m.other, m.other_ci)}</span>`, e);
+  } else tip.hidden = true;
+});
+document.addEventListener("pointerleave", () => tip.hidden = true);
+
+/* ---------- events ---------- */
+$("chips").addEventListener("click", e => {
+  const b = e.target.closest(".chip");
+  if (!b) return;
+  filter = b.dataset.k;
+  renderChips();
+  renderList();
+});
+$("q").addEventListener("input", renderList);
+$("list").addEventListener("click", e => { const r = e.target.closest(".row"); if (r) select(r.dataset.id); });
+$("list").addEventListener("keydown", e => {
+  if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+  const rows = [...document.querySelectorAll(".row")];
+  const i = rows.findIndex(r => r.dataset.id === current.id);
+  const next = rows[Math.min(rows.length - 1, Math.max(0, i + (e.key === "ArrowDown" ? 1 : -1)))];
+  if (next) { e.preventDefault(); select(next.dataset.id, true); }
+});
+$("strip").addEventListener("click", e => {
+  const d = e.target.closest("circle[data-id]");
+  if (!d) return;
+  const s = byId.get(d.dataset.id);
+  if (filter !== "all" && s.key !== filter) { filter = "all"; renderChips(); }
+  $("q").value = "";
+  renderList();
+  select(s.id);
+});
+new ResizeObserver(() => renderStrip()).observe($("strip"));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderStrip);
+new MutationObserver(renderStrip).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+staticText();
+renderChips();
+renderList();
+select(current.id);
+</script>
