@@ -89,10 +89,15 @@ DATASETS = {
     "ds004584": {"line": 60, "eyes": "open", "patient": "parkinsons"},
     "ds003490": {"line": 60, "eyes": "open", "patient": "parkinsons"},
     "ds002778": {"line": 60, "eyes": "open", "patient": "parkinsons"},
+    "ds003478": {"line": 60, "eyes": "closed", "patient": "mood"},
+    # ASZED rest is eyes-open (occipital alpha share 0.12 vs 0.43-0.45 in the
+    # eyes-closed sets), ~20 s per subject, delta-dominated: only 13 clean windows
+    # survive (patients 98% rejected vs controls 59%). Kept for its QC record; no task.
+    "aszed": {"line": 50, "eyes": "open", "patient": "schizophrenia"},
 }
 TASKS = {  # name -> (positive group, negative group, datasets)
     "schizophrenia": ("schizophrenia", "control", ["aseeg", "warsaw"]),
-    "mood": ("mood", "control", ["mumtaz"]),
+    "mood": ("mood", "control", ["mumtaz", "ds003478"]),
     "alzheimers": ("alzheimers", "control", ["ds004504"]),
     "ftd": ("ftd", "control", ["ds004504"]),
     "alzheimers_vs_ftd": ("alzheimers", "ftd", ["ds004504"]),
@@ -110,7 +115,7 @@ RAW_EPOCHS = 20  # ~60k graph visits per fit, comparable to Park's 150 epochs on
 
 
 def norm_name(ch):
-    base = ch.replace("EEG ", "").strip().split("-")[0].upper()
+    base = ch.replace("EEG ", "").strip().split("-")[0].split("[")[0].upper()  # ASZED: "Fp1[1]"
     return ALIASES.get(base, base)
 
 
@@ -160,8 +165,22 @@ def eyes_open_span(events):
     return min(onsets), max(onsets) + 1.0
 
 
+def eyes_closed_blocks(events, x, sf):
+    """ds003478: the three eyes-closed minutes (event codes 1/11, 3/13, 5/15) as separate segments."""
+    onsets = {}
+    for e in events:  # some files label every event "STATUS", so go by code, not trial_type
+        if e.get("value", "").isdigit() and int(e["value"]) in (1, 3, 5, 11, 13, 15):
+            onsets.setdefault(int(e["value"]) % 10, []).append(float(e["onset"]))
+    if not onsets:
+        raise ValueError("no eyes-closed events")
+    return [(x[:, int(min(v) * sf):int((max(v) + 2) * sf)], sf) for v in onsets.values()]
+
+
 def recordings(dataset):
-    """Yield (subject_id, group, data uV (19, n), sfreq, already_filtered)."""
+    """Yield (subject_id, group, data uV (19, n), sfreq, already_filtered).
+
+    data may instead be a list of (segment, sfreq): each segment is filtered and
+    windowed on its own, so no window spans a gap between recordings."""
     d = ROOT / dataset
     if dataset == "aseeg":
         import h5py
@@ -212,6 +231,37 @@ def recordings(dataset):
             if ses not in ("ses-hc", "ses-off"):
                 continue
             yield f"{dataset}-{sid}", "control" if ses == "ses-hc" else "parkinsons", *load_raw(fp), False
+    elif dataset == "ds003478":
+        missing = 0
+        for p in read_tsv(d / "participants.tsv"):
+            sid = p["participant_id"]
+            try:
+                bdi = int(p["BDI"])
+            except ValueError:
+                continue
+            # Cavanagh's cut-offs: BDI >= 13 depressed, < 7 control; the gap is excluded.
+            group = "mood" if bdi >= 13 else "control" if bdi < 7 else None
+            base = d / sid / "eeg" / f"{sid}_task-Rest_run-01"
+            if group is None:
+                continue
+            if not Path(f"{base}_eeg.fdt").exists():
+                missing += 1
+                continue
+            x, sf = load_raw(Path(f"{base}_eeg.set"))
+            yield (f"{dataset}-{sid}", group,
+                   eyes_closed_blocks(read_tsv(Path(f"{base}_events.tsv")), x, sf), sf, False)
+        if missing:
+            print(f"[features] WARNING ds003478: {missing} labelled subjects not downloaded", flush=True)
+    elif dataset == "aszed":
+        sheet = next(d.glob("**/ASZED_SpreadSheet.csv"))
+        with open(sheet, newline="", encoding="utf-8", errors="replace") as f:
+            label = {r["sn"]: r["category"] for r in csv.DictReader(f)}
+        files = {}
+        for fp in sorted(d.glob("ASZED/**/Phase 1.edf")):  # Phase 1 = rest (NSzED protocol)
+            files.setdefault(fp.parts[-3], []).append(fp)
+        for sid, fps in sorted(files.items()):
+            yield (f"aszed-{sid}", "schizophrenia" if label[sid] == "Patient" else "control",
+                   [load_raw(fp) for fp in fps], None, False)
     else:
         raise ValueError(dataset)
 
@@ -219,7 +269,7 @@ def recordings(dataset):
 def harmonise(x, sf, already_filtered, line=50.0):
     import mne
     mne.set_log_level("ERROR")
-    if not already_filtered:
+    if not already_filtered and line < sf / 2:  # a 100 Hz file (6 in ASZED) cannot hold 50 Hz mains
         x = mne.filter.notch_filter(x, sf, float(line))
     if sf != SF:
         x = mne.filter.resample(x, up=SF, down=sf)
@@ -272,9 +322,14 @@ def cmd_features(args):
     out = args.out / "features"
     out.mkdir(parents=True, exist_ok=True)
     for ds in args.datasets:
-        abs_, cohs, subj, grp, qc = [], [], [], [], []
+        abs_, cohs, wins, subj, grp, qc = [], [], [], [], [], []
         for sid, group, x, sf, filt in recordings(ds):
-            w, rejected, total = clean_windows(harmonise(x, sf, filt, DATASETS[ds]["line"]))
+            segs = x if isinstance(x, list) else [(x, sf)]
+            parts = [clean_windows(harmonise(s, f, filt, DATASETS[ds]["line"]))
+                     for s, f in segs if s.shape[1] >= f * WIN_S]
+            w = (np.concatenate([p[0] for p in parts])[:MAX_WINDOWS] if parts
+                 else np.empty((0, len(CH), WIN_S * SF)))
+            rejected, total = sum(p[1] for p in parts), sum(p[2] for p in parts)
             qc.append({"subject": sid, "group": group, "windows_total": total,
                        "rejected": rejected, "kept": int(len(w))})
             if len(w) == 0:
@@ -282,10 +337,11 @@ def cmd_features(args):
             a, c = spectral_features(w)
             abs_.append(a)
             cohs.append(c)
+            wins.append(w.astype(np.float16))  # raw windows for models that read the signal (msbp.py)
             subj += [sid] * len(w)
             grp += [group] * len(w)
         np.savez_compressed(out / f"{ds}.npz", ab=np.concatenate(abs_), coh=np.concatenate(cohs),
-                            subject=np.array(subj), group=np.array(grp))
+                            win=np.concatenate(wins), subject=np.array(subj), group=np.array(grp))
         (out / f"{ds}_qc.json").write_text(json.dumps(qc, indent=1))
         for group in sorted({r["group"] for r in qc}):
             q = [r for r in qc if r["group"] == group]
@@ -309,12 +365,13 @@ def cache_groups(ds, part):
     return np.where(part["label"] == 1, patient, "control")
 
 
-def load_features(out, datasets):
+def load_features(out, datasets, raw=False):
     parts = [np.load(out / "features" / f"{ds}.npz") for ds in datasets]
     cat = lambda k: np.concatenate([p[k] for p in parts])  # noqa: E731
     groups = np.concatenate([cache_groups(ds, p) for ds, p in zip(datasets, parts)])
     dsname = np.concatenate([[ds] * len(p["subject"]) for ds, p in zip(datasets, parts)])
-    return cat("ab"), cat("coh"), cat("subject"), groups, dsname
+    win = cat("win") if raw else None  # caches older than 2026-11-05 lack it: rerun `features`
+    return cat("ab"), cat("coh"), cat("subject"), groups, dsname, win
 
 
 def task_rows(groups, positive, negative):
@@ -339,15 +396,14 @@ def auc_report(lab, score):
             "n_controls": int(len(lab) - lab.sum())}
 
 
-def grouped_oof(cfg, ab, coh, subject, y, rows, strat, device, folds=5):
+def grouped_oof(fit_fn, pred_fn, subject, y, rows, strat, folds=5):
     """Out-of-fold window probabilities with subjects kept whole within a fold."""
     prob = np.zeros(len(y))
     sgkf = StratifiedGroupKFold(n_splits=folds, shuffle=True, random_state=D.SEED)
     for a, b in sgkf.split(rows, strat[rows], subject[rows]):
         tr, te = rows[a], rows[b]
         assert not set(subject[tr]) & set(subject[te]), "subject leaked across folds"
-        model = D.fit(cfg, ab, coh, y, tr, device)
-        prob[te] = D.predict_proba(model, cfg, ab, coh, te, device)
+        prob[te] = pred_fn(fit_fn(tr), te)
     return prob
 
 
@@ -364,9 +420,25 @@ def cmd_run(args, device):
     print(f"[run] {args.disease}: {positive} vs {negative}, datasets {datasets}; GNN "
           f"{cfg['model']}/{cfg['pool']}/topk={cfg['topk']} (tuned on Park, not on these data), "
           f"{cfg['epochs']} epochs\n")
-    ab, coh, subject, groups, ds = load_features(args.out, datasets)
+    ab, coh, subject, groups, ds, win = load_features(args.out, datasets, raw=args.model == "msbp")
     keep, y = task_rows(groups, positive, negative)
     ab, coh, subject, ds = ab[keep], coh[keep], subject[keep], ds[keep]
+    if args.model == "msbp":
+        import msbp as M
+        win = win[keep]
+        cfg = {"model": "msbp", **M.CFG}
+
+        def fit_fn(idx):
+            return M.fit(win, y, idx, device)
+
+        def pred_fn(model, idx):
+            return M.predict_proba(model, win, idx, device)
+    else:
+        def fit_fn(idx):
+            return D.fit(cfg, ab, coh, y, idx, device)
+
+        def pred_fn(model, idx):
+            return D.predict_proba(model, cfg, ab, coh, idx, device)
 
     def fmt(r):
         return (f"AUC {r['auc']:.3f} [{r['ci'][0]:.2f}, {r['ci'][1]:.2f}]  "
@@ -377,7 +449,7 @@ def cmd_run(args, device):
 
     for d in datasets:
         rows = np.where(ds == d)[0]
-        prob = grouped_oof(cfg, ab, coh, subject, y, rows, y, device)
+        prob = grouped_oof(fit_fn, pred_fn, subject, y, rows, y)
         _, lab, score = subject_scores(subject, y, prob, rows)
         report[f"within:{d}"] = auc_report(lab, score)
         print(f"within  {d:<16} {fmt(report[f'within:{d}'])}", flush=True)
@@ -385,7 +457,7 @@ def cmd_run(args, device):
     if len(datasets) > 1:
         rows = np.arange(len(y))
         strat = np.array([f"{a}-{b}" for a, b in zip(ds, y)])
-        prob = grouped_oof(cfg, ab, coh, subject, y, rows, strat, device)
+        prob = grouped_oof(fit_fn, pred_fn, subject, y, rows, strat)
         _, lab, score = subject_scores(subject, y, prob, rows)
         report["pooled"] = auc_report(lab, score)
         print(f"pooled  {'+'.join(datasets):<16} {fmt(report['pooled'])}", flush=True)
@@ -400,9 +472,9 @@ def cmd_run(args, device):
                 if a == b:
                     continue
                 tr, te = np.where(ds == a)[0], np.where(ds == b)[0]
-                model = D.fit(cfg, ab, coh, y, tr, device)
+                model = fit_fn(tr)
                 prob = np.zeros(len(y))
-                prob[te] = D.predict_proba(model, cfg, ab, coh, te, device)
+                prob[te] = pred_fn(model, te)
                 _, lab, score = subject_scores(subject, y, prob, te)
                 report[f"transfer:{a}->{b}"] = auc_report(lab, score)
                 print(f"transfer train {a} -> test {b:<8} {fmt(report[f'transfer:{a}->{b}'])}",
@@ -412,15 +484,15 @@ def cmd_run(args, device):
         for d in datasets:
             tr, te = np.where(ds != d)[0], np.where(ds == d)[0]
             assert not set(subject[tr]) & set(subject[te]), "subject in both sides of a site split"
-            model = D.fit(cfg, ab, coh, y, tr, device)
+            model = fit_fn(tr)
             prob = np.zeros(len(y))
-            prob[te] = D.predict_proba(model, cfg, ab, coh, te, device)
+            prob[te] = pred_fn(model, te)
             _, lab, score = subject_scores(subject, y, prob, te)
             report[f"loso:{d}"] = auc_report(lab, score)
             print(f"leave-one-hospital-out, test {d:<9} {fmt(report[f'loso:{d}'])}", flush=True)
 
     print("\nA CI spanning 0.5 means that result is not distinguishable from chance.")
-    (args.out / f"raw_{args.disease}.json").write_text(json.dumps(report, indent=2))
+    (args.out / f"raw_{args.disease}{'' if args.model == 'gnn' else '_' + args.model}.json").write_text(json.dumps(report, indent=2))
 
 
 # ---------------------------------------------------------------- self-check
@@ -527,6 +599,8 @@ def main():
     ap.add_argument("--out", default="~/eeg/raw")
     ap.add_argument("--tune", default="~/eeg/per_disorder/tune.json")
     ap.add_argument("--threads", type=int, default=None)
+    ap.add_argument("--model", choices=["gnn", "msbp"], default="gnn",
+                    help="gnn = Park-tuned GATv2 on spectral features; msbp = MSBP-GNN on raw windows")
     args = ap.parse_args()
     args.out = Path(args.out).expanduser()
     args.out.mkdir(parents=True, exist_ok=True)
