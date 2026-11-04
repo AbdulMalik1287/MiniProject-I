@@ -403,7 +403,7 @@ def grouped_oof(fit_fn, pred_fn, subject, y, rows, strat, folds=5):
     for a, b in sgkf.split(rows, strat[rows], subject[rows]):
         tr, te = rows[a], rows[b]
         assert not set(subject[tr]) & set(subject[te]), "subject leaked across folds"
-        prob[te] = pred_fn(fit_fn(tr), te)
+        prob[te] = pred_fn(fit_fn(tr, te), te)
     return prob
 
 
@@ -420,21 +420,34 @@ def cmd_run(args, device):
     print(f"[run] {args.disease}: {positive} vs {negative}, datasets {datasets}; GNN "
           f"{cfg['model']}/{cfg['pool']}/topk={cfg['topk']} (tuned on Park, not on these data), "
           f"{cfg['epochs']} epochs\n")
-    ab, coh, subject, groups, ds, win = load_features(args.out, datasets, raw=args.model == "msbp")
+    ab, coh, subject, groups, ds, win = load_features(args.out, datasets, raw=args.model in ("msbp", "align"))
     keep, y = task_rows(groups, positive, negative)
     ab, coh, subject, ds = ab[keep], coh[keep], subject[keep], ds[keep]
+    if args.model in ("align", "combat", "dann"):
+        import site_invariant as SI
+        if args.model == "align":
+            ab, coh = SI.euclidean_align(win[keep], subject, spectral_features)
+        elif args.model == "combat":
+            ab, coh = SI.combat(ab, coh, ds)
+        cfg = {**cfg, "site_method": args.model}
     if args.model == "msbp":
         import msbp as M
         win = win[keep]
         cfg = {"model": "msbp", **M.CFG}
 
-        def fit_fn(idx):
+        def fit_fn(idx, te=None):
             return M.fit(win, y, idx, device)
 
         def pred_fn(model, idx):
             return M.predict_proba(model, win, idx, device)
+    elif args.model == "dann":
+        def fit_fn(idx, te):
+            return SI.fit_dann(cfg, ab, coh, y, ds, idx, te, device)
+
+        def pred_fn(model, idx):
+            return D.predict_proba(model, cfg, ab, coh, idx, device)
     else:
-        def fit_fn(idx):
+        def fit_fn(idx, te=None):
             return D.fit(cfg, ab, coh, y, idx, device)
 
         def pred_fn(model, idx):
@@ -447,7 +460,7 @@ def cmd_run(args, device):
     report = {"disease": args.disease, "positive": positive, "negative": negative,
               "datasets": datasets, "eyes": DATASETS[datasets[0]]["eyes"], "config": cfg}
 
-    for d in datasets:
+    for d in ([] if args.skip_within else datasets):
         rows = np.where(ds == d)[0]
         prob = grouped_oof(fit_fn, pred_fn, subject, y, rows, y)
         _, lab, score = subject_scores(subject, y, prob, rows)
@@ -472,7 +485,7 @@ def cmd_run(args, device):
                 if a == b:
                     continue
                 tr, te = np.where(ds == a)[0], np.where(ds == b)[0]
-                model = fit_fn(tr)
+                model = fit_fn(tr, te)
                 prob = np.zeros(len(y))
                 prob[te] = pred_fn(model, te)
                 _, lab, score = subject_scores(subject, y, prob, te)
@@ -484,7 +497,7 @@ def cmd_run(args, device):
         for d in datasets:
             tr, te = np.where(ds != d)[0], np.where(ds == d)[0]
             assert not set(subject[tr]) & set(subject[te]), "subject in both sides of a site split"
-            model = fit_fn(tr)
+            model = fit_fn(tr, te)
             prob = np.zeros(len(y))
             prob[te] = pred_fn(model, te)
             _, lab, score = subject_scores(subject, y, prob, te)
@@ -599,8 +612,10 @@ def main():
     ap.add_argument("--out", default="~/eeg/raw")
     ap.add_argument("--tune", default="~/eeg/per_disorder/tune.json")
     ap.add_argument("--threads", type=int, default=None)
-    ap.add_argument("--model", choices=["gnn", "msbp"], default="gnn",
-                    help="gnn = Park-tuned GATv2 on spectral features; msbp = MSBP-GNN on raw windows")
+    ap.add_argument("--model", choices=["gnn", "msbp", "align", "combat", "dann"], default="gnn",
+                    help="gnn = Park-tuned GATv2 on spectral features; msbp = MSBP-GNN on raw windows; "
+                         "align/combat/dann = the GATv2 with a site-invariance method (site_invariant.py)")
+    ap.add_argument("--skip-within", action="store_true", help="only the cross-hospital schemes")
     args = ap.parse_args()
     args.out = Path(args.out).expanduser()
     args.out.mkdir(parents=True, exist_ok=True)
