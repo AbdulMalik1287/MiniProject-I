@@ -1,0 +1,67 @@
+{
+  "disease": "mood",
+  "positive": "mood",
+  "negative": "control",
+  "datasets": [
+    "mumtaz",
+    "ds003478"
+  ],
+  "eyes": "closed",
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 20,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gatv2",
+    "pool": "meanmax",
+    "topk": 4,
+    "site_method": "combat"
+  },
+  "pooled": {
+    "auc": 0.7746388028895769,
+    "ci": [
+      0.702252851610165,
+      0.8417975775446302
+    ],
+    "n_patients": 76,
+    "n_controls": 102
+  },
+  "pooled:mumtaz": {
+    "auc": 0.930952380952381,
+    "ci": [
+      0.8596247412008282,
+      0.9808841099163679
+    ],
+    "n_patients": 30,
+    "n_controls": 28
+  },
+  "pooled:ds003478": {
+    "auc": 0.6718566392479437,
+    "ci": [
+      0.5699746642246643,
+      0.7685445080207622
+    ],
+    "n_patients": 46,
+    "n_controls": 74
+  },
+  "transfer:mumtaz->ds003478": {
+    "auc": 0.617508813160987,
+    "ci": [
+      0.5037926398373697,
+      0.7278478792077704
+    ],
+    "n_patients": 46,
+    "n_controls": 74
+  },
+  "transfer:ds003478->mumtaz": {
+    "auc": 0.6916666666666667,
+    "ci": [
+      0.5393752026807912,
+      0.8230734180035649
+    ],
+    "n_patients": 30,
+    "n_controls": 28
+  }
+}
