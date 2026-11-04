@@ -1,0 +1,66 @@
+{
+  "schizophrenia": {
+    "datasets": [
+      "aseeg",
+      "warsaw"
+    ],
+    "site": {
+      "bal_acc": 0.9593352192362093,
+      "chance": 0.5,
+      "n": 129
+    },
+    "site_controls": {
+      "bal_acc": 0.8828571428571428,
+      "chance": 0.5,
+      "n": 64
+    },
+    "disease": {
+      "bal_acc": 0.7212740384615385,
+      "chance": 0.5,
+      "n": 129
+    }
+  },
+  "mood": {
+    "datasets": [
+      "mumtaz",
+      "ds003478"
+    ],
+    "site": {
+      "bal_acc": 0.9827586206896552,
+      "chance": 0.5,
+      "n": 178
+    },
+    "site_controls": {
+      "bal_acc": 1.0,
+      "chance": 0.5,
+      "n": 102
+    },
+    "disease": {
+      "bal_acc": 0.6569917440660475,
+      "chance": 0.5,
+      "n": 178
+    }
+  },
+  "parkinsons": {
+    "datasets": [
+      "ds004584",
+      "ds003490",
+      "ds002778"
+    ],
+    "site": {
+      "bal_acc": 0.7979809215626791,
+      "chance": 0.3333333333333333,
+      "n": 220
+    },
+    "site_controls": {
+      "bal_acc": 0.7777777777777777,
+      "chance": 0.3333333333333333,
+      "n": 85
+    },
+    "disease": {
+      "bal_acc": 0.7043572984749455,
+      "chance": 0.5,
+      "n": 220
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "disease": "alzheimers",
+  "positive": "alzheimers",
+  "negative": "control",
+  "datasets": [
+    "ds004504"
+  ],
+  "eyes": "closed",
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 20,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gatv2",
+    "pool": "meanmax",
+    "topk": 4
+  },
+  "within:ds004504": {
+    "auc": 0.8975095785440613,
+    "ci": [
+      0.8204547862322252,
+      0.9717417135180293
+    ],
+    "n_patients": 36,
+    "n_controls": 29
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "disease": "alzheimers",
+  "positive": "alzheimers",
+  "negative": "control",
+  "datasets": [
+    "ds004504"
+  ],
+  "eyes": "closed",
+  "config": {
+    "model": "msbp",
+    "epochs": 12,
+    "lr": 0.001,
+    "batch": 256,
+    "topk": 10,
+    "dropout": 0.3,
+    "hidden": 64
+  },
+  "within:ds004504": {
+    "auc": 0.8419540229885056,
+    "ci": [
+      0.743219111969112,
+      0.9271031310916179
+    ],
+    "n_patients": 36,
+    "n_controls": 29
+  }
+}
