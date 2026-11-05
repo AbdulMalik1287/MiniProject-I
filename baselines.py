@@ -22,8 +22,12 @@ from sklearn.svm import SVC
 
 import raw_eeg as R
 
+def lr_probe():
+    return make_pipeline(StandardScaler(), LogisticRegression(C=0.05, max_iter=5000))
+
+
 MODELS = {
-    "logreg": lambda: make_pipeline(StandardScaler(), LogisticRegression(C=0.05, max_iter=5000)),
+    "logreg": lr_probe,
     "svm": lambda: make_pipeline(StandardScaler(), SVC(C=1.0, probability=True, random_state=0)),
     "gboost": lambda: HistGradientBoostingClassifier(max_iter=200, learning_rate=0.05, max_depth=3,
                                                      random_state=0),

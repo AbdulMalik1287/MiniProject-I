@@ -11,6 +11,7 @@ OpenNeuro S3 listing and resumable:
               session, and each patient's OFF-medication session (from participants.tsv)
     ds002778  Parkinson's / controls, UC San Diego: controls, and patients' ses-off
     ds003478  Depression rest, University of New Mexico (run-01 only; not in the default set)
+    ds007526  Parkinson's / controls, Tel Aviv Sourasky, eyes-open rest (not in the default set)
 
     python fetch_neuro.py                      # all four, into data/external/<dataset>/
     python fetch_neuro.py --datasets ds004504
@@ -73,6 +74,8 @@ def wanted(ds, files):
         return keep
     if ds == "ds002778":
         return [k for k in raw if k.endswith("_eeg.bdf") and ("/ses-hc/" in k or "/ses-off/" in k)]
+    if ds == "ds007526":  # Parkinson's, Tel Aviv: seated eyes-open rest (walking runs skipped)
+        return [k for k in raw if k.endswith(("_task-rest_eeg.set", "_task-rest_channels.tsv"))]
     if ds == "ds003478":  # depression (BDI in participants.tsv); first rest run only
         return [k for k in raw if "_run-01_" in k and k.endswith(("_eeg.set", "_eeg.fdt", "_events.tsv"))]
     raise ValueError(ds)
