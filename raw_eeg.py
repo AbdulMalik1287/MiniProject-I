@@ -440,6 +440,14 @@ def cmd_run(args, device):
 
         def pred_fn(model, idx):
             return M.predict_proba(model, win, idx, device)
+    elif args.model == "stgnn":
+        import st_gnn as ST
+
+        def fit_fn(idx, te=None):
+            return ST.fit(cfg, ab, coh, y, subject, idx, device, epochs=cfg["epochs"])
+
+        def pred_fn(model, idx):
+            return ST.predict_proba(model, cfg, ab, coh, subject, idx, device)
     elif args.model == "dann":
         def fit_fn(idx, te):
             return SI.fit_dann(cfg, ab, coh, y, ds, idx, te, device)
@@ -467,7 +475,7 @@ def cmd_run(args, device):
         report[f"within:{d}"] = auc_report(lab, score)
         print(f"within  {d:<16} {fmt(report[f'within:{d}'])}", flush=True)
 
-    if len(datasets) > 1:
+    if len(datasets) > 1 and not args.within_only:
         rows = np.arange(len(y))
         strat = np.array([f"{a}-{b}" for a, b in zip(ds, y)])
         prob = grouped_oof(fit_fn, pred_fn, subject, y, rows, strat)
@@ -493,7 +501,7 @@ def cmd_run(args, device):
                 print(f"transfer train {a} -> test {b:<8} {fmt(report[f'transfer:{a}->{b}'])}",
                       flush=True)
 
-    if len(datasets) > 2:  # train on all other hospitals, test on the one left out
+    if len(datasets) > 2 and not args.within_only:  # train on all other hospitals, test on the one left out
         for d in datasets:
             tr, te = np.where(ds != d)[0], np.where(ds == d)[0]
             assert not set(subject[tr]) & set(subject[te]), "subject in both sides of a site split"
@@ -612,10 +620,11 @@ def main():
     ap.add_argument("--out", default="~/eeg/raw")
     ap.add_argument("--tune", default="~/eeg/per_disorder/tune.json")
     ap.add_argument("--threads", type=int, default=None)
-    ap.add_argument("--model", choices=["gnn", "msbp", "align", "combat", "dann"], default="gnn",
+    ap.add_argument("--model", choices=["gnn", "msbp", "stgnn", "align", "combat", "dann"], default="gnn",
                     help="gnn = Park-tuned GATv2 on spectral features; msbp = MSBP-GNN on raw windows; "
                          "align/combat/dann = the GATv2 with a site-invariance method (site_invariant.py)")
     ap.add_argument("--skip-within", action="store_true", help="only the cross-hospital schemes")
+    ap.add_argument("--within-only", action="store_true", help="only within-dataset subject-wise CV")
     args = ap.parse_args()
     args.out = Path(args.out).expanduser()
     args.out.mkdir(parents=True, exist_ok=True)
