@@ -1,0 +1,85 @@
+{
+  "task": "mood",
+  "dataset": "ds003478",
+  "n_subjects": 120,
+  "fold_stability_spearman": 0.835,
+  "agreement_with_cohen_d_spearman": 0.038,
+  "share_band_power_vs_connectivity": 0.207,
+  "bands": {
+    "power": {
+      "delta": 0.1924,
+      "theta": 0.0933,
+      "alpha": 0.1234,
+      "beta": 0.1296,
+      "highbeta": 0.2091,
+      "gamma": 0.2523
+    },
+    "connectivity": {
+      "delta": 0.1742,
+      "theta": 0.1739,
+      "alpha": 0.2166,
+      "beta": 0.1443,
+      "highbeta": 0.1393,
+      "gamma": 0.1515
+    }
+  },
+  "top_nodes_power": [
+    "Fz",
+    "O2",
+    "P4",
+    "Pz",
+    "F4"
+  ],
+  "top_connections": [
+    {
+      "edge": "P4-O2",
+      "importance": 1.0,
+      "cohen_d": -0.338
+    },
+    {
+      "edge": "Fz-F4",
+      "importance": 0.889,
+      "cohen_d": 0.181
+    },
+    {
+      "edge": "Fz-P4",
+      "importance": 0.832,
+      "cohen_d": 0.22
+    },
+    {
+      "edge": "Pz-P4",
+      "importance": 0.822,
+      "cohen_d": 0.069
+    },
+    {
+      "edge": "Fz-Cz",
+      "importance": 0.75,
+      "cohen_d": 0.048
+    },
+    {
+      "edge": "Fz-Pz",
+      "importance": 0.75,
+      "cohen_d": 0.227
+    },
+    {
+      "edge": "Fz-O2",
+      "importance": 0.714,
+      "cohen_d": 0.017
+    },
+    {
+      "edge": "Pz-O2",
+      "importance": 0.688,
+      "cohen_d": -0.237
+    },
+    {
+      "edge": "F4-Pz",
+      "importance": 0.683,
+      "cohen_d": 0.147
+    },
+    {
+      "edge": "Fp2-Fz",
+      "importance": 0.676,
+      "cohen_d": 0.063
+    }
+  ]
+}

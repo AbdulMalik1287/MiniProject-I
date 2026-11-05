@@ -1,0 +1,85 @@
+{
+  "task": "schizophrenia",
+  "dataset": "aseeg",
+  "n_subjects": 101,
+  "fold_stability_spearman": 0.839,
+  "agreement_with_cohen_d_spearman": 0.157,
+  "share_band_power_vs_connectivity": 0.193,
+  "bands": {
+    "power": {
+      "delta": 0.1106,
+      "theta": 0.1401,
+      "alpha": 0.2399,
+      "beta": 0.1484,
+      "highbeta": 0.1863,
+      "gamma": 0.1746
+    },
+    "connectivity": {
+      "delta": 0.2031,
+      "theta": 0.1503,
+      "alpha": 0.1824,
+      "beta": 0.1408,
+      "highbeta": 0.1613,
+      "gamma": 0.162
+    }
+  },
+  "top_nodes_power": [
+    "Fp2",
+    "Pz",
+    "Fp1",
+    "P4",
+    "T4"
+  ],
+  "top_connections": [
+    {
+      "edge": "Fp1-Fp2",
+      "importance": 1.0,
+      "cohen_d": -0.662
+    },
+    {
+      "edge": "Pz-P4",
+      "importance": 0.915,
+      "cohen_d": -0.782
+    },
+    {
+      "edge": "Fp2-F8",
+      "importance": 0.864,
+      "cohen_d": -0.816
+    },
+    {
+      "edge": "Fp2-Pz",
+      "importance": 0.832,
+      "cohen_d": -0.629
+    },
+    {
+      "edge": "Fp1-Pz",
+      "importance": 0.699,
+      "cohen_d": -0.496
+    },
+    {
+      "edge": "Fp2-P4",
+      "importance": 0.686,
+      "cohen_d": -0.452
+    },
+    {
+      "edge": "P3-Pz",
+      "importance": 0.683,
+      "cohen_d": -0.231
+    },
+    {
+      "edge": "Fp2-P3",
+      "importance": 0.668,
+      "cohen_d": -0.577
+    },
+    {
+      "edge": "Fp1-P4",
+      "importance": 0.664,
+      "cohen_d": -0.494
+    },
+    {
+      "edge": "Fp2-Fz",
+      "importance": 0.633,
+      "cohen_d": -0.206
+    }
+  ]
+}

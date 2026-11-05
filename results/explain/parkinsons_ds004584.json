@@ -1,0 +1,85 @@
+{
+  "task": "parkinsons",
+  "dataset": "ds004584",
+  "n_subjects": 145,
+  "fold_stability_spearman": 0.767,
+  "agreement_with_cohen_d_spearman": 0.083,
+  "share_band_power_vs_connectivity": 0.157,
+  "bands": {
+    "power": {
+      "delta": 0.0996,
+      "theta": 0.1916,
+      "alpha": 0.1868,
+      "beta": 0.1615,
+      "highbeta": 0.1615,
+      "gamma": 0.1989
+    },
+    "connectivity": {
+      "delta": 0.2003,
+      "theta": 0.1748,
+      "alpha": 0.1734,
+      "beta": 0.1433,
+      "highbeta": 0.1486,
+      "gamma": 0.1596
+    }
+  },
+  "top_nodes_power": [
+    "C3",
+    "P3",
+    "T5",
+    "Fz",
+    "P4"
+  ],
+  "top_connections": [
+    {
+      "edge": "Fz-F4",
+      "importance": 1.0,
+      "cohen_d": 0.186
+    },
+    {
+      "edge": "F3-Fz",
+      "importance": 0.99,
+      "cohen_d": 0.482
+    },
+    {
+      "edge": "T6-O2",
+      "importance": 0.642,
+      "cohen_d": -0.022
+    },
+    {
+      "edge": "P4-T6",
+      "importance": 0.606,
+      "cohen_d": 0.438
+    },
+    {
+      "edge": "F7-F3",
+      "importance": 0.574,
+      "cohen_d": 0.278
+    },
+    {
+      "edge": "F4-F8",
+      "importance": 0.549,
+      "cohen_d": -0.002
+    },
+    {
+      "edge": "P3-O1",
+      "importance": 0.537,
+      "cohen_d": -0.089
+    },
+    {
+      "edge": "T5-O1",
+      "importance": 0.53,
+      "cohen_d": -0.104
+    },
+    {
+      "edge": "P4-O2",
+      "importance": 0.523,
+      "cohen_d": 0.132
+    },
+    {
+      "edge": "T6-O1",
+      "importance": 0.518,
+      "cohen_d": -0.11
+    }
+  ]
+}
