@@ -91,13 +91,14 @@ DATASETS = {
     "ds002778": {"line": 60, "eyes": "open", "patient": "parkinsons"},
     "ds003478": {"line": 60, "eyes": "closed", "patient": "mood"},
     "ds007526": {"line": 50, "eyes": "open", "patient": "parkinsons"},
+    "semmelweis": {"line": 50, "eyes": "closed", "patient": "schizophrenia"},
     # ASZED rest is eyes-open (occipital alpha share 0.12 vs 0.43-0.45 in the
     # eyes-closed sets), ~20 s per subject, delta-dominated: only 13 clean windows
     # survive (patients 98% rejected vs controls 59%). Kept for its QC record; no task.
     "aszed": {"line": 50, "eyes": "open", "patient": "schizophrenia"},
 }
 TASKS = {  # name -> (positive group, negative group, datasets)
-    "schizophrenia": ("schizophrenia", "control", ["aseeg", "warsaw"]),
+    "schizophrenia": ("schizophrenia", "control", ["aseeg", "warsaw", "semmelweis"]),
     "mood": ("mood", "control", ["mumtaz", "ds003478"]),
     "alzheimers": ("alzheimers", "control", ["ds004504"]),
     "ftd": ("ftd", "control", ["ds004504"]),
@@ -145,7 +146,7 @@ def load_raw(path, add_ref=None, crop=None):
     import mne
     mne.set_log_level("ERROR")
     reader = {".edf": mne.io.read_raw_edf, ".bdf": mne.io.read_raw_bdf,
-              ".set": mne.io.read_raw_eeglab}[path.suffix.lower()]
+              ".set": mne.io.read_raw_eeglab, ".dat": mne.io.read_raw_curry}[path.suffix.lower()]
     raw = reader(path, preload=True)
     if crop:
         raw.crop(tmin=crop[0], tmax=min(crop[1], raw.times[-1]))
@@ -232,6 +233,18 @@ def recordings(dataset):
             if ses not in ("ses-hc", "ses-off"):
                 continue
             yield f"{dataset}-{sid}", "control" if ses == "ses-hc" else "parkinsons", *load_raw(fp), False
+    elif dataset == "semmelweis":  # Racz et al., Zenodo 14808296; Curry files, 2 min eyes closed
+        import pandas as pd
+        table = pd.read_excel(d / "schizophrenia_EI_dynamics_table.xlsx")
+        for _, r in table.iterrows():
+            fp = d / "sch_resting_64ch_ec" / f"{r['code']}_ec.dat"
+            code = "" if pd.isna(r["BNO"]) else str(r["BNO"])
+            # controls have no ICD code; keep F20 (schizophrenia) and drop the
+            # schizoaffective-only (F25) and the one NMDA-encephalitis case
+            group = "control" if not code else "schizophrenia" if "F20" in code else None
+            if group is None or not fp.exists():
+                continue
+            yield f"{dataset}-{r['code']}", group, *load_raw(fp), False
     elif dataset == "ds007526":  # Tel Aviv; Cz is the recording reference (VREF), so it is re-inserted
         groups = {"PD": "parkinsons", "HC": "control"}
         for p in read_tsv(d / "participants.tsv"):

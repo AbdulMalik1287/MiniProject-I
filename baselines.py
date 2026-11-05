@@ -34,7 +34,7 @@ MODELS = {
 }
 WITHIN = [("alzheimers", "ds004504"), ("ftd", "ds004504"), ("alzheimers_vs_ftd", "ds004504"),
           ("mood", "mumtaz"), ("mood", "ds003478"), ("schizophrenia", "aseeg"),
-          ("schizophrenia", "warsaw"), ("parkinsons", "ds004584"), ("parkinsons", "ds003490"),
+          ("schizophrenia", "warsaw"), ("schizophrenia", "semmelweis"), ("parkinsons", "ds004584"), ("parkinsons", "ds003490"),
           ("parkinsons", "ds002778"), ("parkinsons", "ds007526")]
 
 
