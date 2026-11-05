@@ -90,6 +90,7 @@ DATASETS = {
     "ds003490": {"line": 60, "eyes": "open", "patient": "parkinsons"},
     "ds002778": {"line": 60, "eyes": "open", "patient": "parkinsons"},
     "ds003478": {"line": 60, "eyes": "closed", "patient": "mood"},
+    "ds007526": {"line": 50, "eyes": "open", "patient": "parkinsons"},
     # ASZED rest is eyes-open (occipital alpha share 0.12 vs 0.43-0.45 in the
     # eyes-closed sets), ~20 s per subject, delta-dominated: only 13 clean windows
     # survive (patients 98% rejected vs controls 59%). Kept for its QC record; no task.
@@ -101,7 +102,7 @@ TASKS = {  # name -> (positive group, negative group, datasets)
     "alzheimers": ("alzheimers", "control", ["ds004504"]),
     "ftd": ("ftd", "control", ["ds004504"]),
     "alzheimers_vs_ftd": ("alzheimers", "ftd", ["ds004504"]),
-    "parkinsons": ("parkinsons", "control", ["ds004584", "ds003490", "ds002778"]),
+    "parkinsons": ("parkinsons", "control", ["ds004584", "ds003490", "ds002778", "ds007526"]),
 }
 for _t, (_p, _n, _ds) in TASKS.items():  # a task must never mix eyes-open and eyes-closed data
     assert len({DATASETS[d]["eyes"] for d in _ds}) == 1, f"task {_t} mixes recording conditions"
@@ -152,7 +153,7 @@ def load_raw(path, add_ref=None, crop=None):
 
 
 def read_tsv(path):
-    with open(path, newline="", encoding="utf-8") as f:
+    with open(path, newline="", encoding="utf-8-sig") as f:  # ds007526 starts with a BOM
         return list(csv.DictReader(f, delimiter="\t"))
 
 
@@ -231,6 +232,12 @@ def recordings(dataset):
             if ses not in ("ses-hc", "ses-off"):
                 continue
             yield f"{dataset}-{sid}", "control" if ses == "ses-hc" else "parkinsons", *load_raw(fp), False
+    elif dataset == "ds007526":  # Tel Aviv; Cz is the recording reference (VREF), so it is re-inserted
+        groups = {"PD": "parkinsons", "HC": "control"}
+        for p in read_tsv(d / "participants.tsv"):
+            sid = p["participant_id"]
+            fp = d / sid / "eeg" / f"{sid}_task-rest_eeg.set"
+            yield f"{dataset}-{sid}", groups[p["group"]], *load_raw(fp, add_ref="CZ"), False
     elif dataset == "ds003478":
         missing = 0
         for p in read_tsv(d / "participants.tsv"):

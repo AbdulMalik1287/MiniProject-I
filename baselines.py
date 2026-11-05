@@ -35,7 +35,7 @@ MODELS = {
 WITHIN = [("alzheimers", "ds004504"), ("ftd", "ds004504"), ("alzheimers_vs_ftd", "ds004504"),
           ("mood", "mumtaz"), ("mood", "ds003478"), ("schizophrenia", "aseeg"),
           ("schizophrenia", "warsaw"), ("parkinsons", "ds004584"), ("parkinsons", "ds003490"),
-          ("parkinsons", "ds002778")]
+          ("parkinsons", "ds002778"), ("parkinsons", "ds007526")]
 
 
 def subject_features(out, task, dataset, kind="base"):

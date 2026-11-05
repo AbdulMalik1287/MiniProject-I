@@ -6,7 +6,13 @@ best member per task by its test score would be selection on the test folds):
     msbp        MSBP-GNN on raw 2 s windows (msbp.py)
     lr_base     logistic regression on subject-mean band power + coherence
     lr_rich     logistic regression on subject-mean rich_features.py markers
-    ensemble    mean of the four members' within-fold rank-normalised subject scores
+    riemann     filter-bank tangent space + logistic regression (riemann.py)
+    labram      logistic regression on frozen LaBraM block-6 embeddings (labram_probe.py)
+    ensemble    mean of all members' within-fold rank-normalised subject scores
+
+v1 (results/ensemble.json) had the first four members. v2 adds every method
+built afterwards - all of them, not the ones that scored well - so membership is
+still not chosen by test score.
 
 5-fold StratifiedKFold over subjects (seed 42); every member sees the same folds,
 so its out-of-fold subject scores are directly comparable and combinable.
@@ -31,7 +37,7 @@ import per_disorder as D
 import raw_eeg as R
 from baselines import WITHIN
 
-MEMBERS = ["gatv2", "msbp", "lr_base", "lr_rich"]
+MEMBERS = ["gatv2", "msbp", "lr_base", "lr_rich", "riemann", "labram"]
 
 
 def lr():
@@ -51,6 +57,11 @@ def run(task, dataset, out, cfg, device):
     ys = np.array([y[rows_of[s][0]] for s in u])
     xb = np.stack([base[rows_of[s]].mean(0) for s in u])
     xr = np.stack([rich[rows_of[s]].reshape(len(rows_of[s]), -1).mean(0) for s in u])
+    import riemann as RM
+    cu, covs = RM.subject_covs(win, subject)
+    assert (cu == u).all()
+    emb = np.load(out / "features" / f"{dataset}_labram.npz")["block6"][keep]
+    xl = np.stack([emb[rows_of[s]].mean(0) for s in u])
     score = {m: np.zeros(len(u)) for m in MEMBERS + ["ensemble"]}
     for a, b in StratifiedKFold(5, shuffle=True, random_state=42).split(xb, ys):
         tr = np.concatenate([rows_of[s] for s in u[a]])
@@ -62,6 +73,8 @@ def run(task, dataset, out, cfg, device):
             fold[name] = np.array([model_p(rows_of[s]).mean() for s in u[b]])
         fold["lr_base"] = lr().fit(xb[a], ys[a]).predict_proba(xb[b])[:, 1]
         fold["lr_rich"] = lr().fit(xr[a], ys[a]).predict_proba(xr[b])[:, 1]
+        fold["riemann"] = RM.FBTangentLR().fit(covs[a], ys[a]).predict_proba(covs[b])[:, 1]
+        fold["labram"] = lr().fit(xl[a], ys[a]).predict_proba(xl[b])[:, 1]
         for k, v in fold.items():
             score[k][b] = v
         # rank-normalise within the fold so members on different scales weigh equally
@@ -77,7 +90,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="~/eeg/raw2")
     ap.add_argument("--tune", default="results/per_disorder/tune.json")
-    ap.add_argument("--save", default="results/ensemble.json")
+    ap.add_argument("--save", default="results/ensemble_v2.json")
     args = ap.parse_args()
     out = Path(args.out).expanduser()
     cfg = {**json.loads(Path(args.tune).read_text())["best"]["config"], "epochs": R.RAW_EPOCHS}
