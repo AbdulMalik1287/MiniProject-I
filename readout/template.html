@@ -316,7 +316,7 @@ footer code { font-family: var(--mono); color: var(--ink-2); }
   <header>
     <span class="eyebrow">Research demo · not a diagnostic tool</span>
     <h1>EEG Five-Model Readout</h1>
-    <p class="lede">Five graph neural networks, one per psychiatric disorder, each trained to tell its disorder apart from healthy controls on 19-electrode resting EEG. Every subject below is from the <strong>held-out test split</strong>: none was used for tuning, training or calibration.</p>
+    <p class="lede">Graph neural networks and companion methods on 19-electrode resting EEG. The first panel is the project's final result across 12 tasks on 10 open datasets. Below it, the interactive readout of the five psychiatric GNNs: every subject there is from the <strong>held-out test split</strong> - none was used for tuning, training or calibration.</p>
   </header>
 
   <div class="layout">
@@ -334,6 +334,13 @@ footer code { font-family: var(--mono); color: var(--ink-2); }
     </aside>
 
     <main class="readout">
+      <section class="panel" aria-labelledby="h-final" id="final-panel" hidden>
+        <h2 id="h-final">Final results: detecting each disorder within a dataset</h2>
+        <p class="sub">Subject-level AUC of a pre-declared ensemble of six methods (two GNNs, two logistic regressions, Riemannian covariance, frozen LaBraM), 5-fold cross-validation over subjects - no window of a test subject is ever trained on. Bars are 95% bootstrap intervals; with 28-145 subjects per dataset they are wide. Telling Alzheimer's from FTD, and transferring between hospitals, remain at chance.</p>
+        <div class="forest" id="final-forest"></div>
+        <div class="faxis" aria-hidden="true"><div class="ticks"><span style="left:0">0</span><span style="left:50%">0.5 chance</span><span style="left:100%">1</span></div></div>
+      </section>
+
       <section class="panel verdict" aria-live="polite">
         <div class="verdict-top">
           <div>
@@ -387,7 +394,7 @@ footer code { font-family: var(--mono); color: var(--ink-2); }
       </section>
 
       <section class="panel" aria-labelledby="h-neuro" id="neuro-panel" hidden>
-        <h2 id="h-neuro">Neurological disorders</h2>
+        <h2 id="h-neuro">Neurological disorders: first pass (GATv2 only, September)</h2>
         <p class="sub">Separate GNNs for Alzheimer's, frontotemporal dementia and Parkinson's, each trained on one hospital's patients against that hospital's own controls. Different hospitals, older patients and, for Parkinson's, eyes-open recordings: these results are not comparable with the psychiatric models above, and no model is asked to choose between diseases from different hospitals.</p>
         <div class="forest" id="forest"></div>
         <div class="faxis" aria-hidden="true"><div class="ticks"><span style="left:0">0</span><span style="left:50%">0.5 chance</span><span style="left:100%">1</span></div></div>
@@ -456,15 +463,15 @@ function staticText() {
       <tr class="combined"><td>Combined score (mean of 5)</td><td class="num">${c.n_patients}</td>
       <td class="dim">—</td><td class="dim">—</td><td class="num">${ciTxt(c.auc, c.auc_ci)}</td></tr>`;
   $("provenance").textContent =
-    `Generated ${DATA.generated} from results/per_disorder (commit ${DATA.commit}) · Park et al. 2021 corpus, SMG-SNU Boramae Medical Center · laptop CPU run.`;
+    `Generated ${DATA.generated} (commit ${DATA.commit}) · final results: results/ensemble_v2.json, local RTX 2060 · psychiatric readout: results/per_disorder, Park et al. 2021 corpus (SMG-SNU Boramae Medical Center), laptop CPU.`;
 }
 
-/* ---------- neurological results ---------- */
-function renderNeuro() {
-  if (!DATA.neuro || !DATA.neuro.length) return;
-  $("neuro-panel").hidden = false;
+/* ---------- forest plots: final results and neurological first pass ---------- */
+function renderForest(groups, panelId, forestId) {
+  if (!groups || !groups.length) return;
+  $(panelId).hidden = false;
   const verdict = c => c[0] > 0.5 ? "above chance" : c[1] < 0.5 ? "below chance" : "not distinguishable from chance";
-  $("forest").innerHTML = DATA.neuro.map(g => `
+  $(forestId).innerHTML = groups.map(g => `
     <div class="forest-group">${g.title}<span>${g.detail}</span></div>` + g.rows.map(r => `
     <div class="frow">
       <div class="fl">${r.label}</div>
@@ -620,7 +627,8 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", renderStri
 new MutationObserver(renderStrip).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
 staticText();
-renderNeuro();
+renderForest(DATA.final, "final-panel", "final-forest");
+renderForest(DATA.neuro, "neuro-panel", "forest");
 renderChips();
 renderList();
 select(current.id);

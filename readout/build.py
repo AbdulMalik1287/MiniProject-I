@@ -64,6 +64,42 @@ def neuro_groups():
     return groups
 
 
+FINAL = [  # disorder group, dataset key, row label
+    ("Alzheimer's & frontotemporal dementia", [("alzheimers:ds004504", "Alzheimer's vs healthy · Thessaloniki"),
+                                              ("ftd:ds004504", "FTD vs healthy · Thessaloniki"),
+                                              ("alzheimers_vs_ftd:ds004504", "Alzheimer's vs FTD · Thessaloniki")]),
+    ("Depression", [("mood:mumtaz", "Mumtaz · Malaysia"), ("mood:ds003478", "UNM · New Mexico")]),
+    ("Schizophrenia", [("schizophrenia:aseeg", "ASEEG · Iran"), ("schizophrenia:warsaw", "Warsaw · Poland"),
+                       ("schizophrenia:semmelweis", "Semmelweis · Budapest")]),
+    ("Parkinson's", [("parkinsons:ds004584", "Iowa"), ("parkinsons:ds003490", "New Mexico"),
+                     ("parkinsons:ds002778", "San Diego"), ("parkinsons:ds007526", "Tel Aviv")]),
+]
+SHARP = {"unm_moderate_severe": "UNM: moderate/severe depression (BDI-II ≥ 20) vs healthy",
+         "telaviv_moderate_pd": "Tel Aviv: moderate Parkinson's (MDS-UPDRS III ≥ 33) vs healthy"}
+SHORTG = {"alzheimers": "AD", "ftd": "FTD", "parkinsons": "PD", "control": "controls", "mood": "MDD",
+          "schizophrenia": "SZ"}
+
+
+def final_groups():
+    """Final within-dataset ensemble results (ensemble.py v2) and the sharpened secondary tasks."""
+    res = ROOT / "results"
+    if not (res / "ensemble_v2.json").exists() or not (res / "subject_counts.json").exists():
+        return []
+    ens = json.loads((res / "ensemble_v2.json").read_text())
+    n = json.loads((res / "subject_counts.json").read_text())
+    row = lambda key, label, r: {"label": label, "auc": r["ensemble"]["auc"], "ci": r["ensemble"]["ci"],  # noqa: E731
+                                 "n": f"{n[key]['n_pos']} {SHORTG[n[key]['positive']]} / "
+                                      f"{n[key]['n_neg']} {SHORTG[n[key]['negative']]}"}
+    groups = [{"title": t, "detail": "", "rows": [row(k, lab, ens[k]) for k, lab in rows if k in ens]}
+              for t, rows in FINAL]
+    if (res / "sharpened.json").exists():
+        sh = json.loads((res / "sharpened.json").read_text())
+        groups.append({"title": "Secondary: sharper clinical contrasts",
+                       "detail": "easier questions than the rows above, cut-offs fixed in advance",
+                       "rows": [row(k, SHARP[k], v) for k, v in sh.items() if k in SHARP]})
+    return groups
+
+
 def main():
     ev = json.loads((RES / "evaluate.json").read_text())
     preds = json.loads((RES / "test_predictions.json").read_text())
@@ -94,6 +130,7 @@ def main():
         "subjects": [{"id": p["id"], "diagnosis": p["diagnosis"], "p": p["p"], "combined": p["combined"]}
                      for p in sorted(preds, key=lambda p: int(p["id"]))],
         "neuro": neuro_groups(),
+        "final": final_groups(),
     }
     assert len(data["subjects"]) == ev["n_test"], "predictions and evaluation disagree on the test split"
 

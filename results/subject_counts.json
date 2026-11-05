@@ -1,0 +1,86 @@
+{
+ "alzheimers:ds004504": {
+  "positive": "alzheimers",
+  "negative": "control",
+  "n_pos": 36,
+  "n_neg": 29
+ },
+ "ftd:ds004504": {
+  "positive": "ftd",
+  "negative": "control",
+  "n_pos": 23,
+  "n_neg": 29
+ },
+ "alzheimers_vs_ftd:ds004504": {
+  "positive": "alzheimers",
+  "negative": "ftd",
+  "n_pos": 36,
+  "n_neg": 23
+ },
+ "mood:mumtaz": {
+  "positive": "mood",
+  "negative": "control",
+  "n_pos": 30,
+  "n_neg": 28
+ },
+ "mood:ds003478": {
+  "positive": "mood",
+  "negative": "control",
+  "n_pos": 46,
+  "n_neg": 74
+ },
+ "schizophrenia:aseeg": {
+  "positive": "schizophrenia",
+  "negative": "control",
+  "n_pos": 51,
+  "n_neg": 50
+ },
+ "schizophrenia:warsaw": {
+  "positive": "schizophrenia",
+  "negative": "control",
+  "n_pos": 14,
+  "n_neg": 14
+ },
+ "schizophrenia:semmelweis": {
+  "positive": "schizophrenia",
+  "negative": "control",
+  "n_pos": 30,
+  "n_neg": 41
+ },
+ "parkinsons:ds004584": {
+  "positive": "parkinsons",
+  "negative": "control",
+  "n_pos": 97,
+  "n_neg": 48
+ },
+ "parkinsons:ds003490": {
+  "positive": "parkinsons",
+  "negative": "control",
+  "n_pos": 23,
+  "n_neg": 21
+ },
+ "parkinsons:ds002778": {
+  "positive": "parkinsons",
+  "negative": "control",
+  "n_pos": 15,
+  "n_neg": 16
+ },
+ "parkinsons:ds007526": {
+  "positive": "parkinsons",
+  "negative": "control",
+  "n_pos": 111,
+  "n_neg": 28
+ },
+ "unm_moderate_severe": {
+  "positive": "mood",
+  "negative": "control",
+  "n_pos": 30,
+  "n_neg": 74
+ },
+ "telaviv_moderate_pd": {
+  "positive": "parkinsons",
+  "negative": "control",
+  "n_pos": 27,
+  "n_neg": 28
+ }
+}
