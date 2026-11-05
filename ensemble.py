@@ -44,10 +44,13 @@ def lr():
     return make_pipeline(StandardScaler(), LogisticRegression(C=0.05, max_iter=5000))
 
 
-def run(task, dataset, out, cfg, device):
+def run(task, dataset, out, cfg, device, subjects=None):
     pos, neg, _ = R.TASKS[task]
     ab, coh, subject, groups, _, win = R.load_features(out, [dataset], raw=True)
     keep, y = R.task_rows(groups, pos, neg)
+    if subjects is not None:  # sharpened.py: a pre-declared subset of the task's subjects
+        m = np.isin(subject[keep], list(subjects))
+        keep, y = keep[m], y[m]
     ab, coh, subject, win = ab[keep], coh[keep], subject[keep], win[keep]
     rich = np.load(out / "features" / f"{dataset}_rich.npy")[keep]
     iu = np.triu_indices(coh.shape[1], 1)
