@@ -1,0 +1,39 @@
+{
+  "disease": "schizophrenia",
+  "positive": "schizophrenia",
+  "negative": "control",
+  "datasets": [
+    "aseeg",
+    "warsaw"
+  ],
+  "eyes": "closed",
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 20,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gatv2",
+    "pool": "meanmax",
+    "topk": 4
+  },
+  "within:aseeg": {
+    "auc": 0.7392156862745098,
+    "ci": [
+      0.6347584655815339,
+      0.836569476487429
+    ],
+    "n_patients": 51,
+    "n_controls": 50
+  },
+  "within:warsaw": {
+    "auc": 0.7142857142857144,
+    "ci": [
+      0.4871794871794872,
+      0.90625
+    ],
+    "n_patients": 14,
+    "n_controls": 14
+  }
+}

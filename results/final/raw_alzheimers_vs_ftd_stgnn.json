@@ -1,0 +1,29 @@
+{
+  "disease": "alzheimers_vs_ftd",
+  "positive": "alzheimers",
+  "negative": "ftd",
+  "datasets": [
+    "ds004504"
+  ],
+  "eyes": "closed",
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 20,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gatv2",
+    "pool": "meanmax",
+    "topk": 4
+  },
+  "within:ds004504": {
+    "auc": 0.6594202898550724,
+    "ci": [
+      0.5135435077176859,
+      0.788647342995169
+    ],
+    "n_patients": 36,
+    "n_controls": 23
+  }
+}
