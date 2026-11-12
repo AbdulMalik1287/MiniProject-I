@@ -24,6 +24,8 @@ Protocols:
              the 500 epochs (their lines 594-603: the held-out fold is their validation set)
     strict   StratifiedKFold(5) x 5 seeds; the model after the last epoch only; nothing is
              chosen by looking at held-out subjects
+    inner    StratifiedKFold(5); epoch chosen on a 20% inner validation split of the training
+             subjects; the test fold is predicted with that epoch's model (--inner-only)
 Each with the dynamic and the fixed (0.5) threshold.
 
     python dtgcn.py --out ~/eeg/raw2
@@ -134,11 +136,44 @@ def train(adj, y, tr, te, dynamic, device, seed, track_best=False):
     return predict(model, adj, te, device), best
 
 
+def train_inner(adj, y, tr, te, dynamic, device, seed):
+    """Epoch chosen on an inner validation split of the TRAINING subjects (20%, stratified);
+    the test fold is predicted with the model of that epoch and never looked at."""
+    from sklearn.model_selection import StratifiedShuffleSplit
+    itr, ival = next(StratifiedShuffleSplit(1, test_size=0.2, random_state=seed).split(tr, y[tr]))
+    itr, ival = tr[itr], tr[ival]
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    model = Net().to(device)
+    opt = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-4)
+    thr, prev, best, best_pred = 0.5, None, -1.0, None
+    for _ in range(EPOCHS):
+        model.train()
+        loader = DataLoader([graph(adj[i], thr, int(y[i])) for i in itr], batch_size=8, shuffle=True)
+        tot = 0.0
+        for b in loader:
+            b = b.to(device)
+            opt.zero_grad()
+            loss = F.cross_entropy(model(b), b.y)
+            loss.backward()
+            opt.step()
+            tot += loss.item() * b.num_graphs
+        loss = tot / len(itr)
+        if dynamic and prev is not None:
+            thr = float(np.clip(0.5 * thr + 0.5 * (thr + (prev - loss) * 0.1 * 0.4 * 0.4 * 10), 0.3, 0.7))
+        prev = loss
+        acc = accuracy_score(y[ival], predict(model, adj, ival, device))
+        if acc > best:
+            best, best_pred = acc, predict(model, adj, te, device)
+    return best_pred
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="~/eeg/raw2")
     ap.add_argument("--repeats", type=int, default=5)
     ap.add_argument("--save", default="results/dtgcn.json")
+    ap.add_argument("--inner-only", action="store_true", help="only the inner-validation protocol, merged into --save")
     args = ap.parse_args()
     out = Path(args.out).expanduser()
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -146,7 +181,22 @@ def main():
     u, adj = subject_plv(win, subject)
     y = np.array([CLASSES.index(groups[subject == s][0]) for s in u])
     print(f"[dtgcn] {len(u)} subjects, PLV matrices ready", flush=True)
-    report = {}
+    save = Path(args.save)
+    report = json.loads(save.read_text()) if save.exists() else {}
+    if args.inner_only:
+        for dynamic in (True, False):
+            rs = []
+            for rep in range(args.repeats):
+                pred = np.zeros(len(y), dtype=int)
+                for tr, te in StratifiedKFold(5, shuffle=True, random_state=rep).split(adj, y):
+                    pred[te] = train_inner(adj, y, tr, te, dynamic, device, rep)
+                rs.append({"accuracy": accuracy_score(y, pred), "macro_f1": f1_score(y, pred, average="macro"),
+                           "bal_acc": balanced_accuracy_score(y, pred)})
+            name = f"inner_val_{'dynamic' if dynamic else 'fixed'}"
+            report[name] = {k: [float(np.mean([r[k] for r in rs])), float(np.std([r[k] for r in rs]))] for k in rs[0]}
+            print(name, json.dumps(report[name]), flush=True)
+            save.write_text(json.dumps(report, indent=2))
+        return
     for dynamic in (True, False):
         name = "dynamic" if dynamic else "fixed"
         # paper protocol: their KFold, best held-out accuracy over epochs
@@ -165,7 +215,7 @@ def main():
                                     for k in rs[0]}
         print(name, json.dumps({k: v for k, v in report.items() if name in k}), flush=True)
     report["paper_reported"] = {"accuracy": "0.82 +/- 0.07", "macro_f1": "0.79 +/- 0.07", "input": "Gumbel copula"}
-    Path(args.save).write_text(json.dumps(report, indent=2))
+    save.write_text(json.dumps(report, indent=2))
 
 
 if __name__ == "__main__":
