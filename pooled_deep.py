@@ -54,6 +54,15 @@ from train import build_model
 TASKS = ["alzheimers", "ftd", "alzheimers_vs_ftd", "mood", "schizophrenia"]
 MODELS = ["lr_base", "gatv2", "gt", "gt_mil", "gt_mil_dro", "labram_ft"]
 SEED = 42
+BALANCE = False  # --balance: every site x label group gets equal total weight in training
+
+
+def group_w(site, y):
+    """Weight 1/|group| per item, groups = site x label, normalised to mean 1."""
+    key = np.char.add(np.asarray(site).astype(str), np.asarray(y).astype(str))
+    _, inv, cnt = np.unique(key, return_inverse=True, return_counts=True)
+    w = 1.0 / cnt[inv]
+    return w / w.mean()
 
 
 # ------------------------------------------------------------------ data
@@ -72,7 +81,7 @@ def load_task(out, task, raw):
     rows = {s: np.where(subject == s)[0] for s in u}
     ys = np.array([y[rows[s][0]] for s in u])
     site = np.array([dsname[rows[s][0]] for s in u])
-    return dict(ab=ab, coh=coh, win=win, y=y, subject=subject, u=u, rows=rows, ys=ys, site=site)
+    return dict(ab=ab, coh=coh, win=win, y=y, subject=subject, u=u, rows=rows, ys=ys, site=site, wsite=dsname)
 
 
 def folds(d, loho=False):
@@ -108,9 +117,15 @@ def window_gnn(kind, cfg, g, d, tr_s, te_s, device):
     opt = torch.optim.Adam(model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"])
     cnt = np.bincount(d["y"][tr], minlength=2)
     crit = nn.CrossEntropyLoss(weight=torch.tensor(cnt.sum() / (2.0 * cnt), dtype=torch.float32, device=device))
+    kw = {"shuffle": True}
+    if BALANCE:  # sampler draws every site x label group equally often, so no class weight on top
+        gen = torch.Generator().manual_seed(SEED)
+        kw = {"sampler": torch.utils.data.WeightedRandomSampler(
+            group_w(d["wsite"][tr], d["y"][tr]), len(tr), replacement=True, generator=gen)}
+        crit = nn.CrossEntropyLoss()
     for _ in range(R.RAW_EPOCHS):
         model.train()
-        for b in DataLoader([g[i] for i in tr], batch_size=cfg["batch_size"], shuffle=True):
+        for b in DataLoader([g[i] for i in tr], batch_size=cfg["batch_size"], **kw):
             b = b.to(device)
             opt.zero_grad()
             crit(model(b.x, b.edge_index, b.edge_attr, b.batch), b.y).backward()
@@ -219,9 +234,12 @@ def labram_ft(d, tr_s, te_s, device, state, epochs=3, bs=32):
 
     tr = np.concatenate([d["rows"][s] for s in tr_s])
     pw = pos_weight(d["y"][tr], device)
+    if BALANCE:
+        bw = group_w(d["wsite"][tr], d["y"][tr])
+        pw = torch.tensor(1.0, device=device)
     for _ in range(epochs):
         m.train()
-        order = rng.permutation(tr)
+        order = rng.choice(tr, len(tr), p=bw / bw.sum()) if BALANCE else rng.permutation(tr)
         for k in range(0, len(order), bs):
             j = order[k:k + bs]
             loss = F.binary_cross_entropy_with_logits(
@@ -258,7 +276,8 @@ def lr_base(d, tr_s, te_s):
         X[mm] = (X[mm] - X[mm].mean(0)) / (X[mm].std(0) + 1e-8)
     a = [sidx[s] for s in tr_s]
     b = [sidx[s] for s in te_s]
-    return lr_probe().fit(X[a], d["ys"][a]).predict_proba(X[b])[:, 1]
+    sw = group_w(d["site"][a], d["ys"][a]) if BALANCE else None
+    return lr_probe().fit(X[a], d["ys"][a], logisticregression__sample_weight=sw).predict_proba(X[b])[:, 1]
 
 
 # ------------------------------------------------------------------ driver
@@ -282,12 +301,16 @@ def main():
     ap.add_argument("--tasks", default=",".join(TASKS))
     ap.add_argument("--save", default=None)
     ap.add_argument("--loho", action="store_true", help="leave-one-hospital-out instead of pooled 5-fold")
+    ap.add_argument("--balance", action="store_true", help="equal weight per site x label group in training")
     args = ap.parse_args()
     out = Path(args.out).expanduser()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     cfg = json.loads(Path(args.tune).read_text())["best"]["config"]
     models = args.models.split(",")
-    save = Path(args.save or ("results/pooled_deep_loho.json" if args.loho else "results/pooled_deep.json"))
+    global BALANCE
+    BALANCE = args.balance
+    save = Path(args.save or ("results/pooled_deep_loho.json" if args.loho else
+                              "results/pooled_deep_bal.json" if args.balance else "results/pooled_deep.json"))
     report = json.loads(save.read_text()) if save.exists() else {}
     state = None
     if "labram_ft" in models:
