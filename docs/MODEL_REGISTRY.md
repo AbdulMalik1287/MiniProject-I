@@ -56,6 +56,21 @@ All evaluation is subject-wise: no window of a test subject is ever trained on. 
 | 24 | 3-class ensemble | `three_class.py` | Mean class probabilities of 7 members: GATv2 (3-class head), LR, LR markers, Riemannian, LaBraM, RF, XGBoost |
 | 25 | Pooled multi-site training | `pooled.py` | LR / LR markers / Riemannian trained on all same-condition sites of a disorder plus the target's training folds; per-site z-scoring or Riemannian re-centring (label-free) |
 
+## Master models, preprocessing v2 and the final system (2026-11-13)
+
+| # | Model | File | Definition | Params |
+|---|---|---|---|---|
+| 26 | **Graph Transformer** | `train.py` (`transformer`), `pooled_deep.py` | Model 4 with TransformerConv(120 -> 8 x 4 heads, edge_dim 6) -> TransformerConv(32 -> 20); same training (Adam 1e-3, wd 5e-4, batch 64, 20 epochs) | 18,912 |
+| 27 | **Attention-MIL** | `pooled_deep.py` | Graph Transformer window encoder (40-d) -> gated attention over a subject's windows (V, U: 40->16, w: 16->1; Ilse 2018) -> MLP 40->10->1; trained on subjects, 16 random windows per bag, 16 bags/batch, 60 epochs, BCE with pos_weight | 20,662 |
+| 28 | **Attention-MIL + GroupDRO** | `pooled_deep.py` | Model 27 with GroupDRO over site x label groups (exponentiated-gradient step 0.01; Sagawa 2020) | 20,662 |
+| 29 | **LaBraM fine-tuned** | `pooled_deep.py` | Pretrained LaBraM; last 2 of 12 blocks + fc_norm trainable, linear head 200->1; windows z-scored per recording and channel x 0.2, resampled to 200 Hz; AdamW (1e-4 blocks, 1e-3 head, wd 0.05), batch 32, 3 epochs, fp16 autocast; subject = mean window logit | 5.82M total / 965,561 trained |
+| 30 | **Master model scheme** | `pooled_deep.py` | One model per disease on all its datasets; one StratifiedKFold(5, seed 42) over subjects stratified by site x label; band power z-scored per site without labels; AUC per site. `--balance`: equal weight per site x label group (no consistent effect). `--loho` exists but unused | - |
+| 31 | **Preprocessing v2** | `prep_v2.py` | Skip first 60 s if >= 30 windows remain; up to 60 clean windows spread evenly; subject features = median; adds 1/f-corrected band power (log PSD minus 2-40 Hz aperiodic line, alpha 7-14 Hz excluded) and wPLI (wPLI not adopted) | - |
+| 32 | **Scale-free Riemannian** | `prep_v2.py`, `final_system.py` | Model 18 with each band covariance divided by its trace, then per-site re-centring | - |
+| 33 | **Final system** | `final_system.py` | Members fixed before running: LR (relative + 1/f power + coherence, per-site z), model 32, GATv2, model 26, model 29 - all on v2 scale-free inputs; mean-rank ensemble; cross-fitted Platt calibration; abstention by confidence (coverage 100-50%) | - |
+
+Explainability for the final system: `explain_final.py` (within-site Cohen's d per electrode x band, cross-checked with LR fold coefficients). Data check: `mumtaz_check.py` (Mumtaz filter difference above ~40 Hz).
+
 ## Evaluation protocols used
 
 | Name | Where | Definition |
@@ -64,3 +79,4 @@ All evaluation is subject-wise: no window of a test subject is ever trained on. 
 | Shared split | `ensemble.py` | StratifiedKFold(5, seed 42) over subjects, identical for all members |
 | Cross-hospital | `raw_eeg.py` | train on one site, test on another; leave-one-hospital-out (paused) |
 | DT-GCN protocols | `dtgcn.py` | paper (best test-fold epoch), inner validation (epoch picked on 20% of training subjects), strict (last epoch) |
+| Master-model CV | `pooled_deep.py`, `prep_v2.py`, `final_system.py` | StratifiedKFold(5, seed 42) over all subjects of a disease, stratified by site x label; AUC per site |

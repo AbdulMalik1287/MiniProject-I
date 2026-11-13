@@ -80,23 +80,34 @@ SHORTG = {"alzheimers": "AD", "ftd": "FTD", "parkinsons": "PD", "control": "cont
           "schizophrenia": "SZ"}
 
 
+FINAL_SYS = [  # task, group title
+    ("alzheimers", "Alzheimer's vs healthy"), ("ftd", "Frontotemporal dementia vs healthy"),
+    ("alzheimers_vs_ftd", "Alzheimer's vs FTD"), ("mood", "Depression vs healthy"),
+    ("schizophrenia", "Schizophrenia vs healthy")]
+SITE_NAME = {"ds004504": "Thessaloniki", "brainlat": "BrainLat (Argentina/Chile)", "mumtaz": "Mumtaz (Malaysia)",
+             "aseeg": "ASEEG (Iran)", "warsaw": "Warsaw", "semmelweis": "Semmelweis (Budapest)"}
+NOTE = {("alzheimers", "brainlat"): " *", ("ftd", "brainlat"): " *", ("mood", "mumtaz"): " †"}
+POS = {"alzheimers": ("AD", "controls"), "ftd": ("FTD", "controls"), "alzheimers_vs_ftd": ("AD", "FTD"),
+       "mood": ("MDD", "controls"), "schizophrenia": ("SZ", "controls")}
+
+
 def final_groups():
-    """Final within-dataset ensemble results (ensemble.py v2) and the sharpened secondary tasks."""
-    res = ROOT / "results"
-    if not (res / "ensemble_v2.json").exists() or not (res / "subject_counts.json").exists():
+    """Final frozen system (final_system.py): ensemble AUC per task and site."""
+    f = ROOT / "results" / "final_system.json"
+    if not f.exists():
         return []
-    ens = json.loads((res / "ensemble_v2.json").read_text())
-    n = json.loads((res / "subject_counts.json").read_text())
-    row = lambda key, label, r: {"label": label, "auc": r["ensemble"]["auc"], "ci": r["ensemble"]["ci"],  # noqa: E731
-                                 "n": f"{n[key]['n_pos']} {SHORTG[n[key]['positive']]} / "
-                                      f"{n[key]['n_neg']} {SHORTG[n[key]['negative']]}"}
-    groups = [{"title": t, "detail": "", "rows": [row(k, lab, ens[k]) for k, lab in rows if k in ens]}
-              for t, rows in FINAL]
-    if (res / "sharpened.json").exists():
-        sh = json.loads((res / "sharpened.json").read_text())
-        groups.append({"title": "Secondary: sharper clinical contrasts",
-                       "detail": "easier questions than the rows above, cut-offs fixed in advance",
-                       "rows": [row(k, SHARP[k], v) for k, v in sh.items() if k in SHARP]})
+    fs = json.loads(f.read_text())
+    groups = []
+    for t, title in FINAL_SYS:
+        if t not in fs:
+            continue
+        cov = fs[t]["ensemble"]["coverage"]
+        rows = [{"label": SITE_NAME[s] + NOTE.get((t, s), ""), "auc": r["auc"], "ci": r["ci"],
+                 "n": f"{r['n_pos']} {POS[t][0]} / {r['n_neg']} {POS[t][1]}"}
+                for s, r in fs[t]["ensemble"]["per_site"].items() if s != "all"]
+        groups.append({"title": title, "detail": f"accuracy {cov['100%']['accuracy']:.0%} answering everyone, "
+                                                 f"{cov['50%']['accuracy']:.0%} on its most confident half",
+                       "rows": rows})
     return groups
 
 

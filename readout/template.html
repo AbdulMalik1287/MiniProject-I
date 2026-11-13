@@ -316,7 +316,7 @@ footer code { font-family: var(--mono); color: var(--ink-2); }
   <header>
     <span class="eyebrow">Research demo · not a diagnostic tool</span>
     <h1>EEG Five-Model Readout</h1>
-    <p class="lede">Graph neural networks and companion methods on 19-electrode resting EEG. The first panel is the project's final result across 12 tasks on 10 open datasets. Below it, the interactive readout of the five psychiatric GNNs: every subject there is from the <strong>held-out test split</strong> - none was used for tuning, training or calibration.</p>
+    <p class="lede">Graph neural networks and companion methods on 19-electrode resting EEG. The first panel is the project's final frozen system for four disorders on six open datasets. Below it, the interactive readout of the five psychiatric GNNs: every subject there is from the <strong>held-out test split</strong> - none was used for tuning, training or calibration.</p>
   </header>
 
   <div class="layout">
@@ -335,8 +335,8 @@ footer code { font-family: var(--mono); color: var(--ink-2); }
 
     <main class="readout">
       <section class="panel" aria-labelledby="h-final" id="final-panel" hidden>
-        <h2 id="h-final">Final results: detecting each disorder within a dataset</h2>
-        <p class="sub">Subject-level AUC of a pre-declared ensemble of six methods (two GNNs, two logistic regressions, Riemannian covariance, frozen LaBraM), 5-fold cross-validation over subjects - no window of a test subject is ever trained on. Bars are 95% bootstrap intervals; with 28-145 subjects per dataset they are wide. Telling Alzheimer's from FTD, and transferring between hospitals, remain at chance.</p>
+        <h2 id="h-final">Final results: one frozen system per disorder</h2>
+        <p class="sub">Subject-level AUC of a pre-declared ensemble of five scale-free methods (logistic regression, scale-free Riemannian, GATv2, Graph Transformer, fine-tuned LaBraM), trained per disorder on all of its datasets together and scored per hospital; every subject is tested by models that never saw them. Bars are 95% bootstrap intervals. * BrainLat patients and controls were exported as different file types - treat those two rows with caution. † Mumtaz groups were filtered differently above ~40 Hz; using only 1-25 Hz the score is 0.95.</p>
         <div class="forest" id="final-forest"></div>
         <div class="faxis" aria-hidden="true"><div class="ticks"><span style="left:0">0</span><span style="left:50%">0.5 chance</span><span style="left:100%">1</span></div></div>
       </section>
@@ -463,7 +463,7 @@ function staticText() {
       <tr class="combined"><td>Combined score (mean of 5)</td><td class="num">${c.n_patients}</td>
       <td class="dim">—</td><td class="dim">—</td><td class="num">${ciTxt(c.auc, c.auc_ci)}</td></tr>`;
   $("provenance").textContent =
-    `Generated ${DATA.generated} (commit ${DATA.commit}) · final results: results/ensemble_v2.json, local RTX 2060 · psychiatric readout: results/per_disorder, Park et al. 2021 corpus (SMG-SNU Boramae Medical Center), laptop CPU.`;
+    `Generated ${DATA.generated} (commit ${DATA.commit}) · final results: results/final_system.json, local RTX 2060 · psychiatric readout: results/per_disorder, Park et al. 2021 corpus (SMG-SNU Boramae Medical Center), laptop CPU.`;
 }
 
 /* ---------- forest plots: final results and neurological first pass ---------- */
