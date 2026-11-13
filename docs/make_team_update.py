@@ -14,7 +14,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import (KeepTogether, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table,
+from reportlab.platypus import (CondPageBreak, Image, KeepTogether, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table,
                                 TableStyle)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -126,24 +126,78 @@ def master_rows():
     return out
 
 
+FIN = None
+
+
+def fin():
+    global FIN
+    if FIN is None:
+        FIN = json.loads((ROOT / "results" / "final_system.json").read_text())
+    return FIN
+
+
+TASK_NAMES = [("alzheimers", "AD vs healthy"), ("ftd", "FTD vs healthy"), ("alzheimers_vs_ftd", "AD vs FTD"),
+              ("mood", "Depression"), ("schizophrenia", "Schizophrenia")]
+SITE = {"ds004504": "Thessaloniki", "brainlat": "BrainLat", "mumtaz": "Mumtaz", "aseeg": "ASEEG",
+        "warsaw": "Warsaw", "semmelweis": "Semmelweis"}
+
+
+def final_rows():
+    rows = [["Task", "Hospital", "AUC", "95% CI", "Before (master v1)"]]
+    old = json.loads((ROOT / "results" / "pooled_deep.json").read_text())
+    for t, name in TASK_NAMES:
+        ps = fin()[t]["ensemble"]["per_site"]
+        for k, s in enumerate([x for x in ps if x != "all"]):
+            mark = "*" if s == "brainlat" and t != "alzheimers_vs_ftd" else ("†" if s == "mumtaz" else "")
+            prev = old.get(f"{t}:ensemble_all6", {}).get("per_site", {}).get(s)
+            rows.append([name if k == 0 else "", SITE[s] + mark, f"<b>{ps[s]['auc']:.2f}</b>",
+                         f"{ps[s]['ci'][0]:.2f}-{ps[s]['ci'][1]:.2f}",
+                         f"{prev['auc']:.2f}" if prev and t != "mood" else "-"])
+    return rows
+
+
+def coverage_rows():
+    rows = [["Task", "all", "90%", "80%", "70%", "60%", "50%"]]
+    for t, name in TASK_NAMES:
+        c = fin()[t]["ensemble"]["coverage"]
+        rows.append([name] + [f"{c[k]['accuracy']:.0%}" for k in ("100%", "90%", "80%", "70%", "60%", "50%")])
+    return rows
+
+
+def member_rows():
+    names = {"lr": "Logistic regression", "riemann_tn": "Riemannian (scale-free)", "gatv2": "GATv2",
+             "gt": "Graph Transformer", "labram_ft": "LaBraM fine-tuned"}
+    cols = [(t, s) for t, _ in TASK_NAMES for s in fin()[t]["ensemble"]["per_site"] if s != "all"]
+    short = {"alzheimers": "AD", "ftd": "FTD", "alzheimers_vs_ftd": "AD/FTD", "mood": "Dep", "schizophrenia": "SZ"}
+    rows = []
+    for chunk in (cols[:6], cols[6:]):
+        pad = [""] * (6 - len(chunk))
+        rows.append(["<b>Model</b>"] + [f"<b>{short[t]} {SITE[s]}</b>" for t, s in chunk] + pad)
+        for m, mn in names.items():
+            rows.append([mn] + [f"{fin()[t]['per_site_' + m][s]['auc']:.2f}" for t, s in chunk] + pad)
+        rows.append(["<b>Ensemble</b>"] + [f"<b>{fin()[t]['ensemble']['per_site'][s]['auc']:.2f}</b>" for t, s in chunk] + pad)
+    return rows
+
+
 def build():
     st = []
     # ---------------------------------------------------------------- cover / summary
     st += [P("Brain Signal Processing: where we are", "title"),
            P("Detecting brain and mental disorders from resting-state EEG with graph neural networks · "
              "team update and full work history · 13 November 2026 · supervisor Dr. Nileshchandra Pikle", "sub")]
-    st.append(box(P("<b>In one paragraph.</b> We built and honestly tested about 30 models on 12 public EEG datasets. "
-                    "Our best scores are strong for Alzheimer's (AUC 0.92) and depression (0.97 on one dataset), decent "
-                    "for FTD (0.85) and schizophrenia (0.68-0.83 depending on hospital), and weak for telling Alzheimer's "
-                    "apart from FTD (0.68-0.86). The main lesson: <b>a bigger or fancier model does not help</b> - simple "
-                    "logistic regression ties our graph networks and transformers. What limits us is the data: small "
-                    "datasets, each hospital leaving a strong 'fingerprint' in its recordings, noisy labels in one "
-                    "dataset, and a recording mismatch in another. We also showed that several published high scores "
-                    "come from flawed testing.", "box")))
+    st.append(box(P("<b>In one paragraph.</b> We built and honestly tested about 30 models on 12 public EEG datasets "
+                    "and froze a final system per disease: 5 complementary models voting, trained on all hospitals of "
+                    "a disease together, with calibrated probabilities and an 'unsure' option. Final scores: Alzheimer's "
+                    "0.94, FTD 0.89, depression 0.95-0.97 (one dataset), schizophrenia 0.67-0.84 depending on hospital, "
+                    "Alzheimer's vs FTD 0.71-0.86. The main lesson: <b>a bigger or fancier model does not help</b> - "
+                    "simple logistic regression ties our graph networks and transformers; better preprocessing and "
+                    "combining models helped more. What limits us is the data: small datasets, hospital 'fingerprints', "
+                    "and recording differences between patient and control groups in two datasets (found and handled). "
+                    "We also showed that several published high scores come from flawed testing.", "box")))
     st.append(Spacer(1, 8))
-    st.append(stats([("0.92", "Alzheimer's vs healthy<br/>(Thessaloniki)"), ("0.85", "FTD vs healthy<br/>(Thessaloniki)"),
-                     ("0.97", "Depression vs healthy<br/>(Mumtaz)"), ("0.68-0.83", "Schizophrenia vs healthy<br/>(3 hospitals)"),
-                     ("0.68 / 0.86", "Alzheimer's vs FTD<br/>(Thessaloniki / BrainLat)")]))
+    st.append(stats([("0.94", "Alzheimer's vs healthy<br/>(Thessaloniki)"), ("0.89", "FTD vs healthy<br/>(Thessaloniki)"),
+                     ("0.95", "Depression vs healthy<br/>(Mumtaz, 1-25 Hz)"), ("0.67-0.84", "Schizophrenia vs healthy<br/>(3 hospitals)"),
+                     ("0.71 / 0.86", "Alzheimer's vs FTD<br/>(Thessaloniki / BrainLat)")]))
     st.append(P("Numbers are AUC (see 'How to read the numbers'). Each comes from people the model never saw during training.", "small"))
 
     st.append(P("How to read the numbers", "h1"))
@@ -193,9 +247,9 @@ def build():
     st.append(P("Shared processing pipeline", "h2"))
     st.append(P("Every recording goes through the same steps: 19 standard scalp electrodes → mains-noise filter → "
                 "resample to 128 Hz → keep 1-45 Hz → average reference → cut into 10-second windows → throw away "
-                "windows with extreme or flat signal → up to 30 clean windows per person. From each window we compute "
+                "windows with extreme or flat signal → skip the first minute when the recording is long enough → keep up to 60 clean windows spread across the whole recording. From each window we compute "
                 "power in 6 frequency bands per electrode and how strongly each pair of electrodes moves together "
-                "(coherence). These become the nodes and edges of the brain graph."))
+                "(coherence), plus band power with the background 1/f slope removed. These become the nodes and edges of the brain graph."))
 
     # ---------------------------------------------------------------- history
     st.append(P("Work history, in order", "h1"))
@@ -239,15 +293,28 @@ def build():
           "Result: Graph Transformer ties the simple models, LaBraM fine-tuning is mixed, attention-MIL and GroupDRO "
           "are worse. Weighting hospitals equally changed nothing. <b>AD vs FTD improved clearly</b> with the master model.",
           "Dropped leave-one-hospital-out and UNM."]),
-        ("9. Preprocessing review (running)",
+        ("9. Preprocessing review",
          ["Literature: ICA / ASR artifact removal and reference changes do not improve classification (one study on "
-          "our own Thessaloniki data). Testing three cheap changes now: windows spread across the whole recording, "
-          "1/f-corrected band power, and wPLI connectivity."]),
+          "our own Thessaloniki data).",
+          "Tested three cheap changes. <b>Kept:</b> windows spread across the whole recording (median over windows) and "
+          "1/f-corrected band power - small but consistent gains (e.g. Warsaw 0.72 → 0.82, Mumtaz 0.92 → 0.96). "
+          "<b>Dropped:</b> wPLI connectivity (worse).",
+          "Caught a second confound: Riemannian covariances kept BrainLat's amplitude gap (fake 0.99). Dividing each "
+          "covariance by its trace fixed it (0.70, in line with careful prior work) and even helped Thessaloniki FTD."]),
+        ("10. Final frozen system",
+         ["5 members fixed before running: logistic regression, scale-free Riemannian, GATv2, Graph Transformer, "
+          "fine-tuned LaBraM - all on scale-free inputs. Mean-rank ensemble, cross-fitted calibration, 'unsure' option.",
+          "Beats or matches every earlier result (see 'Final system results')."]),
+        ("11. Explainability and a last check",
+         ["Head maps per disease from within-hospital effect sizes, cross-checked with the model's weights.",
+          "Found that Mumtaz's healthy group has ~55× more 44 Hz power than its depressed group (a filter difference). "
+          "Using only 1-25 Hz, depression still scores 0.95, so the result stands with a caveat."]),
     ]
     for head, items in hist:
         st.append(KeepTogether([P(head, "h2")] + bullets(items)))
 
     # ---------------------------------------------------------------- what worked
+    st.append(CondPageBreak(90 * mm))
     st.append(P("What worked and what did not", "h1"))
     st.append(verdict_table([
         ["What we tried", "Result", "Verdict"],
@@ -265,7 +332,10 @@ def build():
         ["Hospital-balanced training", "No consistent change", "Did not"],
         ["Stricter depression cut-off (UNM)", "No improvement; dataset dropped", "Did not"],
         ["3-class AD / FTD / healthy", "65% accuracy; FTD confused with AD", "Partly"],
-        ["Preprocessing v2", "Results pending", "Running"],
+        ["Preprocessing v2: spread-out windows + 1/f-corrected power", "Small consistent gains", "Worked"],
+        ["wPLI connectivity instead of coherence", "Worse", "Did not"],
+        ["Scale-free (trace-normalised) Riemannian", "Removed BrainLat fake 0.99; helped FTD", "Worked"],
+        ["Final frozen ensemble + calibration + 'unsure'", "Best numbers; 84-97% accuracy on confident half", "Worked"],
     ], [0.45, 0.4, 0.15]))
 
     st.append(P("Why the fancy models do not win", "h2"))
@@ -279,20 +349,21 @@ def build():
 
     # ---------------------------------------------------------------- results
     st.append(PageBreak())
-    st.append(P("Best results per disorder", "h1"))
-    st.append(table([
-        ["Task", "Within one dataset (Ensemble v2)", "Master model, all hospitals (ensemble)"],
-        ["AD vs healthy", "Thessaloniki <b>0.92</b>", "Thessaloniki 0.91 · BrainLat 0.74*"],
-        ["FTD vs healthy", "Thessaloniki <b>0.85</b>", "Thessaloniki 0.81 · BrainLat 0.65*"],
-        ["AD vs FTD", "Thessaloniki 0.58 · BrainLat 0.74", "<b>Thessaloniki 0.68 · BrainLat 0.86</b>"],
-        ["Depression", "Mumtaz <b>0.97</b>", "- (single dataset now)"],
-        ["Schizophrenia", "ASEEG 0.83 · Warsaw 0.70 · Semmelweis 0.68", "0.81 · 0.67 · 0.67"],
-        ["3-class AD/FTD/healthy", "accuracy 0.65 · macro-F1 0.62", "not run yet"],
-    ], [0.2, 0.4, 0.4]))
-    st.append(P("* BrainLat patient-vs-healthy carries the file-type caveat. Within-dataset and master numbers use "
-                "different splits, so compare them loosely.", "small"))
-
-    st.append(P("Master model, every model (AUC per hospital)", "h2"))
+    st.append(P("Final system results", "h1"))
+    st.append(P("One frozen system per disease (members fixed before running; master-model splits; every person "
+                "tested by models that never saw them). AUC with 95% confidence interval. Results file: "
+                "results/final_system.json.", "small"))
+    st.append(table(final_rows(), [0.22, 0.18, 0.2, 0.2, 0.2]))
+    st.append(P("* BrainLat patient-vs-healthy: scale-free inputs, but still carries the file-type caveat. "
+                "† Mumtaz: 0.95 when restricted to 1-25 Hz (filter caveat).", "small"))
+    st.append(P("Answer only when confident", "h2"))
+    st.append(P("The system can say 'unsure' for the people it is least confident about. Accuracy on the people it "
+                "does answer:", "p"))
+    st.append(table(coverage_rows(), [0.28] + [0.12] * 6))
+    st.append(P("Every member, per hospital", "h2"))
+    st.append(table(member_rows(), [0.22, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13]))
+    st.append(PageBreak())
+    st.append(P("Earlier master model (before preprocessing v2), every model", "h2"))
     st.append(P("Results file: results/pooled_deep.json. All models used identical splits; differences under ~0.10 "
                 "are within noise.", "small"))
     for tname, rows in master_rows():
@@ -300,6 +371,27 @@ def build():
         st.append(KeepTogether([P(tname, "h2"), table(rows, [0.34] + [0.66 / (n - 1)] * (n - 1))]))
 
     # ---------------------------------------------------------------- teammate table
+    st.append(PageBreak())
+    st.append(P("What the system looks at", "h1"))
+    st.append(P("Maps show, for each frequency band, where patients differ from healthy people (red = higher in "
+                "patients, blue = lower), measured inside each hospital and then averaged. They are cross-checked "
+                "against the logistic-regression member's weights: 'stability' = do the 5 training folds agree, "
+                "'agreement' = does the model use what the data shows."))
+    st += bullets([
+        "<b>Alzheimer's:</b> more slow theta everywhere, less alpha/beta - the classic 'EEG slowing' of dementia. "
+        "Same direction at both hospitals.",
+        "<b>FTD:</b> less beta and alpha, strongest over temporal and frontal electrodes.",
+        "<b>Alzheimer's vs FTD:</b> Alzheimer's shows more theta than FTD.",
+        "<b>Schizophrenia:</b> right-temporal (T4) delta up, alpha down; weaker effects (d ≈ 0.5).",
+        "<b>Depression (Mumtaz):</b> dominated by a 44 Hz filter difference between groups - see caveats; the "
+        "1-25 Hz pattern alone still separates the groups.",
+    ])
+    for t, cap in (("alzheimers", "Alzheimer's vs healthy"), ("ftd", "FTD vs healthy"),
+                   ("alzheimers_vs_ftd", "Alzheimer's vs FTD"), ("schizophrenia", "Schizophrenia vs healthy"),
+                   ("mood", "Depression vs healthy (Mumtaz)")):
+        st.append(KeepTogether([P(cap, "h2"), Image(str(ROOT / "results" / "explain_final" / f"{t}.png"),
+                                                    width=W, height=W * 4.6 / 12)]))
+    st.append(CondPageBreak(90 * mm))
     st.append(P("Status of the teammate's architecture table", "h1"))
     st.append(verdict_table([
         ["Component", "Status", "Verdict"],
@@ -309,7 +401,7 @@ def build():
         ["LaBraM deeper fine-tuning", "Built (last 2 blocks) - mixed", "Done"],
         ["Attention-based MIL", "Built - worse", "Done"],
         ["GroupDRO", "Built - worse", "Done"],
-        ["Uncertainty-aware prediction", "Next step (calibration + 'unsure' output)", "Next"],
+        ["Uncertainty-aware prediction", "Built: calibrated probabilities + 'unsure' option", "Done"],
         ["Spectral / hierarchical temporal transformer, cross-attention", "Skipped: need far more data; LaBraM covers the idea", "Dropped"],
         ["Supervised contrastive learning", "Skipped for now: little to contrast with ~100 people", "Dropped"],
     ], [0.42, 0.43, 0.15]))
@@ -319,6 +411,8 @@ def build():
     st += bullets([
         "<b>Depression is single-site</b> (Mumtaz, 58 people). 0.97 cannot be claimed to generalise. Option: request "
         "access to MODMA (clinically diagnosed depression, needs a signed request).",
+        "<b>Mumtaz has a filter difference between groups</b> (controls ~55× more 44 Hz power). Restricted to 1-25 Hz "
+        "the score is 0.95, so quote 0.95 with this caveat, not 0.97.",
         "<b>BrainLat patient-vs-healthy</b> is confounded by recording file type. We remove the amplitude gap, but other "
         "differences may remain. AD vs FTD on BrainLat is clean.",
         "<b>Small datasets</b> mean wide confidence intervals; many model differences are noise.",
@@ -326,20 +420,15 @@ def build():
     ])
 
     # ---------------------------------------------------------------- next
-    st.append(P("What we do next", "h1"))
+    st.append(P("What is left", "h1"))
     st.append(table([
-        ["#", "Task", "How", "Time"],
-        ["1", "Finish preprocessing v2", "Running now. Adopt only if it helps consistently beyond the noise.", "~1 h"],
-        ["2", "Freeze the final system", "Master model for AD, FTD, AD-vs-FTD, schizophrenia; within-dataset for "
-                                         "depression. Members fixed - no more picking by results.", "~30 min"],
-        ["3", "Calibrated probabilities + 'unsure'", "Per disease, fitted on training data only. Curves like "
-                                                      "'answers 70% of people at X% accuracy'.", "1-2 h"],
-        ["4", "Explainability", "Which electrodes and frequency bands drive each disease, checked for stability "
-                                "across folds.", "~1 h"],
-        ["5", "Update report, results page, model registry", "Add everything above.", "1-2 h"],
-        ["6", "GitHub", "Push branch gcn-comparison and open a PR to master (after team sign-off).", "5 min"],
-        ["7", "Optional: 3-class with BrainLat", "Same 3-class test on the master model.", "~30 min"],
-    ], [0.05, 0.27, 0.56, 0.12]))
+        ["#", "Task", "Status"],
+        ["1", "Experiments, final system, calibration, explainability", "Done"],
+        ["2", "Report, results page, model registry", "Updated with these results"],
+        ["3", "GitHub branch gcn-comparison", "Pushed; PR to master after team review"],
+        ["4", "Optional: 3-class AD/FTD/healthy on the final system", "Not started (~30 min)"],
+        ["5", "Optional: second depression dataset (MODMA)", "Needs a signed access request - team decision"],
+    ], [0.05, 0.55, 0.4]))
     st.append(P("Decisions for the team", "h2"))
     st += bullets([
         "Is single-site depression acceptable, or do we request MODMA?",
@@ -347,8 +436,7 @@ def build():
         "current public EEG, plus audits of leaky published results - rather than chasing one big number.",
     ])
     st.append(Spacer(1, 6))
-    st.append(P("Code: github.com/AbdulMalik1287/MiniProject-I, branch gcn-comparison (latest commits local until "
-                "pushed). Key files: pooled_deep.py (master models), ensemble.py, three_class.py, dtgcn.py, "
+    st.append(P("Code: github.com/AbdulMalik1287/MiniProject-I, branch gcn-comparison. Key files: final_system.py (final system), explain_final.py, pooled_deep.py (master models), ensemble.py, three_class.py, dtgcn.py, "
                 "graph_ablation.py, prep_v2.py, docs/MODEL_REGISTRY.md.", "small"))
 
     doc = SimpleDocTemplate(str(OUT), pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm, topMargin=16 * mm,
