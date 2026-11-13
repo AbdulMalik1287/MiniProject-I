@@ -1,0 +1,114 @@
+{
+ "title": "Alzheimer's vs control",
+ "n": 132,
+ "sites": [
+  "brainlat",
+  "ds004504"
+ ],
+ "fold_stability_spearman": 0.8309504018013987,
+ "model_vs_effect_spearman": 0.7092774257171119,
+ "top_effects": [
+  {
+   "feature": "rel theta Fz",
+   "cohen_d": 1.3016042709350586,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.03194833919405937,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel theta O2",
+   "cohen_d": 1.2801721096038818,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.033608727157115936,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel theta T6",
+   "cohen_d": 1.2346000671386719,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.03489935025572777,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel theta T5",
+   "cohen_d": 1.2321093082427979,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.03024093247950077,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel theta T3",
+   "cohen_d": 1.2289237976074219,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.045912567526102066,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel theta Fp1",
+   "cohen_d": 1.2081658840179443,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.05358590558171272,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "per theta T3",
+   "cohen_d": 1.1430224180221558,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.040217217057943344,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel theta P4",
+   "cohen_d": 1.1229182481765747,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.01379102747887373,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel theta O1",
+   "cohen_d": 1.1197394132614136,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.002200606046244502,
+   "lr_coef_sign_folds": 0.6
+  },
+  {
+   "feature": "rel theta Cz",
+   "cohen_d": 1.1115126609802246,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.010675372555851936,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel theta C3",
+   "cohen_d": 1.1093944311141968,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.023193947970867157,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel theta F3",
+   "cohen_d": 1.1056855916976929,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.02274593710899353,
+   "lr_coef_sign_folds": 1.0
+  }
+ ],
+ "band_mean_abs_d": {
+  "rel": {
+   "delta": 0.6792485117912292,
+   "theta": 1.0876613855361938,
+   "alpha": 0.7928395867347717,
+   "beta": 0.6724145412445068,
+   "highbeta": 0.3270038664340973,
+   "gamma": 0.12653666734695435
+  },
+  "per": {
+   "delta": 0.13125017285346985,
+   "theta": 0.9908121228218079,
+   "alpha": 0.6601629257202148,
+   "beta": 0.8811047077178955,
+   "highbeta": 0.298448771238327,
+   "gamma": 0.7610376477241516
+  }
+ }
+}

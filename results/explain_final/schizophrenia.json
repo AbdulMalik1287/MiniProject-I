@@ -1,0 +1,115 @@
+{
+ "title": "Schizophrenia vs control",
+ "n": 200,
+ "sites": [
+  "aseeg",
+  "semmelweis",
+  "warsaw"
+ ],
+ "fold_stability_spearman": 0.8329760640371295,
+ "model_vs_effect_spearman": 0.5902040849386997,
+ "top_effects": [
+  {
+   "feature": "rel delta T4",
+   "cohen_d": 0.5315032601356506,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.06156754493713379,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel alpha T4",
+   "cohen_d": -0.5063870549201965,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.05738511681556702,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel delta T5",
+   "cohen_d": 0.47351744771003723,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.02884555421769619,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "per beta T4",
+   "cohen_d": -0.47184398770332336,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.04310207441449165,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "per alpha T4",
+   "cohen_d": -0.46578511595726013,
+   "site_sign_agreement": 0.6666666666666666,
+   "lr_coef_mean": -0.07157910615205765,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel delta F7",
+   "cohen_d": 0.45635297894477844,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.041130758821964264,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel alpha T3",
+   "cohen_d": -0.4549613893032074,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.04528753086924553,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel theta T5",
+   "cohen_d": 0.45026695728302,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.08857773244380951,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel delta Fp1",
+   "cohen_d": 0.4475819766521454,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": 0.08216681331396103,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel delta T3",
+   "cohen_d": 0.4231363832950592,
+   "site_sign_agreement": 0.6666666666666666,
+   "lr_coef_mean": 0.027684319764375687,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel highbeta Fp1",
+   "cohen_d": -0.4207533597946167,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.07370249927043915,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel alpha Fp2",
+   "cohen_d": -0.4188961088657379,
+   "site_sign_agreement": 0.6666666666666666,
+   "lr_coef_mean": -0.03690461069345474,
+   "lr_coef_sign_folds": 1.0
+  }
+ ],
+ "band_mean_abs_d": {
+  "rel": {
+   "delta": 0.3545835614204407,
+   "theta": 0.17485640943050385,
+   "alpha": 0.28681710362434387,
+   "beta": 0.17936007678508759,
+   "highbeta": 0.15954038500785828,
+   "gamma": 0.10840195417404175
+  },
+  "per": {
+   "delta": 0.12189358472824097,
+   "theta": 0.09544152021408081,
+   "alpha": 0.2984228730201721,
+   "beta": 0.19892346858978271,
+   "highbeta": 0.17011304199695587,
+   "gamma": 0.19381572306156158
+  }
+ }
+}

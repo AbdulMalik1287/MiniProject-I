@@ -1,0 +1,114 @@
+{
+ "title": "FTD vs control",
+ "n": 103,
+ "sites": [
+  "brainlat",
+  "ds004504"
+ ],
+ "fold_stability_spearman": 0.7467378505321072,
+ "model_vs_effect_spearman": 0.6517302721436259,
+ "top_effects": [
+  {
+   "feature": "per beta T3",
+   "cohen_d": -0.9446741342544556,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.03829050064086914,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel alpha T5",
+   "cohen_d": -0.9155589938163757,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.02237190492451191,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "per beta T5",
+   "cohen_d": -0.8917779922485352,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.031316954642534256,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "per beta F8",
+   "cohen_d": -0.8915750980377197,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.03405248373746872,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "per beta P3",
+   "cohen_d": -0.8539480566978455,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.0322205014526844,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "per alpha T3",
+   "cohen_d": -0.8534376621246338,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.021457942202687263,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "per beta T6",
+   "cohen_d": -0.838653028011322,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.026003826409578323,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel alpha F7",
+   "cohen_d": -0.8367542028427124,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.014948045834898949,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel alpha T3",
+   "cohen_d": -0.8338038325309753,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.016360897570848465,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "per beta Pz",
+   "cohen_d": -0.8310813903808594,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.027035843580961227,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "per alpha T5",
+   "cohen_d": -0.8248162865638733,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.019327452406287193,
+   "lr_coef_sign_folds": 1.0
+  },
+  {
+   "feature": "rel alpha F4",
+   "cohen_d": -0.819424569606781,
+   "site_sign_agreement": 1.0,
+   "lr_coef_mean": -0.01612972468137741,
+   "lr_coef_sign_folds": 1.0
+  }
+ ],
+ "band_mean_abs_d": {
+  "rel": {
+   "delta": 0.4138071835041046,
+   "theta": 0.3524833619594574,
+   "alpha": 0.7584717273712158,
+   "beta": 0.22581349313259125,
+   "highbeta": 0.17262478172779083,
+   "gamma": 0.34875068068504333
+  },
+  "per": {
+   "delta": 0.37846696376800537,
+   "theta": 0.2843663692474365,
+   "alpha": 0.6832699775695801,
+   "beta": 0.7733954787254333,
+   "highbeta": 0.11517319828271866,
+   "gamma": 0.5156159996986389
+  }
+ }
+}
