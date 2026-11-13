@@ -257,11 +257,18 @@ def recordings(dataset):
         import mne
         mne.set_log_level("ERROR")
         groups = {"1_AD": "alzheimers", "2_bvFTD": "ftd", "5_HC": "control"}
+        missing = []
         for folder, group in groups.items():
             for fp in sorted((d / folder).glob("*/sub-*/eeg/*_eeg.set")):
-                raw = mne.io.read_raw_eeglab(fp, preload=True)
+                try:
+                    raw = mne.io.read_raw_eeglab(fp, preload=True)
+                except FileNotFoundError:  # 14 Chilean controls: .set on Synapse, its .fdt never uploaded
+                    missing.append(fp.parts[-3])
+                    continue
                 site, sid = fp.parts[-4], fp.parts[-3]
                 yield f"brainlat-{site}-{sid}", group, brainlat_19(raw), raw.info["sfreq"], False
+        if missing:
+            print(f"[features] WARNING brainlat: {len(missing)} recordings have no .fdt data file, skipped", flush=True)
     elif dataset == "semmelweis":  # Racz et al., Zenodo 14808296; Curry files, 2 min eyes closed
         import pandas as pd
         table = pd.read_excel(d / "schizophrenia_EI_dynamics_table.xlsx")

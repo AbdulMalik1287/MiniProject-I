@@ -102,16 +102,17 @@ def main():
     ap.add_argument("--out", default="~/eeg/raw2")
     ap.add_argument("--tune", default="results/per_disorder/tune.json")
     ap.add_argument("--repeats", type=int, default=5)
-    ap.add_argument("--save", default="results/three_class.json")
+    ap.add_argument("--dataset", default="ds004504", help="ds004504 or brainlat")
+    ap.add_argument("--save", default=None)
     args = ap.parse_args()
     out = Path(args.out).expanduser()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     cfg = {**json.loads(Path(args.tune).read_text())["best"]["config"], "epochs": R.RAW_EPOCHS}
 
-    ab, coh, subject, groups, _, win = R.load_features(out, ["ds004504"], raw=True)
+    ab, coh, subject, groups, _, win = R.load_features(out, [args.dataset], raw=True)
     yw = np.array([CLASSES.index(g) for g in groups])
-    rich = np.load(out / "features" / "ds004504_rich.npy")
-    lab = np.load(out / "features" / "ds004504_labram.npz")["block6"]
+    rich = np.load(out / "features" / f"{args.dataset}_rich.npy")
+    lab = np.load(out / "features" / f"{args.dataset}_labram.npz")["block6"]
     iu = np.triu_indices(coh.shape[1], 1)
     base = np.concatenate([ab.reshape(len(ab), -1), coh[:, iu[0], iu[1], :].reshape(len(coh), -1)], 1)
     u = np.unique(subject)
@@ -160,7 +161,8 @@ def main():
         agg["recall"] = {c: float(np.mean([r["recall"][c] for r in rs])) for c in CLASSES}
         agg["confusion_summed"] = np.sum([r["confusion"] for r in rs], axis=0).tolist()
         report["methods"][m] = agg
-    Path(args.save).write_text(json.dumps(report, indent=2))
+    report["dataset"] = args.dataset
+    Path(args.save or ("results/three_class.json" if args.dataset == "ds004504" else f"results/three_class_{args.dataset}.json")).write_text(json.dumps(report, indent=2))
     print("\nmethod      macro-F1        bal-acc         accuracy        macro-AUC   recall ctl/ftd/ad")
     for m, a in report["methods"].items():
         print(f"{m:<10} " + "  ".join(f"{a[k][0]:.3f}±{a[k][1]:.3f}" for k in ("macro_f1", "bal_acc", "accuracy", "macro_auc_ovr"))
