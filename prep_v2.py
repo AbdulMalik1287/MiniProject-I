@@ -156,6 +156,10 @@ def cmd_eval(args):
         "v2_lr_wpli": ("features_v2", "median", ["ab", "wpli"]),
         "v2_lr_all": ("features_v2", "median", ["ab", "coh", "per", "wpli"]),
         "v2_riemann": ("features_v2", "median", None),
+        # trace-normalised covariances: overall signal scale removed, so the BrainLat
+        # patient/control amplitude gap (rs-HEP vs rs files) cannot drive the score
+        "v1_riemann_tn": ("features", "mean", "tn"),
+        "v2_riemann_tn": ("features_v2", "median", "tn"),
     }
     for task in TASKS:
         cache = {}
@@ -166,11 +170,14 @@ def cmd_eval(args):
             if (fd, agg) not in cache:
                 cache[(fd, agg)] = subject_table(args.out / fd, task, agg)
             u, ys, site, tab, covs = cache[(fd, agg)]
-            x = recentre_sites(covs, site) if blocks is None else per_site(np.concatenate([tab[b] for b in blocks], 1), site, z)
+            if blocks == "tn":
+                covs = covs / np.trace(covs, axis1=-2, axis2=-1)[..., None, None]
+            x = (recentre_sites(covs, site) if blocks in (None, "tn")
+                 else per_site(np.concatenate([tab[b] for b in blocks], 1), site, z))
             strat = np.char.add(site.astype(str), ys.astype(str))
             score = np.zeros(len(u))
             for a, b in StratifiedKFold(5, shuffle=True, random_state=42).split(u, strat):
-                clf = RM.FBTangentLR() if blocks is None else lr_probe()
+                clf = RM.FBTangentLR() if blocks in (None, "tn") else lr_probe()
                 score[b] = clf.fit(x[a], ys[a]).predict_proba(x[b])[:, 1]
             res = {}
             for st in list(np.unique(site)) + ["all"]:
