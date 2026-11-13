@@ -68,9 +68,9 @@ def group_w(site, y):
 # ------------------------------------------------------------------ data
 
 
-def load_task(out, task, raw):
+def load_task(out, task, raw, feat="features"):
     pos, neg, sites = R.TASKS[task]
-    ab, coh, subject, groups, dsname, win = R.load_features(out, sites, raw=raw)
+    ab, coh, subject, groups, dsname, win = R.load_features(out, sites, raw=raw, feat=feat)
     keep, y = R.task_rows(groups, pos, neg)
     ab, coh, subject, dsname = ab[keep], coh[keep], subject[keep], dsname[keep]
     win = win[keep] if raw else None

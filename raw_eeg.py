@@ -421,8 +421,8 @@ def cache_groups(ds, part):
     return np.where(part["label"] == 1, patient, "control")
 
 
-def load_features(out, datasets, raw=False):
-    parts = [np.load(out / "features" / f"{ds}.npz") for ds in datasets]
+def load_features(out, datasets, raw=False, feat="features"):
+    parts = [np.load(out / feat / f"{ds}.npz") for ds in datasets]
     cat = lambda k: np.concatenate([p[k] for p in parts])  # noqa: E731
     groups = np.concatenate([cache_groups(ds, p) for ds, p in zip(datasets, parts)])
     dsname = np.concatenate([[ds] * len(p["subject"]) for ds, p in zip(datasets, parts)])
