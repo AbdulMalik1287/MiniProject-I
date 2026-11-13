@@ -100,7 +100,7 @@ DATASETS = {
 }
 TASKS = {  # name -> (positive group, negative group, datasets)
     "schizophrenia": ("schizophrenia", "control", ["aseeg", "warsaw", "semmelweis"]),
-    "mood": ("mood", "control", ["mumtaz", "ds003478"]),
+    "mood": ("mood", "control", ["mumtaz"]),  # UNM (ds003478) dropped 2026-11-13: BDI labels, only 11/46 interview-confirmed MDD
     "alzheimers": ("alzheimers", "control", ["ds004504", "brainlat"]),
     "ftd": ("ftd", "control", ["ds004504", "brainlat"]),
     "alzheimers_vs_ftd": ("alzheimers", "ftd", ["ds004504", "brainlat"]),
