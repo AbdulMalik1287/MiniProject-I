@@ -24,7 +24,11 @@ Models, fixed before running:
     labram_ft   LaBraM (pretrained), last 2 of 12 blocks + fc_norm fine-tuned with a linear
                 head on windows, subject = mean window logit
 
-    python pooled_deep.py --out ~/eeg/raw2 [--models gt,gt_mil] [--tasks mood]
+    --loho      leave-one-hospital-out: one model per held-out site, trained on all other
+                sites; the per-site AUC is then pure transfer to an unseen hospital. The
+                held-out site's band power is still z-scored on its own (unlabeled) subjects.
+
+    python pooled_deep.py --out ~/eeg/raw2 [--models gt,gt_mil] [--tasks mood] [--loho]
 """
 import argparse
 import json
@@ -71,7 +75,9 @@ def load_task(out, task, raw):
     return dict(ab=ab, coh=coh, win=win, y=y, subject=subject, u=u, rows=rows, ys=ys, site=site)
 
 
-def folds(d):
+def folds(d, loho=False):
+    if loho:  # leave one hospital out: train on every other site, test on all of this one
+        return [(np.where(d["site"] != st)[0], np.where(d["site"] == st)[0]) for st in np.unique(d["site"])]
     strat = np.char.add(d["site"].astype(str), d["ys"].astype(str))
     return list(StratifiedKFold(5, shuffle=True, random_state=SEED).split(d["u"], strat))
 
@@ -274,13 +280,14 @@ def main():
     ap.add_argument("--tune", default="results/per_disorder/tune.json")
     ap.add_argument("--models", default=",".join(MODELS))
     ap.add_argument("--tasks", default=",".join(TASKS))
-    ap.add_argument("--save", default="results/pooled_deep.json")
+    ap.add_argument("--save", default=None)
+    ap.add_argument("--loho", action="store_true", help="leave-one-hospital-out instead of pooled 5-fold")
     args = ap.parse_args()
     out = Path(args.out).expanduser()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     cfg = json.loads(Path(args.tune).read_text())["best"]["config"]
     models = args.models.split(",")
-    save = Path(args.save)
+    save = Path(args.save or ("results/pooled_deep_loho.json" if args.loho else "results/pooled_deep.json"))
     report = json.loads(save.read_text()) if save.exists() else {}
     state = None
     if "labram_ft" in models:
@@ -297,7 +304,7 @@ def main():
         if d["win"] is not None:
             d["winz"] = recording_z(d)
             d["win"] = None
-        fl = folds(d)
+        fl = folds(d, args.loho)
         g = graphs(d, cfg) if any(m in todo for m in ("gatv2", "gt", "gt_mil", "gt_mil_dro")) else None
         print(f"[{task}] {len(d['u'])} subjects, sites " +
               ", ".join(f"{s} {int((d['site'] == s).sum())}" for s in np.unique(d["site"])), flush=True)
