@@ -92,6 +92,7 @@ DATASETS = {
     "ds003478": {"line": 60, "eyes": "closed", "patient": "mood"},
     "ds007526": {"line": 50, "eyes": "open", "patient": "parkinsons"},
     "semmelweis": {"line": 50, "eyes": "closed", "patient": "schizophrenia"},
+    "brainlat": {"line": 50, "eyes": "closed", "patient": None},
     # ASZED rest is eyes-open (occipital alpha share 0.12 vs 0.43-0.45 in the
     # eyes-closed sets), ~20 s per subject, delta-dominated: only 13 clean windows
     # survive (patients 98% rejected vs controls 59%). Kept for its QC record; no task.
@@ -100,9 +101,9 @@ DATASETS = {
 TASKS = {  # name -> (positive group, negative group, datasets)
     "schizophrenia": ("schizophrenia", "control", ["aseeg", "warsaw", "semmelweis"]),
     "mood": ("mood", "control", ["mumtaz", "ds003478"]),
-    "alzheimers": ("alzheimers", "control", ["ds004504"]),
-    "ftd": ("ftd", "control", ["ds004504"]),
-    "alzheimers_vs_ftd": ("alzheimers", "ftd", ["ds004504"]),
+    "alzheimers": ("alzheimers", "control", ["ds004504", "brainlat"]),
+    "ftd": ("ftd", "control", ["ds004504", "brainlat"]),
+    "alzheimers_vs_ftd": ("alzheimers", "ftd", ["ds004504", "brainlat"]),
     "parkinsons": ("parkinsons", "control", ["ds004584", "ds003490", "ds002778", "ds007526"]),
 }
 for _t, (_p, _n, _ds) in TASKS.items():  # a task must never mix eyes-open and eyes-closed data
@@ -165,6 +166,25 @@ def eyes_open_span(events):
         kinds = sorted({e.get("trial_type", "") for e in events})
         raise ValueError(f"no eyes-open events; trial types present: {kinds}")
     return min(onsets), max(onsets) + 1.0
+
+
+def brainlat_19(raw):
+    """128 BioSemi channels -> (19, n) uV: each 10-20 site takes the electrode closest in direction
+    from the head centre (positions read from the file; checked: Cz -> A1, all within 11 degrees)."""
+    import mne
+    pos = np.array([c["loc"][:3] for c in raw.info["chs"]])
+    pos = pos - pos.mean(0)
+    pos /= np.linalg.norm(pos, axis=1, keepdims=True)
+    std = mne.channels.make_standard_montage("standard_1020").get_positions()["ch_pos"]
+    names = {"T3": "T7", "T4": "T8", "T5": "P7", "T6": "P8"}
+    sp = np.array([std[names.get(c, c).capitalize() if c.startswith("FP") else names.get(c, c).replace("Z", "z")]
+                   for c in CH])
+    sp = sp - sp.mean(0)
+    sp /= np.linalg.norm(sp, axis=1, keepdims=True)
+    j = (sp @ pos.T).argmax(1)
+    if len(set(j)) != len(CH):
+        raise ValueError("two 10-20 sites mapped to one BioSemi electrode")
+    return raw.get_data()[j] * 1e6
 
 
 def eyes_closed_blocks(events, x, sf):
@@ -233,6 +253,15 @@ def recordings(dataset):
             if ses not in ("ses-hc", "ses-off"):
                 continue
             yield f"{dataset}-{sid}", "control" if ses == "ses-hc" else "parkinsons", *load_raw(fp), False
+    elif dataset == "brainlat":  # BrainLat (Synapse syn51549340): 128-ch BioSemi, Argentina + Chile
+        import mne
+        mne.set_log_level("ERROR")
+        groups = {"1_AD": "alzheimers", "2_bvFTD": "ftd", "5_HC": "control"}
+        for folder, group in groups.items():
+            for fp in sorted((d / folder).glob("*/sub-*/eeg/*_eeg.set")):
+                raw = mne.io.read_raw_eeglab(fp, preload=True)
+                site, sid = fp.parts[-4], fp.parts[-3]
+                yield f"brainlat-{site}-{sid}", group, brainlat_19(raw), raw.info["sfreq"], False
     elif dataset == "semmelweis":  # Racz et al., Zenodo 14808296; Curry files, 2 min eyes closed
         import pandas as pd
         table = pd.read_excel(d / "schizophrenia_EI_dynamics_table.xlsx")
