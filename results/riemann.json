@@ -17,6 +17,24 @@
       0.05918810928556524
     ]
   },
+  "alzheimers:brainlat": {
+    "riemann_fb": [
+      0.9928571428571429,
+      0.0012626906806902747
+    ]
+  },
+  "ftd:brainlat": {
+    "riemann_fb": [
+      1.0,
+      0.0
+    ]
+  },
+  "alzheimers_vs_ftd:brainlat": {
+    "riemann_fb": [
+      0.673984962406015,
+      0.04266438646930607
+    ]
+  },
   "mood:mumtaz": {
     "riemann_fb": [
       0.9328571428571427,
