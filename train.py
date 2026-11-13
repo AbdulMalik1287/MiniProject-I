@@ -33,7 +33,7 @@ from sklearn.metrics import (balanced_accuracy_score, f1_score, precision_score,
 from sklearn.model_selection import GroupKFold, train_test_split
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
-from torch_geometric.nn import (BatchNorm, ChebConv, GATv2Conv, GCNConv,
+from torch_geometric.nn import (BatchNorm, ChebConv, GATv2Conv, GCNConv, TransformerConv,
                                 global_add_pool, global_max_pool, global_mean_pool)
 
 N_NODES = 8
@@ -163,6 +163,11 @@ class GraphNet(nn.Module):
             # without it GATv2 is blind to the edge weights the paper computes.
             self.conv1 = GATv2Conv(in_dim, 8, heads=4, edge_dim=edge_dim)
             self.conv2 = GATv2Conv(32, 20, heads=1, edge_dim=edge_dim)
+        elif model == "transformer":
+            # Graph Transformer (Shi et al. 2021): scaled dot-product attention over
+            # neighbours with edge features added to keys/values; same widths as gatv2.
+            self.conv1 = TransformerConv(in_dim, 8, heads=4, edge_dim=edge_dim)
+            self.conv2 = TransformerConv(32, 20, heads=1, edge_dim=edge_dim)
         else:
             raise ValueError(model)
         self.bn = BatchNorm(20)
@@ -178,16 +183,18 @@ class GraphNet(nn.Module):
             return conv(x, edge_index, edge_weight=edge_attr.sum(1))
         return conv(x, edge_index, edge_attr=edge_attr)
 
-    def forward(self, x, edge_index, edge_attr, batch):
+    def embed(self, x, edge_index, edge_attr, batch):
+        """Pooled graph embedding (20-d, or 40-d for meanmax) before the head."""
         x = F.leaky_relu(self._conv(self.conv1, x, edge_index, edge_attr))
         x = F.leaky_relu(self.bn(self._conv(self.conv2, x, edge_index, edge_attr)))
         if self.pool == "add":
-            out = global_add_pool(x, batch)
-        elif self.pool == "mean":
-            out = global_mean_pool(x, batch)
-        else:
-            out = torch.cat([global_mean_pool(x, batch), global_max_pool(x, batch)], 1)
-        out = F.dropout(out, p=0.2, training=self.training)
+            return global_add_pool(x, batch)
+        if self.pool == "mean":
+            return global_mean_pool(x, batch)
+        return torch.cat([global_mean_pool(x, batch), global_max_pool(x, batch)], 1)
+
+    def forward(self, x, edge_index, edge_attr, batch):
+        out = F.dropout(self.embed(x, edge_index, edge_attr, batch), p=0.2, training=self.training)
         return self.fc2(F.leaky_relu(self.fc1(out)))
 
 
