@@ -7,3 +7,5 @@ figshare_data/
 .impeccable/
 .claude/
 literature/pdfs/
+*.tmp
+*.tmp.npz
