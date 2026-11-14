@@ -3,7 +3,7 @@
 **Detecting brain and mental disorders from resting-state EEG with graph neural networks, honestly evaluated.**
 
 Mini project, IIIT Nagpur CSE, Jul–Dec 2026 · Supervisor: Dr. Nileshchandra Pikle ·
-Team: Rajat Malik, Yash Khedekar, Abdul Malik, Ashwin Rathore
+Team: Abdul Malik, Ashwin Rathore, Yash Khedekar, Rajat Malik
 
 We built about 30 models (graph networks, transformers, Riemannian and classical baselines) on 12 public
 EEG datasets and froze one system per disorder. Every number comes from people the model never saw
