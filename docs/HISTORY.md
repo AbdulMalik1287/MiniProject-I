@@ -1,4 +1,8 @@
-# Brain Signal Processing — EEG + GNN disorder classification
+# Project history (Sep - Oct 2026)
+
+> Lab notebook of the first phases, kept as written at the time. Numbers here are superseded by the
+> final system in the [README](../README.md) and the [results report](MiniProject_Results.docx).
+> Commands are updated to the current `eeg/` package layout.
 
 Mini project, IIIT Nagpur CSE, Jul–Dec 2026. Supervisor: Dr. Nileshchandra Pikle.
 
@@ -35,7 +39,7 @@ Verified against `EEGGraphDataset.py`, not taken from the paper text:
 
 ## Reproduction status: DONE (2026-09-08, milestone was 15 Sep)
 
-`python train.py --eval-ckpt` on the 478 held-out subjects, 10 released
+`python -m eeg.models.train --eval-ckpt` on the 478 held-out subjects, 10 released
 checkpoints. Every metric matches the published figures including the standard
 deviations:
 
@@ -66,7 +70,7 @@ Two portability issues had to be solved to get there, both worth knowing:
 
 ## Phase 2: multi-disorder on Park et al. (in progress)
 
-`park.py` — 945 subjects, 19 channels, single site (SMG-SNU Boramae, Seoul).
+`eeg/data/park.py` — 945 subjects, 19 channels, single site (SMG-SNU Boramae, Seoul).
 Verified against the paper: Mood 266, Addictive 186, Trauma 128, SZ 117,
 Anxiety 107, Healthy 95, OCD 46. Features are 114 band-power (19×6) and 1026
 coherence (171 pairs × 6 bands) columns.
@@ -75,8 +79,8 @@ Graph: 19 nodes, complete + self-loops (361 edges), node features = 6 band
 powers, edge features = 6 per-band coherences.
 
 ```bash
-python park.py --task multiclass --model gcn       # 4-way deliverable
-python park.py --task binary --target Schizophrenia # reference, comparable to Park
+python -m eeg.data.park --task multiclass --model gcn       # 4-way deliverable
+python -m eeg.data.park --task binary --target Schizophrenia # reference, comparable to Park
 ```
 
 ### Results
@@ -143,10 +147,10 @@ logistic regression on the same features with a clean stratified split reaches
 ## Phase 3: one GNN per disorder, and raw EEG across hospitals
 
 Full write-up with architectures, all tables and figures:
-**[`docs/MiniProject_Results.docx`](docs/MiniProject_Results.docx)**, rebuilt from the result
-files by `python make_report.py`.
+**[`MiniProject_Results.docx`](MiniProject_Results.docx)**, rebuilt from the result
+files by `python -m eeg.reporting.make_report`.
 
-### Per-disorder GNNs (`per_disorder.py`, Park corpus)
+### Per-disorder GNNs (`eeg/experiments/per_disorder.py`, Park corpus)
 
 Five binary GNNs (disorder vs healthy) plus an ensemble. OCD excluded (46 subjects).
 Protocol: stratified 80/20 subject split fixed once (`results/per_disorder/split.json`);
@@ -179,19 +183,19 @@ reaches AUC 0.738 [0.59, 0.85] for any patient vs healthy, catching 70% of patie
 wrongly flagging 42% of healthy controls. It did **not** beat the single models (0.63-0.79),
 and with 19 controls none of those differences is resolvable.
 
-- Readout page for all 180 held-out subjects: [`docs/eeg_readout.html`](docs/eeg_readout.html),
-  built from the result files by `python readout/build.py`
+- Readout page for all 180 held-out subjects: [`eeg_readout.html`](eeg_readout.html),
+  built from the result files by `python -m eeg.reporting.readout`
 - Same readout on the command line:
 
 ```bash
-python per_disorder.py predict --ids 503 730 --out results/per_disorder   # trained models are committed
+python -m eeg.experiments.per_disorder predict --ids 503 730 --out results/per_disorder   # trained models are committed
 ```
 
-### Raw EEG across hospitals (`raw_eeg.py`)
+### Raw EEG across hospitals (`eeg/data/raw_eeg.py`)
 
 Every external dataset brings its own controls. One pipeline for all sources; the GNN
 config is the one tuned on Park, not re-tuned here. ASEEG ships unlabelled channels -
-`infer_channel_order.py` recovers the order from the data.
+`eeg/data/infer_channel_order.py` recovers the order from the data.
 
 | evaluation | AUC [95% CI] |
 |---|---|
@@ -217,9 +221,9 @@ from the psychiatric models: different hospitals, older patients, and eyes-open
 Parkinson's recordings, so the probabilities are not comparable.
 
 ```bash
-python fetch_neuro.py                                   # ~10 GB, resumable
-python raw_eeg.py features --datasets ds004504 ds004584 ds003490 ds002778
-python raw_eeg.py run --disease alzheimers | ftd | alzheimers_vs_ftd | parkinsons
+python -m eeg.data.fetch_neuro                                   # ~10 GB, resumable
+python -m eeg.data.raw_eeg features --datasets ds004504 ds004584 ds003490 ds002778
+python -m eeg.data.raw_eeg run --disease alzheimers | ftd | alzheimers_vs_ftd | parkinsons
 ```
 
 | task | AUC [95% CI] |
@@ -254,19 +258,19 @@ Diego authors ask to be contacted before a manuscript using their data is submit
 ```bash
 ssh blackwell
 ~/envs/eeg/bin/python   # torch 2.11.0+cu128, PyG 2.8.0, CUDA available
-cd ~/eeg                # train.py, eeg-gcnn/ (upstream), data/ (FigShare)
+cd ~/eeg                # eeg/models/train.py, eeg-gcnn/ (upstream), data/ (FigShare)
 ```
 
 ## Usage
 
 ```bash
-python train.py --selfcheck                      # no dataset needed
+python -m eeg.models.train --selfcheck                      # no dataset needed
 
-python train.py --eval-ckpt                      # reproduce published Table 2
-python train.py --model gcn                      # baseline, trained from scratch
-python train.py --model fcnn                     # graph-blind control
-python train.py --model gatv2 --edge-mode split  # attention that reads the edges
-python train.py --model gcn --topk 3             # sparsity sweep
+python -m eeg.models.train --eval-ckpt                      # reproduce published Table 2
+python -m eeg.models.train --model gcn                      # baseline, trained from scratch
+python -m eeg.models.train --model fcnn                     # graph-blind control
+python -m eeg.models.train --model gatv2 --edge-mode split  # attention that reads the edges
+python -m eeg.models.train --model gcn --topk 3             # sparsity sweep
 ```
 
 ## Design notes
