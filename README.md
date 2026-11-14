@@ -9,6 +9,8 @@ We built about 30 models (graph networks, transformers, Riemannian and classical
 EEG datasets and froze one system per disorder. Every number comes from people the model never saw
 during training: splits are by subject, and nothing is tuned on test folds.
 
+> **Branch `disease/schizophrenia`:** everything about schizophrenia - datasets, results, what the model looks at, caveats and how to run it alone - is in [docs/diseases/schizophrenia.md](docs/diseases/schizophrenia.md). The code is shared with master.
+
 ## Final results
 
 One frozen system per disorder: five scale-free models (logistic regression, Riemannian, GATv2, Graph
