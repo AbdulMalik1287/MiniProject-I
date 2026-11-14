@@ -1,0 +1,86 @@
+{
+ "alzheimers:ds004504": {
+  "windows": 1950,
+  "people": 65,
+  "leaky": {
+   "auc": 0.9990549169859515,
+   "accuracy": 0.9887179487179487
+  },
+  "honest": {
+   "auc": 0.8517124308216262,
+   "accuracy": 0.78
+  }
+ },
+ "ftd:ds004504": {
+  "windows": 1543,
+  "people": 52,
+  "leaky": {
+   "auc": 0.9978411982715922,
+   "accuracy": 0.9857420609202852
+  },
+  "honest": {
+   "auc": 0.8446789977967926,
+   "accuracy": 0.7764095917044718
+  }
+ },
+ "alzheimers_vs_ftd:ds004504": {
+  "windows": 1753,
+  "people": 59,
+  "leaky": {
+   "auc": 0.9962962962962963,
+   "accuracy": 0.9743297204791785
+  },
+  "honest": {
+   "auc": 0.5730373947498761,
+   "accuracy": 0.583000570450656
+  }
+ },
+ "mood:mumtaz": {
+  "windows": 1633,
+  "people": 58,
+  "leaky": {
+   "auc": 0.9987697662555886,
+   "accuracy": 0.992651561543172
+  },
+  "honest": {
+   "auc": 0.8867509826867106,
+   "accuracy": 0.8462951622780159
+  }
+ },
+ "schizophrenia:aseeg": {
+  "windows": 2939,
+  "people": 101,
+  "leaky": {
+   "auc": 0.9968879091565863,
+   "accuracy": 0.9731201088805717
+  },
+  "honest": {
+   "auc": 0.7976180001111461,
+   "accuracy": 0.7294998298741069
+  }
+ },
+ "schizophrenia:warsaw": {
+  "windows": 840,
+  "people": 28,
+  "leaky": {
+   "auc": 0.9996995464852608,
+   "accuracy": 0.9940476190476191
+  },
+  "honest": {
+   "auc": 0.8436678004535147,
+   "accuracy": 0.7726190476190476
+  }
+ },
+ "schizophrenia:semmelweis": {
+  "windows": 866,
+  "people": 71,
+  "leaky": {
+   "auc": 0.9978374191049497,
+   "accuracy": 0.9838337182448037
+  },
+  "honest": {
+   "auc": 0.5754939775887762,
+   "accuracy": 0.5958429561200924
+  }
+ }
+}
