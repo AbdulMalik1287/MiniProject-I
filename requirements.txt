@@ -16,3 +16,7 @@ neuroHarmonize
 neuroCombat
 statsmodels
 antropy
+braindecode          # LaBraM (pretrained EEG transformer)
+xgboost
+reportlab            # team update PDF
+truststore           # optional: only behind TLS-intercepting proxies
