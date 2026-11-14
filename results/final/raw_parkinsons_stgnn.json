@@ -1,0 +1,49 @@
+{
+  "disease": "parkinsons",
+  "positive": "parkinsons",
+  "negative": "control",
+  "datasets": [
+    "ds004584",
+    "ds003490",
+    "ds002778"
+  ],
+  "eyes": "open",
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 20,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gatv2",
+    "pool": "meanmax",
+    "topk": 4
+  },
+  "within:ds004584": {
+    "auc": 0.5405927835051546,
+    "ci": [
+      0.43822486441385067,
+      0.6389960385993695
+    ],
+    "n_patients": 97,
+    "n_controls": 48
+  },
+  "within:ds003490": {
+    "auc": 0.7039337474120082,
+    "ci": [
+      0.5374739583333333,
+      0.8526408412335185
+    ],
+    "n_patients": 23,
+    "n_controls": 21
+  },
+  "within:ds002778": {
+    "auc": 0.6041666666666667,
+    "ci": [
+      0.399116569704805,
+      0.8083333333333333
+    ],
+    "n_patients": 15,
+    "n_controls": 16
+  }
+}

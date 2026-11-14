@@ -1,0 +1,85 @@
+{
+  "task": "alzheimers",
+  "dataset": "ds004504",
+  "n_subjects": 65,
+  "fold_stability_spearman": 0.727,
+  "agreement_with_cohen_d_spearman": 0.1,
+  "share_band_power_vs_connectivity": 0.261,
+  "bands": {
+    "power": {
+      "delta": 0.1251,
+      "theta": 0.2162,
+      "alpha": 0.146,
+      "beta": 0.1175,
+      "highbeta": 0.1732,
+      "gamma": 0.222
+    },
+    "connectivity": {
+      "delta": 0.2025,
+      "theta": 0.1577,
+      "alpha": 0.2149,
+      "beta": 0.1408,
+      "highbeta": 0.1503,
+      "gamma": 0.1337
+    }
+  },
+  "top_nodes_power": [
+    "T5",
+    "T3",
+    "P3",
+    "C3",
+    "T4"
+  ],
+  "top_connections": [
+    {
+      "edge": "T3-T5",
+      "importance": 1.0,
+      "cohen_d": 0.268
+    },
+    {
+      "edge": "T5-P3",
+      "importance": 0.992,
+      "cohen_d": 0.203
+    },
+    {
+      "edge": "C3-P3",
+      "importance": 0.9,
+      "cohen_d": 0.553
+    },
+    {
+      "edge": "T5-O1",
+      "importance": 0.878,
+      "cohen_d": -0.054
+    },
+    {
+      "edge": "T3-C3",
+      "importance": 0.705,
+      "cohen_d": 0.186
+    },
+    {
+      "edge": "P3-O1",
+      "importance": 0.643,
+      "cohen_d": 0.281
+    },
+    {
+      "edge": "C3-T5",
+      "importance": 0.606,
+      "cohen_d": 0.518
+    },
+    {
+      "edge": "T3-P3",
+      "importance": 0.586,
+      "cohen_d": 0.27
+    },
+    {
+      "edge": "P4-O2",
+      "importance": 0.579,
+      "cohen_d": 0.856
+    },
+    {
+      "edge": "F4-T5",
+      "importance": 0.572,
+      "cohen_d": -0.215
+    }
+  ]
+}

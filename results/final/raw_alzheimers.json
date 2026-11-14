@@ -1,0 +1,84 @@
+{
+  "disease": "alzheimers",
+  "positive": "alzheimers",
+  "negative": "control",
+  "datasets": [
+    "ds004504",
+    "brainlat"
+  ],
+  "eyes": "closed",
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 20,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gatv2",
+    "pool": "meanmax",
+    "topk": 4
+  },
+  "within:ds004504": {
+    "auc": 0.9003831417624522,
+    "ci": [
+      0.8247548116020602,
+      0.9717417135180294
+    ],
+    "n_patients": 36,
+    "n_controls": 29
+  },
+  "within:brainlat": {
+    "auc": 0.6767857142857142,
+    "ci": [
+      0.5477370897683397,
+      0.8026791747104247
+    ],
+    "n_patients": 35,
+    "n_controls": 32
+  },
+  "pooled": {
+    "auc": 0.819672131147541,
+    "ci": [
+      0.7423634098435455,
+      0.887688753132832
+    ],
+    "n_patients": 71,
+    "n_controls": 61
+  },
+  "pooled:ds004504": {
+    "auc": 0.8936781609195402,
+    "ci": [
+      0.8096472484630379,
+      0.9619068504594821
+    ],
+    "n_patients": 36,
+    "n_controls": 29
+  },
+  "pooled:brainlat": {
+    "auc": 0.7482142857142857,
+    "ci": [
+      0.6275615401987352,
+      0.8675280886154164
+    ],
+    "n_patients": 35,
+    "n_controls": 32
+  },
+  "transfer:ds004504->brainlat": {
+    "auc": 0.6598214285714286,
+    "ci": [
+      0.5271810506566604,
+      0.7849426967802647
+    ],
+    "n_patients": 35,
+    "n_controls": 32
+  },
+  "transfer:brainlat->ds004504": {
+    "auc": 0.8477011494252873,
+    "ci": [
+      0.7470699046837568,
+      0.937381404174573
+    ],
+    "n_patients": 36,
+    "n_controls": 29
+  }
+}

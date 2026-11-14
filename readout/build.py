@@ -64,6 +64,53 @@ def neuro_groups():
     return groups
 
 
+FINAL = [  # disorder group, dataset key, row label
+    ("Alzheimer's & frontotemporal dementia", [("alzheimers:ds004504", "Alzheimer's vs healthy · Thessaloniki"),
+                                              ("ftd:ds004504", "FTD vs healthy · Thessaloniki"),
+                                              ("alzheimers_vs_ftd:ds004504", "Alzheimer's vs FTD · Thessaloniki")]),
+    ("Depression", [("mood:mumtaz", "Mumtaz · Malaysia"), ("mood:ds003478", "UNM · New Mexico")]),
+    ("Schizophrenia", [("schizophrenia:aseeg", "ASEEG · Iran"), ("schizophrenia:warsaw", "Warsaw · Poland"),
+                       ("schizophrenia:semmelweis", "Semmelweis · Budapest")]),
+    ("Parkinson's", [("parkinsons:ds004584", "Iowa"), ("parkinsons:ds003490", "New Mexico"),
+                     ("parkinsons:ds002778", "San Diego"), ("parkinsons:ds007526", "Tel Aviv")]),
+]
+SHARP = {"unm_moderate_severe": "UNM: moderate/severe depression (BDI-II ≥ 20) vs healthy",
+         "telaviv_moderate_pd": "Tel Aviv: moderate Parkinson's (MDS-UPDRS III ≥ 33) vs healthy"}
+SHORTG = {"alzheimers": "AD", "ftd": "FTD", "parkinsons": "PD", "control": "controls", "mood": "MDD",
+          "schizophrenia": "SZ"}
+
+
+FINAL_SYS = [  # task, group title
+    ("alzheimers", "Alzheimer's vs healthy"), ("ftd", "Frontotemporal dementia vs healthy"),
+    ("alzheimers_vs_ftd", "Alzheimer's vs FTD"), ("mood", "Depression vs healthy"),
+    ("schizophrenia", "Schizophrenia vs healthy")]
+SITE_NAME = {"ds004504": "Thessaloniki", "brainlat": "BrainLat (Argentina/Chile)", "mumtaz": "Mumtaz (Malaysia)",
+             "aseeg": "ASEEG (Iran)", "warsaw": "Warsaw", "semmelweis": "Semmelweis (Budapest)"}
+NOTE = {("alzheimers", "brainlat"): " *", ("ftd", "brainlat"): " *", ("mood", "mumtaz"): " †"}
+POS = {"alzheimers": ("AD", "controls"), "ftd": ("FTD", "controls"), "alzheimers_vs_ftd": ("AD", "FTD"),
+       "mood": ("MDD", "controls"), "schizophrenia": ("SZ", "controls")}
+
+
+def final_groups():
+    """Final frozen system (final_system.py): ensemble AUC per task and site."""
+    f = ROOT / "results" / "final_system.json"
+    if not f.exists():
+        return []
+    fs = json.loads(f.read_text())
+    groups = []
+    for t, title in FINAL_SYS:
+        if t not in fs:
+            continue
+        cov = fs[t]["ensemble"]["coverage"]
+        rows = [{"label": SITE_NAME[s] + NOTE.get((t, s), ""), "auc": r["auc"], "ci": r["ci"],
+                 "n": f"{r['n_pos']} {POS[t][0]} / {r['n_neg']} {POS[t][1]}"}
+                for s, r in fs[t]["ensemble"]["per_site"].items() if s != "all"]
+        groups.append({"title": title, "detail": f"accuracy {cov['100%']['accuracy']:.0%} answering everyone, "
+                                                 f"{cov['50%']['accuracy']:.0%} on its most confident half",
+                       "rows": rows})
+    return groups
+
+
 def main():
     ev = json.loads((RES / "evaluate.json").read_text())
     preds = json.loads((RES / "test_predictions.json").read_text())
@@ -94,6 +141,7 @@ def main():
         "subjects": [{"id": p["id"], "diagnosis": p["diagnosis"], "p": p["p"], "combined": p["combined"]}
                      for p in sorted(preds, key=lambda p: int(p["id"]))],
         "neuro": neuro_groups(),
+        "final": final_groups(),
     }
     assert len(data["subjects"]) == ev["n_test"], "predictions and evaluation disagree on the test split"
 

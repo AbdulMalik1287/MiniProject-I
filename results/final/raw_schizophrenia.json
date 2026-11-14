@@ -1,0 +1,84 @@
+{
+  "disease": "schizophrenia",
+  "positive": "schizophrenia",
+  "negative": "control",
+  "datasets": [
+    "aseeg",
+    "warsaw"
+  ],
+  "eyes": "closed",
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 20,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gatv2",
+    "pool": "meanmax",
+    "topk": 4
+  },
+  "within:aseeg": {
+    "auc": 0.7694117647058824,
+    "ci": [
+      0.6690208006279434,
+      0.8588585573782941
+    ],
+    "n_patients": 51,
+    "n_controls": 50
+  },
+  "within:warsaw": {
+    "auc": 0.75,
+    "ci": [
+      0.5260283801020408,
+      0.9444444444444444
+    ],
+    "n_patients": 14,
+    "n_controls": 14
+  },
+  "pooled": {
+    "auc": 0.734375,
+    "ci": [
+      0.6468141284611202,
+      0.8216395887191201
+    ],
+    "n_patients": 65,
+    "n_controls": 64
+  },
+  "pooled:aseeg": {
+    "auc": 0.7301960784313726,
+    "ci": [
+      0.6276454368612753,
+      0.8270443951165372
+    ],
+    "n_patients": 51,
+    "n_controls": 50
+  },
+  "pooled:warsaw": {
+    "auc": 0.7448979591836735,
+    "ci": [
+      0.5357142857142857,
+      0.923469387755102
+    ],
+    "n_patients": 14,
+    "n_controls": 14
+  },
+  "transfer:aseeg->warsaw": {
+    "auc": 0.47959183673469397,
+    "ci": [
+      0.26041666666666663,
+      0.6974744897959182
+    ],
+    "n_patients": 14,
+    "n_controls": 14
+  },
+  "transfer:warsaw->aseeg": {
+    "auc": 0.5725490196078431,
+    "ci": [
+      0.4579320906519357,
+      0.686562304971916
+    ],
+    "n_patients": 51,
+    "n_controls": 50
+  }
+}

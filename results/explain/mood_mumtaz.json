@@ -1,0 +1,85 @@
+{
+  "task": "mood",
+  "dataset": "mumtaz",
+  "n_subjects": 58,
+  "fold_stability_spearman": 0.673,
+  "agreement_with_cohen_d_spearman": 0.207,
+  "share_band_power_vs_connectivity": 0.328,
+  "bands": {
+    "power": {
+      "delta": 0.1497,
+      "theta": 0.0942,
+      "alpha": 0.0944,
+      "beta": 0.1964,
+      "highbeta": 0.2506,
+      "gamma": 0.2147
+    },
+    "connectivity": {
+      "delta": 0.1749,
+      "theta": 0.1978,
+      "alpha": 0.2159,
+      "beta": 0.1272,
+      "highbeta": 0.1451,
+      "gamma": 0.139
+    }
+  },
+  "top_nodes_power": [
+    "Pz",
+    "P4",
+    "Cz",
+    "Fp2",
+    "Fz"
+  ],
+  "top_connections": [
+    {
+      "edge": "Fz-Cz",
+      "importance": 1.0,
+      "cohen_d": -0.202
+    },
+    {
+      "edge": "Fp2-P4",
+      "importance": 0.993,
+      "cohen_d": -0.706
+    },
+    {
+      "edge": "F3-Fz",
+      "importance": 0.969,
+      "cohen_d": -0.294
+    },
+    {
+      "edge": "Fp1-Fp2",
+      "importance": 0.929,
+      "cohen_d": -0.143
+    },
+    {
+      "edge": "Fp2-Pz",
+      "importance": 0.922,
+      "cohen_d": -0.143
+    },
+    {
+      "edge": "Pz-P4",
+      "importance": 0.858,
+      "cohen_d": 0.354
+    },
+    {
+      "edge": "F3-P4",
+      "importance": 0.832,
+      "cohen_d": -0.125
+    },
+    {
+      "edge": "Fp2-F8",
+      "importance": 0.82,
+      "cohen_d": -0.301
+    },
+    {
+      "edge": "Fz-F4",
+      "importance": 0.809,
+      "cohen_d": -0.037
+    },
+    {
+      "edge": "F3-Pz",
+      "importance": 0.782,
+      "cohen_d": -0.172
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "disease": "alzheimers_vs_ftd",
+  "positive": "alzheimers",
+  "negative": "ftd",
+  "datasets": [
+    "ds004504"
+  ],
+  "eyes": "closed",
+  "config": {
+    "model": "msbp",
+    "epochs": 12,
+    "lr": 0.001,
+    "batch": 256,
+    "topk": 10,
+    "dropout": 0.3,
+    "hidden": 64
+  },
+  "within:ds004504": {
+    "auc": 0.6364734299516909,
+    "ci": [
+      0.47831581160639197,
+      0.7835490196078431
+    ],
+    "n_patients": 36,
+    "n_controls": 23
+  }
+}

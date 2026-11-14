@@ -89,14 +89,22 @@ DATASETS = {
     "ds004584": {"line": 60, "eyes": "open", "patient": "parkinsons"},
     "ds003490": {"line": 60, "eyes": "open", "patient": "parkinsons"},
     "ds002778": {"line": 60, "eyes": "open", "patient": "parkinsons"},
+    "ds003478": {"line": 60, "eyes": "closed", "patient": "mood"},
+    "ds007526": {"line": 50, "eyes": "open", "patient": "parkinsons"},
+    "semmelweis": {"line": 50, "eyes": "closed", "patient": "schizophrenia"},
+    "brainlat": {"line": 50, "eyes": "closed", "patient": None},
+    # ASZED rest is eyes-open (occipital alpha share 0.12 vs 0.43-0.45 in the
+    # eyes-closed sets), ~20 s per subject, delta-dominated: only 13 clean windows
+    # survive (patients 98% rejected vs controls 59%). Kept for its QC record; no task.
+    "aszed": {"line": 50, "eyes": "open", "patient": "schizophrenia"},
 }
 TASKS = {  # name -> (positive group, negative group, datasets)
-    "schizophrenia": ("schizophrenia", "control", ["aseeg", "warsaw"]),
-    "mood": ("mood", "control", ["mumtaz"]),
-    "alzheimers": ("alzheimers", "control", ["ds004504"]),
-    "ftd": ("ftd", "control", ["ds004504"]),
-    "alzheimers_vs_ftd": ("alzheimers", "ftd", ["ds004504"]),
-    "parkinsons": ("parkinsons", "control", ["ds004584", "ds003490", "ds002778"]),
+    "schizophrenia": ("schizophrenia", "control", ["aseeg", "warsaw", "semmelweis"]),
+    "mood": ("mood", "control", ["mumtaz"]),  # UNM (ds003478) dropped 2026-11-13: BDI labels, only 11/46 interview-confirmed MDD
+    "alzheimers": ("alzheimers", "control", ["ds004504", "brainlat"]),
+    "ftd": ("ftd", "control", ["ds004504", "brainlat"]),
+    "alzheimers_vs_ftd": ("alzheimers", "ftd", ["ds004504", "brainlat"]),
+    "parkinsons": ("parkinsons", "control", ["ds004584", "ds003490", "ds002778", "ds007526"]),
 }
 for _t, (_p, _n, _ds) in TASKS.items():  # a task must never mix eyes-open and eyes-closed data
     assert len({DATASETS[d]["eyes"] for d in _ds}) == 1, f"task {_t} mixes recording conditions"
@@ -110,7 +118,7 @@ RAW_EPOCHS = 20  # ~60k graph visits per fit, comparable to Park's 150 epochs on
 
 
 def norm_name(ch):
-    base = ch.replace("EEG ", "").strip().split("-")[0].upper()
+    base = ch.replace("EEG ", "").strip().split("-")[0].split("[")[0].upper()  # ASZED: "Fp1[1]"
     return ALIASES.get(base, base)
 
 
@@ -139,7 +147,7 @@ def load_raw(path, add_ref=None, crop=None):
     import mne
     mne.set_log_level("ERROR")
     reader = {".edf": mne.io.read_raw_edf, ".bdf": mne.io.read_raw_bdf,
-              ".set": mne.io.read_raw_eeglab}[path.suffix.lower()]
+              ".set": mne.io.read_raw_eeglab, ".dat": mne.io.read_raw_curry}[path.suffix.lower()]
     raw = reader(path, preload=True)
     if crop:
         raw.crop(tmin=crop[0], tmax=min(crop[1], raw.times[-1]))
@@ -147,7 +155,7 @@ def load_raw(path, add_ref=None, crop=None):
 
 
 def read_tsv(path):
-    with open(path, newline="", encoding="utf-8") as f:
+    with open(path, newline="", encoding="utf-8-sig") as f:  # ds007526 starts with a BOM
         return list(csv.DictReader(f, delimiter="\t"))
 
 
@@ -160,8 +168,41 @@ def eyes_open_span(events):
     return min(onsets), max(onsets) + 1.0
 
 
+def brainlat_19(raw):
+    """128 BioSemi channels -> (19, n) uV: each 10-20 site takes the electrode closest in direction
+    from the head centre (positions read from the file; checked: Cz -> A1, all within 11 degrees)."""
+    import mne
+    pos = np.array([c["loc"][:3] for c in raw.info["chs"]])
+    pos = pos - pos.mean(0)
+    pos /= np.linalg.norm(pos, axis=1, keepdims=True)
+    std = mne.channels.make_standard_montage("standard_1020").get_positions()["ch_pos"]
+    names = {"T3": "T7", "T4": "T8", "T5": "P7", "T6": "P8"}
+    sp = np.array([std[names.get(c, c).capitalize() if c.startswith("FP") else names.get(c, c).replace("Z", "z")]
+                   for c in CH])
+    sp = sp - sp.mean(0)
+    sp /= np.linalg.norm(sp, axis=1, keepdims=True)
+    j = (sp @ pos.T).argmax(1)
+    if len(set(j)) != len(CH):
+        raise ValueError("two 10-20 sites mapped to one BioSemi electrode")
+    return raw.get_data()[j] * 1e6
+
+
+def eyes_closed_blocks(events, x, sf):
+    """ds003478: the three eyes-closed minutes (event codes 1/11, 3/13, 5/15) as separate segments."""
+    onsets = {}
+    for e in events:  # some files label every event "STATUS", so go by code, not trial_type
+        if e.get("value", "").isdigit() and int(e["value"]) in (1, 3, 5, 11, 13, 15):
+            onsets.setdefault(int(e["value"]) % 10, []).append(float(e["onset"]))
+    if not onsets:
+        raise ValueError("no eyes-closed events")
+    return [(x[:, int(min(v) * sf):int((max(v) + 2) * sf)], sf) for v in onsets.values()]
+
+
 def recordings(dataset):
-    """Yield (subject_id, group, data uV (19, n), sfreq, already_filtered)."""
+    """Yield (subject_id, group, data uV (19, n), sfreq, already_filtered).
+
+    data may instead be a list of (segment, sfreq): each segment is filtered and
+    windowed on its own, so no window spans a gap between recordings."""
     d = ROOT / dataset
     if dataset == "aseeg":
         import h5py
@@ -212,6 +253,71 @@ def recordings(dataset):
             if ses not in ("ses-hc", "ses-off"):
                 continue
             yield f"{dataset}-{sid}", "control" if ses == "ses-hc" else "parkinsons", *load_raw(fp), False
+    elif dataset == "brainlat":  # BrainLat (Synapse syn51549340): 128-ch BioSemi, Argentina + Chile
+        import mne
+        mne.set_log_level("ERROR")
+        groups = {"1_AD": "alzheimers", "2_bvFTD": "ftd", "5_HC": "control"}
+        missing = []
+        for folder, group in groups.items():
+            for fp in sorted((d / folder).glob("*/sub-*/eeg/*_eeg.set")):
+                try:
+                    raw = mne.io.read_raw_eeglab(fp, preload=True)
+                except FileNotFoundError:  # 14 Chilean controls: .set on Synapse, its .fdt never uploaded
+                    missing.append(fp.parts[-3])
+                    continue
+                site, sid = fp.parts[-4], fp.parts[-3]
+                yield f"brainlat-{site}-{sid}", group, brainlat_19(raw), raw.info["sfreq"], False
+        if missing:
+            print(f"[features] WARNING brainlat: {len(missing)} recordings have no .fdt data file, skipped", flush=True)
+    elif dataset == "semmelweis":  # Racz et al., Zenodo 14808296; Curry files, 2 min eyes closed
+        import pandas as pd
+        table = pd.read_excel(d / "schizophrenia_EI_dynamics_table.xlsx")
+        for _, r in table.iterrows():
+            fp = d / "sch_resting_64ch_ec" / f"{r['code']}_ec.dat"
+            code = "" if pd.isna(r["BNO"]) else str(r["BNO"])
+            # controls have no ICD code; keep F20 (schizophrenia) and drop the
+            # schizoaffective-only (F25) and the one NMDA-encephalitis case
+            group = "control" if not code else "schizophrenia" if "F20" in code else None
+            if group is None or not fp.exists():
+                continue
+            yield f"{dataset}-{r['code']}", group, *load_raw(fp), False
+    elif dataset == "ds007526":  # Tel Aviv; Cz is the recording reference (VREF), so it is re-inserted
+        groups = {"PD": "parkinsons", "HC": "control"}
+        for p in read_tsv(d / "participants.tsv"):
+            sid = p["participant_id"]
+            fp = d / sid / "eeg" / f"{sid}_task-rest_eeg.set"
+            yield f"{dataset}-{sid}", groups[p["group"]], *load_raw(fp, add_ref="CZ"), False
+    elif dataset == "ds003478":
+        missing = 0
+        for p in read_tsv(d / "participants.tsv"):
+            sid = p["participant_id"]
+            try:
+                bdi = int(p["BDI"])
+            except ValueError:
+                continue
+            # Cavanagh's cut-offs: BDI >= 13 depressed, < 7 control; the gap is excluded.
+            group = "mood" if bdi >= 13 else "control" if bdi < 7 else None
+            base = d / sid / "eeg" / f"{sid}_task-Rest_run-01"
+            if group is None:
+                continue
+            if not Path(f"{base}_eeg.fdt").exists():
+                missing += 1
+                continue
+            x, sf = load_raw(Path(f"{base}_eeg.set"))
+            yield (f"{dataset}-{sid}", group,
+                   eyes_closed_blocks(read_tsv(Path(f"{base}_events.tsv")), x, sf), sf, False)
+        if missing:
+            print(f"[features] WARNING ds003478: {missing} labelled subjects not downloaded", flush=True)
+    elif dataset == "aszed":
+        sheet = next(d.glob("**/ASZED_SpreadSheet.csv"))
+        with open(sheet, newline="", encoding="utf-8", errors="replace") as f:
+            label = {r["sn"]: r["category"] for r in csv.DictReader(f)}
+        files = {}
+        for fp in sorted(d.glob("ASZED/**/Phase 1.edf")):  # Phase 1 = rest (NSzED protocol)
+            files.setdefault(fp.parts[-3], []).append(fp)
+        for sid, fps in sorted(files.items()):
+            yield (f"aszed-{sid}", "schizophrenia" if label[sid] == "Patient" else "control",
+                   [load_raw(fp) for fp in fps], None, False)
     else:
         raise ValueError(dataset)
 
@@ -219,7 +325,7 @@ def recordings(dataset):
 def harmonise(x, sf, already_filtered, line=50.0):
     import mne
     mne.set_log_level("ERROR")
-    if not already_filtered:
+    if not already_filtered and line < sf / 2:  # a 100 Hz file (6 in ASZED) cannot hold 50 Hz mains
         x = mne.filter.notch_filter(x, sf, float(line))
     if sf != SF:
         x = mne.filter.resample(x, up=SF, down=sf)
@@ -272,9 +378,14 @@ def cmd_features(args):
     out = args.out / "features"
     out.mkdir(parents=True, exist_ok=True)
     for ds in args.datasets:
-        abs_, cohs, subj, grp, qc = [], [], [], [], []
+        abs_, cohs, wins, subj, grp, qc = [], [], [], [], [], []
         for sid, group, x, sf, filt in recordings(ds):
-            w, rejected, total = clean_windows(harmonise(x, sf, filt, DATASETS[ds]["line"]))
+            segs = x if isinstance(x, list) else [(x, sf)]
+            parts = [clean_windows(harmonise(s, f, filt, DATASETS[ds]["line"]))
+                     for s, f in segs if s.shape[1] >= f * WIN_S]
+            w = (np.concatenate([p[0] for p in parts])[:MAX_WINDOWS] if parts
+                 else np.empty((0, len(CH), WIN_S * SF)))
+            rejected, total = sum(p[1] for p in parts), sum(p[2] for p in parts)
             qc.append({"subject": sid, "group": group, "windows_total": total,
                        "rejected": rejected, "kept": int(len(w))})
             if len(w) == 0:
@@ -282,10 +393,11 @@ def cmd_features(args):
             a, c = spectral_features(w)
             abs_.append(a)
             cohs.append(c)
+            wins.append(w.astype(np.float16))  # raw windows for models that read the signal (msbp.py)
             subj += [sid] * len(w)
             grp += [group] * len(w)
         np.savez_compressed(out / f"{ds}.npz", ab=np.concatenate(abs_), coh=np.concatenate(cohs),
-                            subject=np.array(subj), group=np.array(grp))
+                            win=np.concatenate(wins), subject=np.array(subj), group=np.array(grp))
         (out / f"{ds}_qc.json").write_text(json.dumps(qc, indent=1))
         for group in sorted({r["group"] for r in qc}):
             q = [r for r in qc if r["group"] == group]
@@ -309,12 +421,13 @@ def cache_groups(ds, part):
     return np.where(part["label"] == 1, patient, "control")
 
 
-def load_features(out, datasets):
-    parts = [np.load(out / "features" / f"{ds}.npz") for ds in datasets]
+def load_features(out, datasets, raw=False, feat="features"):
+    parts = [np.load(out / feat / f"{ds}.npz") for ds in datasets]
     cat = lambda k: np.concatenate([p[k] for p in parts])  # noqa: E731
     groups = np.concatenate([cache_groups(ds, p) for ds, p in zip(datasets, parts)])
     dsname = np.concatenate([[ds] * len(p["subject"]) for ds, p in zip(datasets, parts)])
-    return cat("ab"), cat("coh"), cat("subject"), groups, dsname
+    win = cat("win") if raw else None  # caches older than 2026-11-05 lack it: rerun `features`
+    return cat("ab"), cat("coh"), cat("subject"), groups, dsname, win
 
 
 def task_rows(groups, positive, negative):
@@ -339,15 +452,14 @@ def auc_report(lab, score):
             "n_controls": int(len(lab) - lab.sum())}
 
 
-def grouped_oof(cfg, ab, coh, subject, y, rows, strat, device, folds=5):
+def grouped_oof(fit_fn, pred_fn, subject, y, rows, strat, folds=5):
     """Out-of-fold window probabilities with subjects kept whole within a fold."""
     prob = np.zeros(len(y))
     sgkf = StratifiedGroupKFold(n_splits=folds, shuffle=True, random_state=D.SEED)
     for a, b in sgkf.split(rows, strat[rows], subject[rows]):
         tr, te = rows[a], rows[b]
         assert not set(subject[tr]) & set(subject[te]), "subject leaked across folds"
-        model = D.fit(cfg, ab, coh, y, tr, device)
-        prob[te] = D.predict_proba(model, cfg, ab, coh, te, device)
+        prob[te] = pred_fn(fit_fn(tr, te), te)
     return prob
 
 
@@ -364,9 +476,46 @@ def cmd_run(args, device):
     print(f"[run] {args.disease}: {positive} vs {negative}, datasets {datasets}; GNN "
           f"{cfg['model']}/{cfg['pool']}/topk={cfg['topk']} (tuned on Park, not on these data), "
           f"{cfg['epochs']} epochs\n")
-    ab, coh, subject, groups, ds = load_features(args.out, datasets)
+    ab, coh, subject, groups, ds, win = load_features(args.out, datasets, raw=args.model in ("msbp", "align"))
     keep, y = task_rows(groups, positive, negative)
     ab, coh, subject, ds = ab[keep], coh[keep], subject[keep], ds[keep]
+    if args.model in ("align", "combat", "dann"):
+        import site_invariant as SI
+        if args.model == "align":
+            ab, coh = SI.euclidean_align(win[keep], subject, spectral_features)
+        elif args.model == "combat":
+            ab, coh = SI.combat(ab, coh, ds)
+        cfg = {**cfg, "site_method": args.model}
+    if args.model == "msbp":
+        import msbp as M
+        win = win[keep]
+        cfg = {"model": "msbp", **M.CFG}
+
+        def fit_fn(idx, te=None):
+            return M.fit(win, y, idx, device)
+
+        def pred_fn(model, idx):
+            return M.predict_proba(model, win, idx, device)
+    elif args.model == "stgnn":
+        import st_gnn as ST
+
+        def fit_fn(idx, te=None):
+            return ST.fit(cfg, ab, coh, y, subject, idx, device, epochs=cfg["epochs"])
+
+        def pred_fn(model, idx):
+            return ST.predict_proba(model, cfg, ab, coh, subject, idx, device)
+    elif args.model == "dann":
+        def fit_fn(idx, te):
+            return SI.fit_dann(cfg, ab, coh, y, ds, idx, te, device)
+
+        def pred_fn(model, idx):
+            return D.predict_proba(model, cfg, ab, coh, idx, device)
+    else:
+        def fit_fn(idx, te=None):
+            return D.fit(cfg, ab, coh, y, idx, device)
+
+        def pred_fn(model, idx):
+            return D.predict_proba(model, cfg, ab, coh, idx, device)
 
     def fmt(r):
         return (f"AUC {r['auc']:.3f} [{r['ci'][0]:.2f}, {r['ci'][1]:.2f}]  "
@@ -375,17 +524,17 @@ def cmd_run(args, device):
     report = {"disease": args.disease, "positive": positive, "negative": negative,
               "datasets": datasets, "eyes": DATASETS[datasets[0]]["eyes"], "config": cfg}
 
-    for d in datasets:
+    for d in ([] if args.skip_within else datasets):
         rows = np.where(ds == d)[0]
-        prob = grouped_oof(cfg, ab, coh, subject, y, rows, y, device)
+        prob = grouped_oof(fit_fn, pred_fn, subject, y, rows, y)
         _, lab, score = subject_scores(subject, y, prob, rows)
         report[f"within:{d}"] = auc_report(lab, score)
         print(f"within  {d:<16} {fmt(report[f'within:{d}'])}", flush=True)
 
-    if len(datasets) > 1:
+    if len(datasets) > 1 and not args.within_only:
         rows = np.arange(len(y))
         strat = np.array([f"{a}-{b}" for a, b in zip(ds, y)])
-        prob = grouped_oof(cfg, ab, coh, subject, y, rows, strat, device)
+        prob = grouped_oof(fit_fn, pred_fn, subject, y, rows, strat)
         _, lab, score = subject_scores(subject, y, prob, rows)
         report["pooled"] = auc_report(lab, score)
         print(f"pooled  {'+'.join(datasets):<16} {fmt(report['pooled'])}", flush=True)
@@ -400,27 +549,27 @@ def cmd_run(args, device):
                 if a == b:
                     continue
                 tr, te = np.where(ds == a)[0], np.where(ds == b)[0]
-                model = D.fit(cfg, ab, coh, y, tr, device)
+                model = fit_fn(tr, te)
                 prob = np.zeros(len(y))
-                prob[te] = D.predict_proba(model, cfg, ab, coh, te, device)
+                prob[te] = pred_fn(model, te)
                 _, lab, score = subject_scores(subject, y, prob, te)
                 report[f"transfer:{a}->{b}"] = auc_report(lab, score)
                 print(f"transfer train {a} -> test {b:<8} {fmt(report[f'transfer:{a}->{b}'])}",
                       flush=True)
 
-    if len(datasets) > 2:  # train on all other hospitals, test on the one left out
+    if len(datasets) > 2 and not args.within_only:  # train on all other hospitals, test on the one left out
         for d in datasets:
             tr, te = np.where(ds != d)[0], np.where(ds == d)[0]
             assert not set(subject[tr]) & set(subject[te]), "subject in both sides of a site split"
-            model = D.fit(cfg, ab, coh, y, tr, device)
+            model = fit_fn(tr, te)
             prob = np.zeros(len(y))
-            prob[te] = D.predict_proba(model, cfg, ab, coh, te, device)
+            prob[te] = pred_fn(model, te)
             _, lab, score = subject_scores(subject, y, prob, te)
             report[f"loso:{d}"] = auc_report(lab, score)
             print(f"leave-one-hospital-out, test {d:<9} {fmt(report[f'loso:{d}'])}", flush=True)
 
     print("\nA CI spanning 0.5 means that result is not distinguishable from chance.")
-    (args.out / f"raw_{args.disease}.json").write_text(json.dumps(report, indent=2))
+    (args.out / f"raw_{args.disease}{'' if args.model == 'gnn' else '_' + args.model}.json").write_text(json.dumps(report, indent=2))
 
 
 # ---------------------------------------------------------------- self-check
@@ -527,6 +676,11 @@ def main():
     ap.add_argument("--out", default="~/eeg/raw")
     ap.add_argument("--tune", default="~/eeg/per_disorder/tune.json")
     ap.add_argument("--threads", type=int, default=None)
+    ap.add_argument("--model", choices=["gnn", "msbp", "stgnn", "align", "combat", "dann"], default="gnn",
+                    help="gnn = Park-tuned GATv2 on spectral features; msbp = MSBP-GNN on raw windows; "
+                         "align/combat/dann = the GATv2 with a site-invariance method (site_invariant.py)")
+    ap.add_argument("--skip-within", action="store_true", help="only the cross-hospital schemes")
+    ap.add_argument("--within-only", action="store_true", help="only within-dataset subject-wise CV")
     args = ap.parse_args()
     args.out = Path(args.out).expanduser()
     args.out.mkdir(parents=True, exist_ok=True)

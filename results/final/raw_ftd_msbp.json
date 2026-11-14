@@ -1,0 +1,27 @@
+{
+  "disease": "ftd",
+  "positive": "ftd",
+  "negative": "control",
+  "datasets": [
+    "ds004504"
+  ],
+  "eyes": "closed",
+  "config": {
+    "model": "msbp",
+    "epochs": 12,
+    "lr": 0.001,
+    "batch": 256,
+    "topk": 10,
+    "dropout": 0.3,
+    "hidden": 64
+  },
+  "within:ds004504": {
+    "auc": 0.7541229385307346,
+    "ci": [
+      0.6124776785714287,
+      0.8800599700149925
+    ],
+    "n_patients": 23,
+    "n_controls": 29
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "disease": "mood",
+  "positive": "mood",
+  "negative": "control",
+  "datasets": [
+    "mumtaz",
+    "ds003478"
+  ],
+  "eyes": "closed",
+  "config": {
+    "node_features": "profile",
+    "edge_mode": "bands",
+    "epochs": 20,
+    "batch_size": 64,
+    "lr": 0.001,
+    "weight_decay": 0.0005,
+    "model": "gatv2",
+    "pool": "meanmax",
+    "topk": 4
+  },
+  "within:mumtaz": {
+    "auc": 0.9392857142857143,
+    "ci": [
+      0.852162457374254,
+      0.9975766264798522
+    ],
+    "n_patients": 30,
+    "n_controls": 28
+  },
+  "within:ds003478": {
+    "auc": 0.6424794359576969,
+    "ci": [
+      0.5376131439933522,
+      0.7396397513929931
+    ],
+    "n_patients": 46,
+    "n_controls": 74
+  }
+}

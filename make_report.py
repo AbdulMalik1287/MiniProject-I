@@ -30,6 +30,7 @@ from docx.shared import Inches, Pt, RGBColor  # noqa: E402
 import park as P  # noqa: E402
 import per_disorder as D  # noqa: E402
 import raw_eeg as R  # noqa: E402
+import report_final as RF  # noqa: E402
 from train import build_model  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -462,6 +463,7 @@ def main():
     best_h = max(dis, key=lambda d: ev["per_disorder"][d]["auc"])
     e = ev["ensemble"]
     bullets(doc, [
+        *RF.summary_bullets(),
         "Base paper EEG-GCNN (Wagh & Varatharajah, ML4H 2020) reproduced exactly: all five held-out "
         "metrics match the published values, including standard deviations (AUC 0.871 +/- 0.001).",
         f"One GNN per disorder was built for {len(dis)} disorders. On a held-out test split never used for "
@@ -488,9 +490,8 @@ def main():
         f"{raw_sz['transfer:aseeg->warsaw']['auc']:.2f} and {raw_sz['transfer:warsaw->aseeg']['auc']:.2f}). "
         "For schizophrenia, what is learned is largely hospital-specific: the signature, as captured by "
         "these features, does not transfer across sites.",
-        f"Depression within Mumtaz reaches AUC {raw_md['within:mumtaz']['auc']:.2f}, but with no second open "
-        "dataset it cannot be checked across hospitals, and the schizophrenia transfer result means a "
-        "single-site score should not be read as a transferable disease signature.",
+        f"Depression within Mumtaz reaches AUC {raw_md['within:mumtaz']['auc']:.2f}; a second open depression "
+        "dataset (UNM, New Mexico) was added in the final phase - see 5.6 and 5.10.",
         *neuro_summary(raws),
     ])
 
@@ -741,8 +742,18 @@ def main():
             note="'positive' and 'negative' are the two groups of each task: patients vs controls, "
                  "and for AD vs FTD, Alzheimer's vs frontotemporal dementia.")
 
+    RF.add_sections(doc, {"table": table, "figure": figure, "bullets": bullets, "ci": ci,
+                          "dot_whisker": dot_whisker, "FIG": FIG, "S1": S1, "S2": S2})
+
     doc.add_heading("6. Problems found and fixed", 1)
     bullets(doc, [
+        "Final phase: ds007526's participants.tsv starts with a UTF-8 byte-order mark (read as part of the first "
+        "column name); some UNM event files label every event STATUS, so eyes-closed blocks are found by code; "
+        "six ASZED files are sampled at 100 Hz, where a 50 Hz notch is at Nyquist.",
+        "ComBat's empirical-Bayes prior pools site effects across features; fitted jointly on band power and "
+        "~2,000 coherence features it under-corrected band power, so the two are fitted as separate blocks.",
+        "Plain gradient x input ranked neighbouring electrodes first only because their coherence is large; "
+        "attribution is taken against the training-fold mean instead.",
         "PyG checkpoint layout changed since 2020: GCN weights moved into a Linear submodule with "
         "transposed shape, so porting needs a transpose, not a rename.",
         "Positive class: the baseline corpus is 87% diseased, so precision/recall against 'healthy' "
@@ -762,8 +773,8 @@ def main():
         "Small test sets: with 19-23 healthy controls in most comparisons, AUC confidence intervals are "
         "roughly +/-0.15. Differences smaller than that are not interpretable.",
         "One feature row per subject in Park (no raw EEG), so no windowing or augmentation is possible there.",
-        "Depression has only one open raw dataset with controls, so its within-dataset result has no "
-        "cross-hospital check. Addictive, trauma and anxiety have no open raw dataset with controls.",
+        "Addictive, trauma and anxiety disorders have no open raw dataset with controls.",
+        *RF.limitations(),
         "ASEEG left/right channel assignment is not identifiable from resting EEG and follows the "
         "standard 10-20 export order.",
         "Per-disorder and raw-EEG results were computed on a laptop CPU (Blackwell node unreachable on "
@@ -790,6 +801,7 @@ def main():
         "python raw_eeg.py features",
         "python raw_eeg.py run --disease schizophrenia | mood",
         "python raw_eeg.py run --disease alzheimers | ftd | alzheimers_vs_ftd | parkinsons",
+        *RF.REPRODUCE,
         "python make_report.py                                # this document",
     ]))
 
